@@ -178,25 +178,29 @@ export function DashboardCard({
     // Generate CSS Grid classes dynamically
     const classes = [];
     
-    // Column span - handle all possible values 1-12
+    // Mobile-first approach: Force full width on mobile (col-span-12), use desktop value on larger screens
+    // This ensures each widget takes full width on mobile regardless of desktop configuration
+    classes.push('col-span-12'); // Mobile: full width
+    
+    // Desktop column span - add responsive classes for md and up
     switch (colSpan) {
-      case 1: classes.push('col-span-1'); break;
-      case 2: classes.push('col-span-2'); break;
-      case 3: classes.push('col-span-3'); break;
-      case 4: classes.push('col-span-4'); break;
-      case 5: classes.push('col-span-5'); break;
-      case 6: classes.push('col-span-6'); break;
-      case 7: classes.push('col-span-7'); break;
-      case 8: classes.push('col-span-8'); break;
-      case 9: classes.push('col-span-9'); break;
-      case 10: classes.push('col-span-10'); break;
-      case 11: classes.push('col-span-11'); break;
-      case 12: classes.push('col-span-12'); break;
+      case 1: classes.push('md:col-span-1'); break;
+      case 2: classes.push('md:col-span-2'); break;
+      case 3: classes.push('md:col-span-3'); break;
+      case 4: classes.push('md:col-span-4'); break;
+      case 5: classes.push('md:col-span-5'); break;
+      case 6: classes.push('md:col-span-6'); break;
+      case 7: classes.push('md:col-span-7'); break;
+      case 8: classes.push('md:col-span-8'); break;
+      case 9: classes.push('md:col-span-9'); break;
+      case 10: classes.push('md:col-span-10'); break;
+      case 11: classes.push('md:col-span-11'); break;
+      case 12: classes.push('md:col-span-12'); break;
       default: 
         if (colSpan >= totalGridColumns) {
-          classes.push('col-span-full');
+          classes.push('md:col-span-full');
         } else {
-          classes.push('col-span-3'); // Fallback
+          classes.push('md:col-span-3'); // Fallback
         }
     }
     
