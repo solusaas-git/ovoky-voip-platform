@@ -161,22 +161,23 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
   return (
     <div className="space-y-4">
       {/* Header Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           Users missing Sippy account IDs or pending email verification
         </p>
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={handleRefresh}
             disabled={isLoading}
+            className="w-full sm:w-auto"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" asChild>
-            <a href="/users" className="flex items-center space-x-2">
+          <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
+            <a href="/users" className="flex items-center justify-center space-x-2">
               <ExternalLink className="h-4 w-4 mr-2" />
               Manage All Users
             </a>
@@ -185,11 +186,11 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
       </div>
       
       {/* Filter Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <div className="flex items-center space-x-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+        <div className="flex items-center space-x-2 w-full lg:w-auto">
+          <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
           <Select value={filter} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-full lg:w-[200px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -202,10 +203,10 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
           </Select>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-muted-foreground">Show:</span>
+        <div className="flex items-center space-x-2 w-full lg:w-auto">
+          <span className="text-sm text-muted-foreground flex-shrink-0">Show:</span>
           <Select value={limit.toString()} onValueChange={handleLimitChange}>
-            <SelectTrigger className="w-[100px]">
+            <SelectTrigger className="w-full lg:w-[100px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -221,28 +222,28 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
       <Separator />
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="flex items-center space-x-3 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
-          <Phone className="h-5 w-5 text-amber-600" />
-          <div>
-            <p className="text-sm font-medium">Missing Sippy ID</p>
-            <p className="text-2xl font-bold text-amber-600">{data?.counts.missingSippy || 0}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+        <div className="flex items-center space-x-3 p-3 md:p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
+          <Phone className="h-5 w-5 text-amber-600 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">Missing Sippy ID</p>
+            <p className="text-xl md:text-2xl font-bold text-amber-600">{data?.counts.missingSippy || 0}</p>
           </div>
         </div>
         
-        <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <Mail className="h-5 w-5 text-blue-600" />
-          <div>
-            <p className="text-sm font-medium">Pending Verification</p>
-            <p className="text-2xl font-bold text-blue-600">{data?.counts.pendingVerification || 0}</p>
+        <div className="flex items-center space-x-3 p-3 md:p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <Mail className="h-5 w-5 text-blue-600 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">Pending Verification</p>
+            <p className="text-xl md:text-2xl font-bold text-blue-600">{data?.counts.pendingVerification || 0}</p>
           </div>
         </div>
         
-        <div className="flex items-center space-x-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
-          <AlertTriangle className="h-5 w-5 text-red-600" />
-          <div>
-            <p className="text-sm font-medium">Total Pending</p>
-            <p className="text-2xl font-bold text-red-600">{data?.counts.totalPending || 0}</p>
+        <div className="flex items-center space-x-3 p-3 md:p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
+          <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">Total Pending</p>
+            <p className="text-xl md:text-2xl font-bold text-red-600">{data?.counts.totalPending || 0}</p>
           </div>
         </div>
       </div>
@@ -251,34 +252,36 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
       {data?.users && data.users.length > 0 ? (
         <div className="space-y-3">
           {data.users.map((user) => (
-            <div key={user.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-3">
-                    <h4 className="font-medium">{user.name}</h4>
-                    {getRoleBadge(user.role)}
-                    {getCreationMethodBadge(user.creationMethod)}
+            <div key={user.id} className="p-3 md:p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                <div className="space-y-2 min-w-0 flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <h4 className="font-medium truncate">{user.name}</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {getRoleBadge(user.role)}
+                      {getCreationMethodBadge(user.creationMethod)}
+                    </div>
                   </div>
                   
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                  <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                   
                   <div className="flex flex-wrap gap-2">
                     {getStatusBadges(user)}
                   </div>
                   
-                  <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-muted-foreground">
                     <span>Created: {format(new Date(user.createdAt), 'MMM dd, yyyy')}</span>
                     {user.sippyAccountId && (
-                      <span>Sippy ID: {user.sippyAccountId}</span>
+                      <span className="sm:ml-2">Sippy ID: {user.sippyAccountId}</span>
                     )}
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center lg:justify-start">
                   {user.isEmailVerified ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
                   ) : (
-                    <XCircle className="h-5 w-5 text-red-500" />
+                    <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
                   )}
                 </div>
               </div>
@@ -289,7 +292,7 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
         <div className="text-center py-8">
           <UserX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-muted-foreground">No users need attention</h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
             {filter === 'all' 
               ? 'All users have Sippy IDs and verified emails'
               : `No users match the current filter: ${filter.replace('_', ' ')}`
@@ -301,11 +304,11 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
       {/* Quick Action Footer */}
       {data?.users && data.users.length > 0 && (
         <div className="pt-4 border-t">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-muted-foreground">
             <span>
               Showing {data.users.length} of {data.counts.totalPending} users requiring attention
             </span>
-            <Button variant="link" size="sm" asChild>
+            <Button variant="link" size="sm" asChild className="w-fit">
               <a href="/users">View all users →</a>
             </Button>
           </div>

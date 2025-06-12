@@ -24,33 +24,22 @@ export function TotalMinutesWidget() {
     }
   };
 
-  // Show "not loaded" state when data hasn't been manually loaded
-  if (!hasDataLoaded && !isLoading) {
+  // Loading state
+  if (isLoading && !hasDataLoaded) {
     return (
-      <Card className="h-full bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-slate-950/50 dark:via-gray-950/50 dark:to-zinc-950/50 border-slate-200/50 dark:border-slate-800/50">
+      <Card className="h-full bg-card border-border shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Total Minutes
-          </CardTitle>
+          <CardTitle className="text-sm font-semibold">Total Day Minutes</CardTitle>
           <div className="relative">
-            <div className="relative z-10 p-2 rounded-full bg-slate-500/10 dark:bg-slate-400/10">
-              <Timer className="h-5 w-5 text-slate-600 dark:text-slate-400" />
-            </div>
+            <div className="absolute inset-0 bg-muted/10 rounded-full"></div>
+            <Clock className="h-5 w-5 text-muted-foreground relative z-10" />
           </div>
         </CardHeader>
-        
         <CardContent className="space-y-4">
-          <div className="flex flex-col items-center justify-center py-8 space-y-3">
-            <div className="p-3 rounded-full bg-slate-100 dark:bg-slate-800">
-              <Activity className="h-6 w-6 text-slate-500 dark:text-slate-400" />
-            </div>
-            <div className="text-center space-y-1">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                No data loaded
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Use the date selector to load metrics
-              </p>
+          <div className="flex items-center justify-center py-8">
+            <div className="flex items-center space-x-2">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <span className="text-sm text-muted-foreground">Loading minutes data...</span>
             </div>
           </div>
         </CardContent>
@@ -58,52 +47,35 @@ export function TotalMinutesWidget() {
     );
   }
 
-  if (isLoading) {
+  // Error state
+  if (error) {
     return (
-      <Card className="h-full bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-950/50 dark:via-cyan-950/50 dark:to-teal-950/50 border-blue-200/50 dark:border-blue-800/50">
+      <Card className="h-full bg-card border-border shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-            Total Minutes
-          </CardTitle>
+          <CardTitle className="text-sm font-semibold">Total Day Minutes</CardTitle>
           <div className="relative">
-            <div className="absolute inset-0 rounded-full animate-ping bg-blue-500/20 dark:bg-blue-400/20"></div>
-            <div className="relative z-10 p-2 rounded-full bg-blue-500/10 dark:bg-blue-400/10">
-              <Loader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin" />
-            </div>
+            <div className="absolute inset-0 bg-muted/10 rounded-full"></div>
+            <Clock className="h-5 w-5 text-muted-foreground relative z-10" />
           </div>
         </CardHeader>
-        
         <CardContent className="space-y-4">
-          <div className="flex flex-col items-center justify-center py-8 space-y-3">
-            <div className="text-center space-y-1">
-              <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                Loading metrics...
+          <div className="space-y-2">
+            <div className="text-2xl md:text-3xl font-bold tracking-tight text-destructive">
+              Error
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Failed to load data
               </p>
-              <p className="text-xs text-blue-600/70 dark:text-blue-400/70">
-                Please wait while we fetch your data
-              </p>
+              <Badge variant="destructive" className="text-xs font-medium">
+                Error
+              </Badge>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error || !kpis) {
-    return (
-      <Card className="h-full bg-gradient-to-br from-red-50 via-rose-50 to-pink-50 border-red-200/50 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold text-red-900">Total Day Minutes</CardTitle>
-          <div className="relative">
-            <div className="absolute inset-0 bg-red-500/20 rounded-full animate-pulse"></div>
-            <Clock className="h-5 w-5 text-red-600 relative z-10" />
+          <div className="text-xs text-muted-foreground flex items-center space-x-1">
+            <div className="w-2 h-2 bg-destructive rounded-full"></div>
+            <span>Please try refreshing the widget</span>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-red-600 mb-2">Error</div>
-          <p className="text-xs text-red-600/80">
-            Failed to load usage data
-          </p>
         </CardContent>
       </Card>
     );
@@ -120,16 +92,16 @@ export function TotalMinutesWidget() {
             <Clock className="h-5 w-5 text-muted-foreground relative z-10" />
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 md:space-y-4">
           <div className="space-y-2">
-            <div className="text-3xl font-bold tracking-tight">
+            <div className="text-2xl md:text-3xl font-bold tracking-tight">
               0 min
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <p className="text-xs text-muted-foreground">
                 No usage {formatSelectedDate(selectedDate)}
               </p>
-              <Badge variant="outline" className="text-xs font-medium">
+              <Badge variant="outline" className="text-xs font-medium w-fit">
                 No Activity
               </Badge>
             </div>
@@ -137,6 +109,36 @@ export function TotalMinutesWidget() {
           <div className="text-xs text-muted-foreground flex items-center space-x-1">
             <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
             <span>Waiting for call activity...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Return early if no kpis data
+  if (!kpis) {
+    return (
+      <Card className="h-full bg-card border-border shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardTitle className="text-sm font-semibold">Total Day Minutes</CardTitle>
+          <div className="relative">
+            <div className="absolute inset-0 bg-muted/10 rounded-full"></div>
+            <Clock className="h-5 w-5 text-muted-foreground relative z-10" />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="text-2xl md:text-3xl font-bold tracking-tight">
+              --
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                No data available
+              </p>
+              <Badge variant="outline" className="text-xs font-medium">
+                No Data
+              </Badge>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -180,28 +182,28 @@ export function TotalMinutesWidget() {
     switch (status) {
       case 'light':
         return {
-          gradient: 'from-green-50 via-emerald-50 to-teal-50 dark:from-green-950/50 dark:via-emerald-950/50 dark:to-teal-950/50',
-          border: 'border-green-200/50 dark:border-green-800/50',
-          textPrimary: 'text-green-900 dark:text-green-100',
-          textSecondary: 'text-green-700 dark:text-green-300',
-          textMuted: 'text-green-600/70 dark:text-green-400/70',
-          badge: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-800',
+          gradient: 'from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-teal-950/50',
+          border: 'border-emerald-200/50 dark:border-emerald-800/50',
+          textPrimary: 'text-emerald-900 dark:text-emerald-100',
+          textSecondary: 'text-emerald-700 dark:text-emerald-300',
+          textMuted: 'text-emerald-600/70 dark:text-emerald-400/70',
+          badge: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800',
           badgeText: 'Light Usage',
-          iconBg: 'bg-green-500/10 dark:bg-green-400/10',
-          iconColor: 'text-green-600 dark:text-green-400',
-          progressBg: 'bg-gradient-to-r from-green-400 to-emerald-500',
-          pulse: 'bg-green-500/20 dark:bg-green-400/20',
-          icon: <Zap className="h-4 w-4 text-green-600 dark:text-green-400" />
+          iconBg: 'bg-emerald-500/10 dark:bg-emerald-400/10',
+          iconColor: 'text-emerald-600 dark:text-emerald-400',
+          progressBg: 'bg-gradient-to-r from-emerald-400 to-green-500',
+          pulse: 'bg-emerald-500/20 dark:bg-emerald-400/20',
+          icon: <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         };
       case 'moderate':
         return {
-          gradient: 'from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-950/50 dark:via-cyan-950/50 dark:to-teal-950/50',
+          gradient: 'from-blue-50 via-cyan-50 to-sky-50 dark:from-blue-950/50 dark:via-cyan-950/50 dark:to-sky-950/50',
           border: 'border-blue-200/50 dark:border-blue-800/50',
           textPrimary: 'text-blue-900 dark:text-blue-100',
           textSecondary: 'text-blue-700 dark:text-blue-300',
           textMuted: 'text-blue-600/70 dark:text-blue-400/70',
           badge: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800',
-          badgeText: 'Moderate',
+          badgeText: 'Moderate Usage',
           iconBg: 'bg-blue-500/10 dark:bg-blue-400/10',
           iconColor: 'text-blue-600 dark:text-blue-400',
           progressBg: 'bg-gradient-to-r from-blue-400 to-cyan-500',
@@ -246,19 +248,17 @@ export function TotalMinutesWidget() {
           textSecondary: 'text-muted-foreground',
           textMuted: 'text-muted-foreground/70',
           badge: 'bg-muted text-muted-foreground border-border',
-          badgeText: 'No Usage',
+          badgeText: 'No Data',
           iconBg: 'bg-muted/10',
           iconColor: 'text-muted-foreground',
-          progressBg: 'bg-gradient-to-r from-muted to-muted-foreground',
+          progressBg: 'bg-muted',
           pulse: 'bg-muted/20',
-          icon: <Timer className="h-4 w-4 text-muted-foreground" />
+          icon: <Clock className="h-4 w-4 text-muted-foreground" />
         };
     }
   };
 
   const config = getStatusConfig();
-
-
 
   return (
     <Card className={cn(
@@ -268,21 +268,21 @@ export function TotalMinutesWidget() {
     )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className={cn("text-sm font-semibold", config.textPrimary)}>
-          Total Minutes
+          Total Day Minutes
         </CardTitle>
         <div className="relative">
           <div className={cn("absolute inset-0 rounded-full animate-ping", config.pulse)}></div>
           <div className={cn("relative z-10 p-2 rounded-full", config.iconBg)}>
-            <Timer className={cn("h-5 w-5", config.iconColor)} />
+            <Clock className={cn("h-5 w-5", config.iconColor)} />
           </div>
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 md:space-y-4">
         {/* Main Minutes Display */}
         <div className="space-y-2">
           <div className="flex items-baseline space-x-2">
-            <div className={cn("text-3xl font-bold tracking-tight", config.textPrimary)}>
+            <div className={cn("text-2xl md:text-3xl font-bold tracking-tight", config.textPrimary)}>
               {formatMinutes(kpis.totalMinutes)}
             </div>
             <div className="flex items-center space-x-1">
@@ -290,22 +290,22 @@ export function TotalMinutesWidget() {
             </div>
           </div>
           
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <p className={cn("text-xs", config.textMuted)}>
               Total usage {formatSelectedDate(selectedDate)}
             </p>
-            <Badge variant="outline" className={cn("text-xs font-medium", config.badge)}>
+            <Badge variant="outline" className={cn("text-xs font-medium w-fit", config.badge)}>
               {config.badgeText}
             </Badge>
           </div>
         </div>
 
-        {/* Usage Gauge */}
+        {/* Usage Gauge - Responsive sizing */}
         {kpis.totalMinutes > 0 && (
           <div className="relative flex items-center justify-center">
-            <div className="relative w-24 h-24">
+            <div className="relative w-20 h-20 md:w-24 md:h-24">
               {/* Gauge background */}
-              <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+              <svg className="w-20 h-20 md:w-24 md:h-24 transform -rotate-90" viewBox="0 0 100 100">
                 <circle
                   cx="50"
                   cy="50"
@@ -350,31 +350,31 @@ export function TotalMinutesWidget() {
           </div>
         )}
 
-        {/* Statistics */}
+        {/* Statistics - Responsive layout */}
         <div className="space-y-3">
           {kpis.totalMinutes > 0 && (
-            <div className={cn("text-center p-2 rounded-lg bg-muted/30 dark:bg-muted/20", config.textSecondary)}>
+            <div className={cn("text-center p-2 md:p-3 rounded-lg bg-muted/30 dark:bg-muted/20", config.textSecondary)}>
               <div className="text-xs font-medium mb-1">Detailed Breakdown</div>
-              <div className="font-semibold">{formatDetailedTime(kpis.totalMinutes)}</div>
+              <div className="font-semibold text-sm md:text-base">{formatDetailedTime(kpis.totalMinutes)}</div>
             </div>
           )}
           
           {kpis.totalCalls > 0 && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className={cn("text-center p-2 rounded-lg bg-muted/30", config.textSecondary)}>
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
+              <div className={cn("text-center p-2 md:p-3 rounded-lg bg-muted/30", config.textSecondary)}>
                 <div className="flex items-center justify-center space-x-1 mb-1">
                   <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                   <span className="text-xs font-medium">Avg</span>
                 </div>
-                <div className="font-semibold">{(kpis.totalMinutes / Math.max(kpis.totalCalls, 1)).toFixed(1)}m</div>
+                <div className="font-semibold text-sm md:text-base">{(kpis.totalMinutes / Math.max(kpis.totalCalls, 1)).toFixed(1)}m</div>
               </div>
               
-              <div className={cn("text-center p-2 rounded-lg bg-muted/30", config.textSecondary)}>
+              <div className={cn("text-center p-2 md:p-3 rounded-lg bg-muted/30", config.textSecondary)}>
                 <div className="flex items-center justify-center space-x-1 mb-1">
                   <TrendingUp className="h-3 w-3 text-green-600 dark:text-green-400" />
                   <span className="text-xs font-medium">Peak</span>
                 </div>
-                <div className="font-semibold">{(kpis.totalMinutes * 1.3).toFixed(0)}m</div>
+                <div className="font-semibold text-sm md:text-base">{(kpis.totalMinutes * 1.3).toFixed(0)}m</div>
               </div>
             </div>
           )}
@@ -391,10 +391,10 @@ export function TotalMinutesWidget() {
                  getUsageStatus() === 'heavy' ? '🟠 High' : '🔴 Very High'}
               </span>
             </div>
-            <div className="w-full bg-muted/50 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-muted/50 rounded-full h-2 md:h-3 overflow-hidden">
               <div 
                 className={cn(
-                  "h-3 rounded-full transition-all duration-1000 ease-out relative",
+                  "h-2 md:h-3 rounded-full transition-all duration-1000 ease-out relative",
                   config.progressBg
                 )}
                 style={{ 
@@ -412,29 +412,29 @@ export function TotalMinutesWidget() {
           </div>
         )}
 
-        {/* Status Messages */}
+        {/* Status Messages - Responsive layout */}
         {kpis.totalMinutes === 0 && kpis.totalCalls > 0 && (
-          <div className={cn("text-center p-3 rounded-lg bg-muted/30", config.textMuted)}>
+          <div className={cn("text-center p-2 md:p-3 rounded-lg bg-muted/30", config.textMuted)}>
             <div className="flex items-center justify-center space-x-1 mb-1">
               <Calendar className="h-3 w-3" />
               <span className="text-xs font-medium">Daily Avg</span>
             </div>
-            <div className="font-semibold">{(kpis.totalMinutes / 30).toFixed(1)}m</div>
+            <div className="font-semibold text-sm md:text-base">{(kpis.totalMinutes / 30).toFixed(1)}m</div>
           </div>
         )}
 
         {kpis.totalCalls === 0 && (
-          <div className={cn("text-center p-3 rounded-lg bg-muted/30", config.textMuted)}>
+          <div className={cn("text-center p-2 md:p-3 rounded-lg bg-muted/30", config.textMuted)}>
             <div className="flex items-center justify-center space-x-1 mb-1">
               <Zap className="h-3 w-3" />
               <span className="text-xs font-medium">Efficiency</span>
             </div>
-            <div className="font-semibold">{Math.min(100, kpis.asr).toFixed(0)}%</div>
+            <div className="font-semibold text-sm md:text-base">{Math.min(100, kpis.asr).toFixed(0)}%</div>
           </div>
         )}
 
-        {/* Footer */}
-        <div className={cn("flex items-center justify-between text-xs pt-2 border-t border-muted/20", config.textMuted)}>
+        {/* Footer - Responsive layout */}
+        <div className={cn("flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs pt-2 border-t border-muted/20", config.textMuted)}>
           <div className="flex items-center space-x-1">
             <div className={cn("w-2 h-2 rounded-full", 
               getUsageStatus() === 'light' ? 'bg-green-400 dark:bg-green-500' :
@@ -444,7 +444,7 @@ export function TotalMinutesWidget() {
             )}></div>
             <span>Live Data</span>
           </div>
-          <span>{new Date().toLocaleTimeString()}</span>
+          <span className="text-right sm:text-left">{new Date().toLocaleTimeString()}</span>
         </div>
       </CardContent>
     </Card>

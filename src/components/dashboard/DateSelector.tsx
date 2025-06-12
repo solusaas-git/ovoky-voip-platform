@@ -71,24 +71,25 @@ export function DateSelector({
 
   return (
     <div className="space-y-3">
-      {/* Date Selector and Load Metrics Buttons - All in one line */}
+      {/* Date Selector and Load Metrics Buttons - Responsive layout */}
       <div className="flex justify-center">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-2 max-w-full">
           {/* Today Button */}
           <Button
             variant="outline"
             size="sm"
             onClick={handleTodayClick}
             disabled={isLoading}
-            className="gap-2 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950 dark:hover:border-blue-700"
+            className="gap-2 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950 dark:hover:border-blue-700 min-w-0 flex-shrink-0"
             style={{ 
               backgroundColor: isToday ? `${primaryColor}20` : undefined,
               borderColor: isToday ? primaryColor : undefined,
               color: isToday ? primaryColor : undefined
             }}
           >
-            <Calendar className="h-3 w-3" />
-            Today
+            <Calendar className="h-3 w-3 flex-shrink-0" />
+            <span className="hidden xs:inline">Today</span>
+            <span className="xs:hidden">T</span>
           </Button>
 
           {/* Yesterday Button */}
@@ -97,15 +98,16 @@ export function DateSelector({
             size="sm"
             onClick={handleYesterdayClick}
             disabled={isLoading}
-            className="gap-2 hover:bg-orange-50 hover:border-orange-300 dark:hover:bg-orange-950 dark:hover:border-orange-700"
+            className="gap-2 hover:bg-orange-50 hover:border-orange-300 dark:hover:bg-orange-950 dark:hover:border-orange-700 min-w-0 flex-shrink-0"
             style={{ 
               backgroundColor: isYesterday ? `${primaryColor}20` : undefined,
               borderColor: isYesterday ? primaryColor : undefined,
               color: isYesterday ? primaryColor : undefined
             }}
           >
-            <Calendar className="h-3 w-3" />
-            Yesterday
+            <Calendar className="h-3 w-3 flex-shrink-0" />
+            <span className="hidden xs:inline">Yesterday</span>
+            <span className="xs:hidden">Y</span>
           </Button>
 
           {/* Custom Date Picker */}
@@ -115,15 +117,24 @@ export function DateSelector({
                 variant="outline"
                 size="sm"
                 disabled={isLoading}
-                className="gap-2 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950 dark:hover:border-purple-700"
+                className="gap-2 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950 dark:hover:border-purple-700 min-w-0 flex-shrink-0 max-w-[140px] sm:max-w-none"
                 style={{ 
                   backgroundColor: isCustomDate ? `${primaryColor}20` : undefined,
                   borderColor: isCustomDate ? primaryColor : undefined,
                   color: isCustomDate ? primaryColor : undefined
                 }}
               >
-                <Calendar className="h-3 w-3" />
-                {isCustomDate ? formatDate(selectedDate) : 'Pick Date'}
+                <Calendar className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">
+                  {isCustomDate ? (
+                    <span className="hidden sm:inline">{formatDate(selectedDate)}</span>
+                  ) : (
+                    <span className="hidden sm:inline">Pick Date</span>
+                  )}
+                  <span className="sm:hidden">
+                    {isCustomDate ? formatDate(selectedDate).split(',')[0] : 'Pick'}
+                  </span>
+                </span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="center">
@@ -138,15 +149,15 @@ export function DateSelector({
             </PopoverContent>
           </Popover>
 
-          {/* Separator */}
-          <div className="w-px h-6 bg-border mx-1"></div>
+          {/* Separator - Hidden on very small screens */}
+          <div className="hidden sm:block w-px h-6 bg-border mx-1"></div>
 
           {/* Load Metrics Button */}
           <Button
             onClick={handleLoadMetrics}
             disabled={isLoading}
             size="sm"
-            className="gap-2"
+            className="gap-2 min-w-0 flex-shrink-0"
             style={{ 
               backgroundColor: primaryColor,
               borderColor: primaryColor,
@@ -155,18 +166,21 @@ export function DateSelector({
           >
             {isLoading ? (
               <>
-                <RefreshCw className="h-3 w-3 animate-spin" />
-                Loading...
+                <RefreshCw className="h-3 w-3 animate-spin flex-shrink-0" />
+                <span className="hidden xs:inline">Loading...</span>
+                <span className="xs:hidden">...</span>
               </>
             ) : hasDataLoaded ? (
               <>
-                <RefreshCw className="h-3 w-3" />
-                Refresh
+                <RefreshCw className="h-3 w-3 flex-shrink-0" />
+                <span className="hidden xs:inline">Refresh</span>
+                <span className="xs:hidden">R</span>
               </>
             ) : (
               <>
-                <BarChart3 className="h-3 w-3" />
-                Load
+                <BarChart3 className="h-3 w-3 flex-shrink-0" />
+                <span className="hidden xs:inline">Load</span>
+                <span className="xs:hidden">L</span>
               </>
             )}
           </Button>
@@ -177,8 +191,8 @@ export function DateSelector({
       {hasDataLoaded && !isLoading && (
         <div className="flex justify-center">
           <Badge variant="outline" className="gap-1 text-xs px-2 py-1">
-            <TrendingUp className="h-3 w-3" />
-            {kpis?.totalCalls || 0} calls
+            <TrendingUp className="h-3 w-3 flex-shrink-0" />
+            <span>{kpis?.totalCalls || 0} calls</span>
           </Badge>
         </div>
       )}
@@ -188,8 +202,8 @@ export function DateSelector({
         <div className="space-y-2">
           <div className="flex items-center justify-center">
             <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-              <RefreshCw className="h-3 w-3 animate-spin" />
-              <span>
+              <RefreshCw className="h-3 w-3 animate-spin flex-shrink-0" />
+              <span className="truncate">
                 {progress ? (
                   `${progress.phase === 'initial' ? 'Loading' : 'Background'} • ${progress.recordsLoaded.toLocaleString()}`
                 ) : (
