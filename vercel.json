@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "npm run build:vercel",
+  "installCommand": "npm install --legacy-peer-deps",
   "env": {
     "NODE_ENV": "production"
   },
