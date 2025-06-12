@@ -40,6 +40,9 @@ interface User {
   suspensionReason?: string;
   suspendedBy?: string;
   createdAt: string;
+  onboarding?: {
+    companyName?: string;
+  };
 }
 
 interface UserManagementTableProps {
@@ -81,8 +84,8 @@ export function UserManagementTable({ searchQuery = '', roleFilter = 'all' }: Us
     try {
       setIsLoading(true);
       
-      // Fetch users from the API
-      const response = await fetch('/api/users');
+      // Fetch users from the API with onboarding data
+      const response = await fetch('/api/users?include_onboarding=true');
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -366,7 +369,8 @@ export function UserManagementTable({ searchQuery = '', roleFilter = 'all' }: Us
   const filteredUsers = users.filter((user) => {
     const matchesSearch = !searchQuery || 
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.onboarding?.companyName && user.onboarding.companyName.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     
@@ -417,6 +421,7 @@ export function UserManagementTable({ searchQuery = '', roleFilter = 'all' }: Us
             <TableRow className="bg-muted/50">
               <TableHead className="w-[50px]"></TableHead>
               <TableHead>User</TableHead>
+              <TableHead>Company</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Email Status</TableHead>
@@ -429,7 +434,7 @@ export function UserManagementTable({ searchQuery = '', roleFilter = 'all' }: Us
           <TableBody>
             {filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-12">
+                <TableCell colSpan={10} className="text-center py-12">
                   <div className="flex flex-col items-center space-y-4">
                     <div className="p-4 bg-muted rounded-full">
                       <User className="h-8 w-8 text-muted-foreground" />
@@ -464,6 +469,9 @@ export function UserManagementTable({ searchQuery = '', roleFilter = 'all' }: Us
                           {user.email}
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {user.onboarding?.companyName || 'N/A'}
                     </TableCell>
                     <TableCell>
                       <Badge variant={getRoleBadgeVariant(user.role)} className="flex items-center w-fit">
