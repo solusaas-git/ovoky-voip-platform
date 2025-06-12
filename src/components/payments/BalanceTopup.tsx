@@ -97,6 +97,7 @@ interface PaymentFailureData {
 
 interface BalanceTopupProps {
   onPaymentSuccess?: () => void;
+  size?: 'default' | 'sm';
 }
 
 // Helper function to convert currency code to symbol
@@ -803,7 +804,7 @@ function PaymentForm({
   );
 }
 
-export function BalanceTopup({ onPaymentSuccess }: BalanceTopupProps = {}) {
+export function BalanceTopup({ onPaymentSuccess, size = 'default' }: BalanceTopupProps = {}) {
   const { colors } = useBranding();
   const [showDialog, setShowDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -1018,11 +1019,14 @@ export function BalanceTopup({ onPaymentSuccess }: BalanceTopupProps = {}) {
       }}>
         <DialogTrigger asChild>
           <Button 
-            className="gap-2 hover:shadow-lg hover:scale-105 transition-all duration-200 hover:brightness-110" 
+            size={size}
+            className={`gap-2 hover:shadow-lg hover:scale-105 transition-all duration-200 hover:brightness-110 ${
+              size === 'sm' ? 'text-xs px-2 py-1 h-7' : ''
+            }`}
             style={{ backgroundColor: colors.primary }}
           >
-            <Plus className="h-4 w-4" />
-            Top Up Balance
+            <Plus className={size === 'sm' ? 'h-3 w-3' : 'h-4 w-4'} />
+            {size === 'sm' ? 'Top Up' : 'Top Up Balance'}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-md">

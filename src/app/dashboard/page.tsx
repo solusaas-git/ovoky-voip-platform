@@ -47,7 +47,7 @@ export default function DashboardPage() {
     <MainLayout>
       <PageLayout
         title="Dashboard"
-        description="Overview of your Sippy account activity, call statistics, and system status"
+        description="Overview of your account activity, call statistics, and system status"
       >
         <CdrProvider>
           <DashboardContent />
@@ -756,7 +756,7 @@ function DashboardContent() {
             key={widget.id}
             title="Account Balance"
             icon={<Wallet className="h-4 w-4" />}
-            headerActions={<BalanceTopup onPaymentSuccess={() => refetch()} />}
+            headerActions={<BalanceTopup size="sm" onPaymentSuccess={() => refetch()} />}
             {...commonProps}
           >
             <BalanceWidget />
