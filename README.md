@@ -1,36 +1,208 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OVOKY - VoIP Management Platform
 
-## Getting Started
+A comprehensive VoIP management platform built with Next.js 15, featuring user management, phone number provisioning, billing, and real-time call monitoring.
 
-First, run the development server:
+## 🚀 Features
+
+- **User Management** - Complete user lifecycle management
+- **Phone Number Management** - Purchase, assign, and manage phone numbers
+- **Billing & Payments** - Integrated Stripe payments and billing
+- **Call Management** - Real-time call monitoring and CDR reports
+- **Admin Dashboard** - Comprehensive admin interface
+- **Notifications** - Real-time push notifications
+- **Ticketing System** - Built-in support ticket management
+- **Rate Management** - Flexible rate deck system
+- **Trunk Management** - SIP trunk configuration
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Database**: MongoDB
+- **Authentication**: JWT-based auth
+- **Payments**: Stripe
+- **UI**: Tailwind CSS + shadcn/ui
+- **VoIP Integration**: Sippy API
+- **Deployment**: Vercel
+
+## 📦 Installation
+
+### Prerequisites
+- Node.js 18+ 
+- MongoDB
+- npm or yarn
+
+### Local Development
 
 ```bash
+# Clone the repository
+git clone <your-repo-url>
+cd ovo
+
+# Install dependencies
+npm run install:legacy
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your configuration
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000` to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🌐 Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Vercel (Recommended)
 
-## Learn More
+```bash
+# Quick deployment
+./deploy-to-vercel.sh
 
-To learn more about Next.js, take a look at the following resources:
+# Or manually
+npm i -g vercel
+vercel login
+vercel --prod
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for detailed instructions.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Plesk
 
-## Deploy on Vercel
+See [PLESK_DEPLOYMENT.md](./PLESK_DEPLOYMENT.md) for Plesk deployment instructions.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ⚙️ Configuration
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Environment Variables
+
+```env
+# Database
+MONGODB_URI=mongodb://localhost:27017/sippy
+
+# Authentication
+JWT_SECRET=your-jwt-secret
+NEXTAUTH_SECRET=your-nextauth-secret
+
+# Sippy API
+SIPPY_API_URL=https://your-sippy-api.com/xmlapi/xmlapi
+SIPPY_API_USERNAME=your-username
+SIPPY_API_PASSWORD=your-password
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+# Email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+```
+
+## 📚 Scripts
+
+```bash
+# Development
+npm run dev              # Start development server
+npm run build           # Build for production
+npm run start           # Start production server
+
+# Deployment
+npm run build:vercel    # Build for Vercel
+npm run install:legacy  # Install with legacy peer deps
+
+# Utilities
+npm run lint            # Run ESLint
+npm run create-admin    # Create admin user
+```
+
+## 🏗️ Project Structure
+
+```
+ovo/
+├── src/
+│   ├── app/                 # Next.js App Router pages
+│   ├── components/          # React components
+│   ├── lib/                 # Utilities and configurations
+│   ├── models/              # MongoDB models
+│   ├── services/            # Business logic services
+│   └── types/               # TypeScript type definitions
+├── public/                  # Static assets
+├── docs/                    # Documentation
+└── scripts/                 # Utility scripts
+```
+
+## 🔧 Development
+
+### Key Components
+
+- **Dashboard**: Real-time metrics and KPIs
+- **User Management**: CRUD operations for users
+- **Phone Numbers**: Purchase and assignment workflow
+- **Billing**: Stripe integration for payments
+- **Tickets**: Support ticket system
+- **Notifications**: Real-time push notifications
+
+### API Routes
+
+- `/api/auth/*` - Authentication endpoints
+- `/api/users/*` - User management
+- `/api/phone-numbers/*` - Phone number operations
+- `/api/payments/*` - Payment processing
+- `/api/sippy/*` - Sippy API integration
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
+```
+
+## 📊 Monitoring
+
+- **Vercel Analytics**: Built-in performance monitoring
+- **Error Tracking**: Automatic error logging
+- **Real-time Metrics**: Dashboard KPIs and alerts
+
+## 🔐 Security
+
+- JWT-based authentication
+- Environment variable encryption
+- CORS configuration
+- Input validation with Zod
+- SQL injection prevention
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is proprietary software. All rights reserved.
+
+## 📞 Support
+
+For support and questions:
+- Email: support@ovoky.io
+- Documentation: See `/docs` folder
+- Issues: Create a GitHub issue
+
+## 🚀 Deployment Status
+
+- **Production**: https://app.ovoky.io
+- **Staging**: https://staging.ovoky.io
+
+---
+
+Built with ❤️ by the OVOKY team
