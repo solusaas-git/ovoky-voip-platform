@@ -159,6 +159,9 @@ interface User {
   role: string;
   sippyAccountId?: number;
   isEmailVerified: boolean;
+  onboarding?: {
+    companyName?: string;
+  };
 }
 
 interface AccountPaymentsProps {
@@ -1829,7 +1832,7 @@ export function AccountPayments({ accountId }: AccountPaymentsProps) {
     try {
       setIsLoadingUsers(true);
       
-      const response = await fetch('/api/users', {
+      const response = await fetch('/api/users?include_onboarding=true', {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -1869,6 +1872,7 @@ export function AccountPayments({ accountId }: AccountPaymentsProps) {
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
     `${user.name} ${user.email}`.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+    (user.onboarding?.companyName && user.onboarding.companyName.toLowerCase().includes(userSearchTerm.toLowerCase())) ||
     (user.sippyAccountId && user.sippyAccountId.toString().includes(userSearchTerm))
   );
 
@@ -3014,7 +3018,7 @@ export function AccountPayments({ accountId }: AccountPaymentsProps) {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search by email, name, or account ID..."
+                      placeholder="Search by name, company, email, or account ID..."
                       value={userSearchTerm}
                       onChange={(e) => setUserSearchTerm(e.target.value)}
                       className="pl-10"
@@ -3039,10 +3043,13 @@ export function AccountPayments({ accountId }: AccountPaymentsProps) {
                           <SelectItem key={user.id} value={user.id}>
                             <div className="flex flex-col">
                               <span className="font-medium">
-                                {user.name}
+                                {user.onboarding?.companyName || user.name}
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                {user.email} • Account: {user.sippyAccountId}
+                                {user.onboarding?.companyName ? 
+                                  (user.name || user.email) : 
+                                  user.email
+                                }
                               </span>
                             </div>
                           </SelectItem>
