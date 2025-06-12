@@ -143,7 +143,7 @@ export function DashboardSettings({
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed top-4 right-4 z-50 hidden md:block">
       <div className={cn(
         "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
         "border rounded-lg shadow-lg transition-all duration-200",
