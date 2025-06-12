@@ -19,12 +19,22 @@ import { InternalNotificationModel } from '@/models/InternalNotification';
 import { PushSubscriptionModel } from '@/models/PushSubscription';
 import webpush from 'web-push';
 
-// Configure webpush
-webpush.setVapidDetails(
-  'mailto:' + (process.env.VAPID_EMAIL || 'your-email@example.com'),
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
-  process.env.VAPID_PRIVATE_KEY || ''
-);
+// Configure webpush only if VAPID keys are available
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+const vapidEmail = process.env.VAPID_EMAIL || 'your-email@example.com';
+
+if (vapidPublicKey && vapidPrivateKey) {
+  try {
+    webpush.setVapidDetails(
+      'mailto:' + vapidEmail,
+      vapidPublicKey,
+      vapidPrivateKey
+    );
+  } catch (error) {
+    console.warn('Failed to configure VAPID details:', error);
+  }
+}
 
 // Additional interfaces for type safety
 interface NotificationUpdates {
@@ -498,6 +508,16 @@ export class CustomerNotificationService {
 
   private async deliverViaPush(content: NotificationContent, user: NotificationUser, deliveryId: string): Promise<DeliveryResult> {
     try {
+      // Check if VAPID is configured
+      if (!vapidPublicKey || !vapidPrivateKey) {
+        console.warn('Push notifications not configured - VAPID keys missing');
+        return { 
+          success: false, 
+          deliveryId, 
+          error: 'Push notifications not configured - VAPID keys missing' 
+        };
+      }
+
       await connectToDatabase();
       
       // Get active push subscriptions for the user

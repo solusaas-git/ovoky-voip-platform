@@ -4,15 +4,28 @@ import { PushSubscriptionModel } from '@/models/PushSubscription';
 import { getCurrentUser } from '@/lib/authService';
 import webpush from 'web-push';
 
-// Configure web-push with VAPID keys
-webpush.setVapidDetails(
-  'mailto:admin@example.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+// Configure web-push with VAPID keys only if they are available
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+const webPushContact = 'mailto:admin@example.com';
+
+if (vapidPublicKey && vapidPrivateKey) {
+  try {
+    webpush.setVapidDetails(webPushContact, vapidPublicKey, vapidPrivateKey);
+  } catch (error) {
+    console.warn('Failed to configure VAPID details:', error);
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if VAPID is configured
+    if (!vapidPublicKey || !vapidPrivateKey) {
+      return NextResponse.json({ 
+        error: 'Push notifications not configured - VAPID keys missing' 
+      }, { status: 503 });
+    }
+
     const user = await getCurrentUser();
     
     // Allow internal requests (for notification creation) or authenticated users

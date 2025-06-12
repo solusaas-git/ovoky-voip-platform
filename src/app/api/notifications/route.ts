@@ -6,12 +6,18 @@ import { NotificationType, NotificationTemplates, createDefaultPreferences } fro
 import { getCurrentUser } from '@/lib/authService';
 import webpush from 'web-push';
 
-// Configure web-push with VAPID keys
-webpush.setVapidDetails(
-  process.env.WEB_PUSH_CONTACT || 'mailto:admin@example.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+// Configure web-push with VAPID keys only if they are available
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+const webPushContact = process.env.WEB_PUSH_CONTACT || 'mailto:admin@example.com';
+
+if (vapidPublicKey && vapidPrivateKey) {
+  try {
+    webpush.setVapidDetails(webPushContact, vapidPublicKey, vapidPrivateKey);
+  } catch (error) {
+    console.warn('Failed to configure VAPID details:', error);
+  }
+}
 
 // Interface for notification query
 interface NotificationQuery {
@@ -152,7 +158,7 @@ export async function POST(request: NextRequest) {
     await notification.save();
 
     // Send push notification if enabled (moved inline to avoid authentication issues)
-    if (preferences.enablePushNotifications && typePrefs?.enablePush) {
+    if (preferences.enablePushNotifications && typePrefs?.enablePush && vapidPublicKey && vapidPrivateKey) {
       try {
         // Get active push subscriptions for the user
         const subscriptions = await PushSubscriptionModel.find({ 
@@ -209,11 +215,9 @@ export async function POST(request: NextRequest) {
 
           const results = await Promise.allSettled(pushPromises);
           const successCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
-          
-          // Only log if there are failures
-          if (successCount < results.length) {
-            console.log(`Push notifications sent. Success: ${successCount}, Failed: ${results.length - successCount}`);
-          }
+          const failureCount = results.length - successCount;
+
+          console.log(`Push notifications sent: ${successCount} successful, ${failureCount} failed`);
         }
       } catch (error) {
         console.error('Error sending push notifications:', error);
