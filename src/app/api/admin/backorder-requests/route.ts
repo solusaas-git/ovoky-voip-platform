@@ -8,6 +8,7 @@ import PhoneNumberBilling from '@/models/PhoneNumberBilling';
 import User from '@/models/User';
 import UserOnboarding from '@/models/UserOnboarding';
 import NumberRate from '@/models/NumberRate';
+import RateDeckAssignment from '@/models/RateDeckAssignment';
 import BrandingSettings from '@/models/BrandingSettings';
 import mongoose from 'mongoose';
 import { z } from 'zod';
@@ -100,15 +101,115 @@ const findMatchingRate = async (phoneNumber: PhoneNumberForRate, rateDeckId: str
   return bestMatch;
 };
 
+// Helper function to get user's assigned rate deck
+const getUserAssignedRateDeck = async (userId: string) => {
+  try {
+    const assignment = await RateDeckAssignment.findOne({
+      userId: new mongoose.Types.ObjectId(userId),
+      rateDeckType: 'number', // Only number rate decks
+      isActive: true
+    }).populate('rateDeckId').lean();
+
+    if (assignment && assignment.rateDeckId) {
+      return assignment.rateDeckId as any; // Populated rate deck
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting user assigned rate deck:', error);
+    return null;
+  }
+};
+
+// Helper function to find matching rate in a specific rate deck
+const findMatchingRateInDeck = async (phoneNumber: PhoneNumberForRate, rateDeckId: string) => {
+  if (!rateDeckId) return null;
+  
+  console.log(`[Rate Matching] Looking for rates for backorder number: ${phoneNumber.number}, country: ${phoneNumber.country}, type: ${phoneNumber.numberType}, rateDeckId: ${rateDeckId}`);
+  
+  // Find all rates for this rate deck
+  const rates = await NumberRate.find({
+    rateDeckId: new mongoose.Types.ObjectId(rateDeckId),
+  }).lean();
+  
+  console.log(`[Rate Matching] Found ${rates.length} rates in deck ${rateDeckId}`);
+  
+  // Normalize phone number for prefix matching (remove + and any spaces)
+  const normalizedNumber = phoneNumber.number.replace(/^\+/, '').replace(/\s/g, '');
+  console.log(`[Rate Matching] Normalized phone number: ${normalizedNumber} (from ${phoneNumber.number})`);
+  
+  // First, try to find rates matching country and type
+  const countryTypeRates = rates.filter(rate => 
+    rate.country.toLowerCase() === phoneNumber.country.toLowerCase() && 
+    rate.type === phoneNumber.numberType
+  );
+  
+  console.log(`[Rate Matching] Found ${countryTypeRates.length} rates matching country and type`);
+  
+  if (countryTypeRates.length > 0) {
+    // Among matching country/type rates, find the one with longest matching prefix
+    let bestMatch = null;
+    let longestMatch = 0;
+    
+    for (const rate of countryTypeRates) {
+      // Normalize rate prefix for comparison (remove + and spaces)
+      const normalizedPrefix = rate.prefix.replace(/^\+/, '').replace(/\s/g, '');
+      const matches = normalizedNumber.startsWith(normalizedPrefix);
+      
+      console.log(`[Rate Matching] Checking prefix ${rate.prefix} (normalized: ${normalizedPrefix}) against ${normalizedNumber}: ${matches}`);
+      
+      if (matches && normalizedPrefix.length > longestMatch) {
+        bestMatch = rate;
+        longestMatch = normalizedPrefix.length;
+      }
+    }
+    
+    if (bestMatch) {
+      console.log(`[Rate Matching] Best match: prefix=${bestMatch.prefix}, rate=${bestMatch.rate}, setupFee=${bestMatch.setupFee}`);
+      return bestMatch;
+    }
+  }
+  
+  // Fallback: try prefix matching only
+  console.log(`[Rate Matching] No country/type match, trying prefix-only matching`);
+  let bestMatch = null;
+  let longestMatch = 0;
+  
+  for (const rate of rates) {
+    // Normalize rate prefix for comparison (remove + and spaces)
+    const normalizedPrefix = rate.prefix.replace(/^\+/, '').replace(/\s/g, '');
+    const matches = normalizedNumber.startsWith(normalizedPrefix);
+    
+    if (matches && normalizedPrefix.length > longestMatch) {
+      bestMatch = rate;
+      longestMatch = normalizedPrefix.length;
+    }
+  }
+  
+  if (bestMatch) {
+    console.log(`[Rate Matching] Fallback match: prefix=${bestMatch.prefix}, rate=${bestMatch.rate}, country=${bestMatch.country}, type=${bestMatch.type}`);
+  } else {
+    console.log(`[Rate Matching] No matching rate found for ${phoneNumber.number}`);
+  }
+  
+  return bestMatch;
+};
+
 // Helper function to assign phone number to user (same as purchase logic)
 const assignPhoneNumberToUser = async (phoneNumber: PhoneNumberForAssignment, user: UserForAssignment, adminEmail: string) => {
   const now = new Date();
   
-  // Find the matching rate for this phone number
-  const rate = await findMatchingRate(phoneNumber, phoneNumber.rateDeckId?.toString() || '');
+  // Get user's assigned rate deck
+  const userRateDeck = await getUserAssignedRateDeck(user.id || user._id?.toString() || '');
+  
+  if (!userRateDeck) {
+    throw new Error('User does not have an assigned rate deck');
+  }
+  
+  // Find the matching rate for this phone number using user's rate deck
+  const rate = await findMatchingRateInDeck(phoneNumber, userRateDeck._id.toString());
   
   if (!rate) {
-    throw new Error('No rate found for this phone number');
+    throw new Error('No matching rate found for this phone number in user\'s assigned rate deck');
   }
 
   const monthlyRate = rate.rate;
@@ -527,7 +628,7 @@ export async function PUT(request: NextRequest) {
       }
 
       try {
-        await assignPhoneNumberToUser(phoneNumber, requestUser, user.email);
+        const assignmentResult = await assignPhoneNumberToUser(phoneNumber, requestUser, user.email);
         
         updateObj.reviewedBy = user.email;
         updateObj.reviewedAt = new Date();
@@ -536,8 +637,13 @@ export async function PUT(request: NextRequest) {
         
         console.log(`✅ Backorder request ${backorderRequest.requestNumber} approved and completed - ${phoneNumber.number} assigned to ${requestUser.email}`);
 
-        // Send approval notification email
-        await sendBackorderNotification('approved', backorderRequest, phoneNumber, requestUser, user.email);
+        // Send approval notification email with correct rates from user's assigned rate deck
+        const phoneNumberWithCorrectRates = {
+          ...phoneNumber,
+          monthlyRate: assignmentResult.monthlyRate,
+          setupFee: assignmentResult.setupFee
+        };
+        await sendBackorderNotification('approved', backorderRequest, phoneNumberWithCorrectRates, requestUser, user.email);
       } catch (assignmentError) {
         console.error('Error assigning phone number:', assignmentError);
         return NextResponse.json(
@@ -558,15 +664,20 @@ export async function PUT(request: NextRequest) {
       }
 
       try {
-        await assignPhoneNumberToUser(phoneNumber, requestUser, user.email);
+        const assignmentResult = await assignPhoneNumberToUser(phoneNumber, requestUser, user.email);
         
         updateObj.processedBy = user.email;
         updateObj.processedAt = new Date();
         
         console.log(`✅ Backorder request ${backorderRequest.requestNumber} completed - ${phoneNumber.number} assigned to ${requestUser.email}`);
 
-        // Send approval notification email for completed requests
-        await sendBackorderNotification('approved', backorderRequest, phoneNumber, requestUser, user.email);
+        // Send approval notification email for completed requests with correct rates
+        const phoneNumberWithCorrectRates = {
+          ...phoneNumber,
+          monthlyRate: assignmentResult.monthlyRate,
+          setupFee: assignmentResult.setupFee
+        };
+        await sendBackorderNotification('approved', backorderRequest, phoneNumberWithCorrectRates, requestUser, user.email);
       } catch (assignmentError) {
         console.error('Error assigning phone number:', assignmentError);
         return NextResponse.json(

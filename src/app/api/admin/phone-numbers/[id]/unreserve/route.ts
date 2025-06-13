@@ -89,7 +89,7 @@ export async function POST(
     const response = {
       ...updatedPhoneNumber,
       _id: updatedPhoneNumber!._id.toString(),
-      rateDeckId: updatedPhoneNumber!.rateDeckId ? (updatedPhoneNumber!.rateDeckId as unknown as PopulatedRateDeck)._id.toString() : undefined,
+      // rateDeckId removed - rate decks are now assigned to users, not phone numbers
       assignedTo: updatedPhoneNumber!.assignedTo ? (updatedPhoneNumber!.assignedTo as unknown as PopulatedUser)._id.toString() : undefined,
       createdAt: updatedPhoneNumber!.createdAt.toISOString(),
       updatedAt: updatedPhoneNumber!.updatedAt.toISOString(),

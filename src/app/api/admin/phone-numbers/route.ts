@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/authService';
 import { connectToDatabase } from '@/lib/db';
 import PhoneNumber from '@/models/PhoneNumber';
-import NumberRateDeck from '@/models/NumberRateDeck';
+// NumberRateDeck import removed - rate decks are now assigned to users, not phone numbers
+import RateDeckAssignment from '@/models/RateDeckAssignment';
+import NumberRate from '@/models/NumberRate';
 import UserOnboarding from '@/models/UserOnboarding';
 import mongoose from 'mongoose';
 import { z } from 'zod';
@@ -31,7 +33,7 @@ interface PopulatedPhoneNumber {
   status: string;
   numberType: string;
   assignedTo?: PopulatedUser;
-  rateDeckId?: PopulatedRateDeck;
+  // rateDeckId removed - rate decks are now assigned to users, not phone numbers
   createdAt: Date;
   updatedAt: Date;
   assignedAt?: Date;
@@ -51,7 +53,7 @@ interface PhoneNumberQuery {
   country?: string;
   numberType?: string;
   assignedTo?: mongoose.Types.ObjectId;
-  rateDeckId?: mongoose.Types.ObjectId;
+  // rateDeckId removed - rate decks are now assigned to users, not phone numbers
 }
 
 interface SortObject {
@@ -66,7 +68,7 @@ const createPhoneNumberSchema = z.object({
   numberType: z.enum(['Geographic/Local', 'Mobile', 'National', 'Toll-free', 'Shared Cost', 'NPV (Verified Numbers)', 'Premium']),
   provider: z.string().min(1, 'Provider is required'),
   backorderOnly: z.boolean().default(false),
-  rateDeckId: z.string().optional(),
+  // rateDeckId: z.string().optional(), // Removed: Rate decks are now assigned to users, not phone numbers
   monthlyRate: z.number().min(0).optional(),
   setupFee: z.number().min(0).optional().default(0),
   currency: z.string().length(3, 'Currency must be 3 characters').default('USD'),
@@ -114,7 +116,7 @@ export async function GET(request: NextRequest) {
     const country = searchParams.get('country');
     const numberType = searchParams.get('numberType');
     const assignedTo = searchParams.get('assignedTo');
-    const rateDeckId = searchParams.get('rateDeckId');
+    // rateDeckId parameter removed - rate decks are now assigned to users, not phone numbers
     const sortBy = searchParams.get('sortBy') || 'createdAt';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
@@ -146,9 +148,7 @@ export async function GET(request: NextRequest) {
       query.assignedTo = new mongoose.Types.ObjectId(assignedTo);
     }
 
-    if (rateDeckId) {
-      query.rateDeckId = new mongoose.Types.ObjectId(rateDeckId);
-    }
+    // rateDeckId filter removed - rate decks are now assigned to users, not phone numbers
 
     // Build sort object
     const sort: SortObject = {};
@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
     const [phoneNumbers, total] = await Promise.all([
       PhoneNumber.find(query)
         .populate('assignedTo', 'name email company')
-        .populate('rateDeckId', 'name description currency')
+        // .populate('rateDeckId') removed - rate decks are now assigned to users, not phone numbers
         .sort(sort)
         .skip(skip)
         .limit(limit)
@@ -177,6 +177,13 @@ export async function GET(request: NextRequest) {
       userId: { $in: assignedUserIds }
     }).lean() : [];
 
+    // Get rate deck assignments for assigned users
+    const rateDeckAssignments = assignedUserIds.length > 0 ? await RateDeckAssignment.find({
+      userId: { $in: assignedUserIds.map(id => new mongoose.Types.ObjectId(id)) },
+      rateDeckType: 'number',
+      isActive: true,
+    }).populate('rateDeckId', 'name description currency').lean() : [];
+
     // Transform the response
     const transformedPhoneNumbers = phoneNumbers.map(phoneNumber => {
       const typedPhoneNumber = phoneNumber as unknown as PopulatedPhoneNumber;
@@ -185,15 +192,22 @@ export async function GET(request: NextRequest) {
       const userOnboarding = typedPhoneNumber.assignedTo ? 
         onboardingData.find(ob => ob.userId.toString() === typedPhoneNumber.assignedTo!._id.toString()) : null;
 
+      // Get rate deck assignment for this user (if assigned)
+      const userRateDeckAssignment = typedPhoneNumber.assignedTo ? 
+        rateDeckAssignments.find(assignment => assignment.userId.toString() === typedPhoneNumber.assignedTo!._id.toString()) : null;
+      
+      const userRateDeck = userRateDeckAssignment?.rateDeckId as unknown as PopulatedRateDeck | null;
+
       return {
         ...phoneNumber,
         _id: typedPhoneNumber._id.toString(),
-        rateDeckId: typedPhoneNumber.rateDeckId ? typedPhoneNumber.rateDeckId._id.toString() : undefined,
-        rateDeck: typedPhoneNumber.rateDeckId ? {
-          _id: typedPhoneNumber.rateDeckId._id.toString(),
-          name: typedPhoneNumber.rateDeckId.name,
-          description: typedPhoneNumber.rateDeckId.description,
-          currency: typedPhoneNumber.rateDeckId.currency,
+        // Use user's assigned rate deck instead of phone number's rateDeckId
+        rateDeckId: userRateDeck ? userRateDeck._id.toString() : undefined,
+        rateDeck: userRateDeck ? {
+          _id: userRateDeck._id.toString(),
+          name: userRateDeck.name,
+          description: userRateDeck.description,
+          currency: userRateDeck.currency,
         } : undefined,
         assignedTo: typedPhoneNumber.assignedTo ? typedPhoneNumber.assignedTo._id.toString() : undefined,
         assignedToUser: typedPhoneNumber.assignedTo ? {
@@ -263,17 +277,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If rate deck is specified, verify it exists and get the rate
-    let rateDeckData = null;
-    if (validatedData.rateDeckId) {
-      rateDeckData = await NumberRateDeck.findById(validatedData.rateDeckId);
-      if (!rateDeckData) {
-        return NextResponse.json(
-          { error: 'Rate deck not found' },
-          { status: 404 }
-        );
-      }
-    }
+    // Note: Rate decks are now assigned to users, not phone numbers directly
 
     // Calculate next billing date
     let nextBillingDate = null;
@@ -290,28 +294,26 @@ export async function POST(request: NextRequest) {
     // Create the phone number
     const phoneNumber = new PhoneNumber({
       ...validatedData,
-      rateDeckId: validatedData.rateDeckId ? new mongoose.Types.ObjectId(validatedData.rateDeckId) : undefined,
+      // rateDeckId is no longer stored on phone numbers
       nextBillingDate,
       createdBy: user.email,
     });
 
     await phoneNumber.save();
 
-    // Populate the response
-    const populatedPhoneNumber = await PhoneNumber.findById(phoneNumber._id)
-      .populate('rateDeckId', 'name description currency')
-      .lean();
-
-    const typedPopulatedPhoneNumber = populatedPhoneNumber as unknown as PopulatedPhoneNumber;
+    // Get the created phone number
+    const createdPhoneNumber = await PhoneNumber.findById(phoneNumber._id).lean();
     
     const response = {
-      ...populatedPhoneNumber,
-      _id: typedPopulatedPhoneNumber._id.toString(),
-      rateDeckId: typedPopulatedPhoneNumber.rateDeckId ? typedPopulatedPhoneNumber.rateDeckId._id.toString() : undefined,
-      rateDeckName: typedPopulatedPhoneNumber.rateDeckId ? typedPopulatedPhoneNumber.rateDeckId.name : undefined,
-      createdAt: typedPopulatedPhoneNumber.createdAt.toISOString(),
-      updatedAt: typedPopulatedPhoneNumber.updatedAt.toISOString(),
-      nextBillingDate: typedPopulatedPhoneNumber.nextBillingDate?.toISOString(),
+      ...createdPhoneNumber,
+      _id: createdPhoneNumber!._id.toString(),
+      // Rate deck information is no longer stored on phone numbers
+      rateDeckId: undefined,
+      rateDeckName: undefined,
+      rateDeck: undefined,
+      createdAt: createdPhoneNumber!.createdAt.toISOString(),
+      updatedAt: createdPhoneNumber!.updatedAt.toISOString(),
+      nextBillingDate: createdPhoneNumber!.nextBillingDate?.toISOString(),
     };
 
     return NextResponse.json(response, { status: 201 });

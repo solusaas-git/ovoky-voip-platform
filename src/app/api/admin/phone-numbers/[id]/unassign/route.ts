@@ -218,25 +218,13 @@ export async function POST(
       // Fetch the updated phone number with populated data
       const updatedPhoneNumber = await PhoneNumber.findById(phoneNumberId).lean();
 
-      // Fetch rate deck separately if rateDeckId exists
-      let rateDeckInfo = null;
-      if (updatedPhoneNumber?.rateDeckId) {
-        try {
-          const NumberRateDeckModel = (await import('@/models/NumberRateDeck')).default;
-          rateDeckInfo = await NumberRateDeckModel.findById(updatedPhoneNumber.rateDeckId)
-            .select('name description currency')
-            .lean();
-        } catch (error) {
-          console.warn('Could not fetch rate deck info:', error);
-        }
-      }
+      // Rate deck fetching removed - rate decks are now assigned to users, not phone numbers
 
       // Transform the response
       const response = {
         ...updatedPhoneNumber,
         _id: updatedPhoneNumber!._id.toString(),
-        rateDeckId: updatedPhoneNumber!.rateDeckId ? updatedPhoneNumber!.rateDeckId.toString() : undefined,
-        rateDeckName: rateDeckInfo?.name || undefined,
+        // rateDeckId and rateDeckName removed - rate decks are now assigned to users, not phone numbers
         assignedTo: null,
         assignedToUser: null,
         createdAt: updatedPhoneNumber!.createdAt.toISOString(),

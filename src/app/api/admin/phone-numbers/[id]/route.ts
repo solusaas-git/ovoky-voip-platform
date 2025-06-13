@@ -4,7 +4,7 @@ import { connectToDatabase } from '@/lib/db';
 import PhoneNumber from '@/models/PhoneNumber';
 import PhoneNumberAssignment from '@/models/PhoneNumberAssignment';
 import PhoneNumberBilling from '@/models/PhoneNumberBilling';
-import NumberRateDeck from '@/models/NumberRateDeck';
+// NumberRateDeck import removed - rate decks are now assigned to users, not phone numbers
 import mongoose from 'mongoose';
 import { z } from 'zod';
 import UserOnboarding from '@/models/UserOnboarding';
@@ -29,7 +29,7 @@ interface PopulatedPhoneNumber {
   number: string;
   status: string;
   assignedTo?: PopulatedUser;
-  rateDeckId?: PopulatedRateDeck;
+  // rateDeckId removed - rate decks are now assigned to users, not phone numbers
   monthlyRate?: number;
   setupFee?: number;
   billingDayOfMonth?: number;
@@ -56,7 +56,7 @@ interface PopulatedAssignment {
 
 interface UpdateData {
   [key: string]: unknown;
-  rateDeckId?: string;
+  // rateDeckId removed - rate decks are now assigned to users, not phone numbers
   monthlyRate?: number;
   billingDayOfMonth?: number;
   nextBillingDate?: Date | null;
@@ -156,13 +156,7 @@ export async function GET(
     const response = {
       ...phoneNumber,
       _id: typedPhoneNumber._id.toString(),
-      rateDeckId: typedPhoneNumber.rateDeckId ? typedPhoneNumber.rateDeckId._id.toString() : undefined,
-      rateDeck: typedPhoneNumber.rateDeckId ? {
-        _id: typedPhoneNumber.rateDeckId._id.toString(),
-        name: typedPhoneNumber.rateDeckId.name,
-        description: typedPhoneNumber.rateDeckId.description,
-        currency: typedPhoneNumber.rateDeckId.currency,
-      } : undefined,
+      // rateDeckId and rateDeck removed - rate decks are now assigned to users, not phone numbers
       assignedTo: typedPhoneNumber.assignedTo ? typedPhoneNumber.assignedTo._id.toString() : undefined,
       assignedToUser: typedPhoneNumber.assignedTo ? {
         _id: typedPhoneNumber.assignedTo._id.toString(),
@@ -254,16 +248,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Phone number not found' }, { status: 404 });
     }
 
-    // If rate deck is being changed, verify it exists
-    if (validatedData.rateDeckId && validatedData.rateDeckId !== phoneNumber.rateDeckId?.toString()) {
-      const rateDeck = await NumberRateDeck.findById(validatedData.rateDeckId);
-      if (!rateDeck) {
-        return NextResponse.json(
-          { error: 'Rate deck not found' },
-          { status: 404 }
-        );
-      }
-    }
+    // Rate deck validation removed - rate decks are now assigned to users, not phone numbers
 
     // Update billing date if monthly rate or billing day changes
     const updateData: UpdateData = { ...validatedData };
@@ -289,10 +274,7 @@ export async function PUT(
       }
     }
 
-    // Convert rateDeckId to ObjectId if provided
-    if (updateData.rateDeckId) {
-      updateData.rateDeckId = updateData.rateDeckId;
-    }
+    // rateDeckId conversion removed - rate decks are now assigned to users, not phone numbers
 
     // Update the phone number
     const updatedPhoneNumber = await PhoneNumber.findByIdAndUpdate(
@@ -301,7 +283,7 @@ export async function PUT(
       { new: true, runValidators: true }
     )
       .populate('assignedTo', 'name email company')
-      .populate('rateDeckId', 'name description currency')
+      // .populate('rateDeckId') removed - rate decks are now assigned to users, not phone numbers
       .lean();
 
     const typedUpdatedPhoneNumber = updatedPhoneNumber as unknown as PopulatedPhoneNumber;
@@ -310,8 +292,7 @@ export async function PUT(
     const response = {
       ...updatedPhoneNumber,
       _id: typedUpdatedPhoneNumber._id.toString(),
-      rateDeckId: typedUpdatedPhoneNumber.rateDeckId ? typedUpdatedPhoneNumber.rateDeckId._id.toString() : undefined,
-      rateDeckName: typedUpdatedPhoneNumber.rateDeckId ? typedUpdatedPhoneNumber.rateDeckId.name : undefined,
+      // rateDeckId and rateDeckName removed - rate decks are now assigned to users, not phone numbers
       assignedTo: typedUpdatedPhoneNumber.assignedTo ? typedUpdatedPhoneNumber.assignedTo._id.toString() : undefined,
       assignedToUser: typedUpdatedPhoneNumber.assignedTo ? {
         _id: typedUpdatedPhoneNumber.assignedTo._id.toString(),

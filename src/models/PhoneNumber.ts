@@ -12,8 +12,8 @@ export interface IPhoneNumber {
   // Backorder configuration
   backorderOnly: boolean; // If true, users must place backorder requests instead of direct purchase
   
-  // Rate deck assignment
-  rateDeckId?: mongoose.Types.ObjectId;
+  // Rate deck assignment - DEPRECATED: Rate decks are now assigned to users, not phone numbers
+  // rateDeckId?: mongoose.Types.ObjectId;
   monthlyRate?: number;
   setupFee?: number;
   currency: string;
@@ -122,12 +122,12 @@ const phoneNumberSchema = new Schema<IPhoneNumberDocument, IPhoneNumberModel>(
       index: true, // Index for filtering queries
     },
     
-    // Rate deck assignment
-    rateDeckId: {
-      type: Schema.Types.ObjectId,
-      ref: 'NumberRateDeck',
-      index: true,
-    },
+    // Rate deck assignment - DEPRECATED: Rate decks are now assigned to users, not phone numbers
+    // rateDeckId: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'NumberRateDeck',
+    //   index: true,
+    // },
     monthlyRate: {
       type: Number,
       min: [0, 'Monthly rate cannot be negative'],

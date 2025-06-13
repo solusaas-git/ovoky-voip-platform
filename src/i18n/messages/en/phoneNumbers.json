@@ -490,13 +490,11 @@
         "type": "Type",
         "status": "Status",
         "assignedTo": "Assigned To",
-        "rateDeck": "Rate Deck",
         "actions": "Actions"
       },
       "content": {
         "unassigned": "Unassigned",
         "noCompany": "No company",
-        "noRateDeck": "No Rate Deck",
         "selectNumber": "Select {number}"
       },
       "bulkActions": {
@@ -539,7 +537,6 @@
           "countryCode": "Country Code",
           "numberType": "Number Type",
           "provider": "Provider",
-          "rateDeck": "Rate Deck",
           "currency": "Currency",
           "backorderOnly": "Backorder Only",
           "backorderDescription": "Requires admin approval for purchase",
@@ -615,8 +612,7 @@
           "numberType": "Number Type",
           "provider": "Provider",
           "providerPlaceholder": "Select provider",
-          "rateDeck": "Rate Deck",
-          "rateDeckPlaceholder": "Select rate deck",
+
           "backorderOnly": "Require backorder (users must request this number instead of purchasing directly)",
           "backorderDescription": "When enabled, users will need to submit a backorder request for admin approval instead of purchasing this number directly.",
           "billingCycle": "Billing Cycle",
@@ -732,7 +728,6 @@
           "country": "Country",
           "type": "Type",
           "provider": "Provider",
-          "rateDeck": "Rate Deck",
           "assignedTo": "Assigned To",
           "assignedDate": "Assigned Date",
           "billingCycle": "Billing Cycle",
@@ -801,7 +796,7 @@
       "error": {
         "loadNumbers": "Failed to load phone numbers",
         "loadUsers": "Failed to load users",
-        "loadRateDecks": "Failed to load rate decks",
+
         "loadCountries": "Failed to load countries",
         "loadProviders": "Failed to load providers",
         "loadDetails": "Failed to load phone number details",
@@ -823,7 +818,7 @@
         "numberRequired": "Phone number is required",
         "countryRequired": "Country is required",
         "providerRequired": "Provider is required",
-        "rateDeckRequired": "Rate deck is required",
+
         "userRequired": "User selection is required",
         "reasonRequired": "Reason is required"
       },

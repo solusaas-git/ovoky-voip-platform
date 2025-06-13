@@ -121,8 +121,7 @@ export async function GET(request: NextRequest) {
           return {
             ...phoneNumber,
             _id: phoneNumber._id.toString(),
-            rateDeckId: phoneNumber.rateDeckId ? phoneNumber.rateDeckId.toString() : undefined,
-            rateDeckName: undefined,
+            // rateDeckId and rateDeckName removed - rate decks are now assigned to users, not phone numbers
             assignedTo: phoneNumber.assignedTo?.toString(),
             createdAt: phoneNumber.createdAt.toISOString(),
             updatedAt: phoneNumber.updatedAt.toISOString(),
@@ -181,8 +180,7 @@ export async function GET(request: NextRequest) {
           return {
             ...phoneNumber,
             _id: phoneNumber._id.toString(),
-            rateDeckId: phoneNumber.rateDeckId ? phoneNumber.rateDeckId.toString() : undefined,
-            rateDeckName: undefined,
+            // rateDeckId and rateDeckName removed - rate decks are now assigned to users, not phone numbers
             assignedTo: phoneNumber.assignedTo?.toString(),
             createdAt: phoneNumber.createdAt.toISOString(),
             updatedAt: phoneNumber.updatedAt.toISOString(),

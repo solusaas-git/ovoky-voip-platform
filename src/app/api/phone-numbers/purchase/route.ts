@@ -6,6 +6,7 @@ import PhoneNumberAssignment from '@/models/PhoneNumberAssignment';
 import PhoneNumberBilling from '@/models/PhoneNumberBilling';
 import NumberRate from '@/models/NumberRate';
 import NumberRateDeck from '@/models/NumberRateDeck';
+import RateDeckAssignment from '@/models/RateDeckAssignment';
 import BrandingSettings from '@/models/BrandingSettings';
 import UserOnboarding from '@/models/UserOnboarding';
 import mongoose from 'mongoose';
@@ -160,7 +161,6 @@ export async function POST(request: NextRequest) {
     const phoneNumber = await PhoneNumber.findOne({
       _id: new mongoose.Types.ObjectId(validatedData.phoneNumberId),
       status: 'available',
-      rateDeckId: { $exists: true, $ne: null }, // Must have a rate deck assigned
       backorderOnly: { $ne: true }, // Cannot purchase backorder-only numbers directly
     });
 
@@ -185,20 +185,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find the matching rate for this phone number
-    const rateDeckId = phoneNumber.rateDeckId?.toString();
-    if (!rateDeckId) {
+    // Get user's assigned rate deck and find matching rate
+    const userRateDeck = await getUserAssignedRateDeck(user.id);
+    if (!userRateDeck) {
       return NextResponse.json(
-        { error: 'No rate deck assigned to this phone number' },
+        { error: 'No rate deck assigned to your account. Please contact support.' },
         { status: 400 }
       );
     }
     
-    const rate = await findMatchingRate(phoneNumber, rateDeckId);
+    const rate = await findMatchingRateInDeck(phoneNumber, userRateDeck._id.toString());
     
     if (!rate) {
       return NextResponse.json(
-        { error: 'No rate found for this phone number' },
+        { error: 'No rate found for this phone number in your assigned rate deck' },
         { status: 400 }
       );
     }
@@ -257,8 +257,7 @@ export async function POST(request: NextRequest) {
     const response = {
       ...updatedNumber,
       _id: updatedNumber!._id.toString(),
-      rateDeckId: updatedNumber!.rateDeckId ? updatedNumber!.rateDeckId._id.toString() : undefined,
-      rateDeckName: updatedNumber!.rateDeckId ? (updatedNumber!.rateDeckId as unknown as { name: string }).name : undefined,
+      // rateDeckId and rateDeckName removed - rate decks are now assigned to users, not phone numbers
       assignedTo: updatedNumber!.assignedTo?.toString(),
       createdAt: updatedNumber!.createdAt.toISOString(),
       updatedAt: updatedNumber!.updatedAt.toISOString(),
@@ -496,4 +495,106 @@ async function updatePhoneNumberAndCreateRecords(
     });
     await setupBilling.save();
   }
-} 
+}
+
+// Helper function to get user's assigned rate deck
+const getUserAssignedRateDeck = async (userId: string) => {
+  try {
+    const assignment = await RateDeckAssignment.findOne({
+      userId: new mongoose.Types.ObjectId(userId),
+      rateDeckType: 'number', // Only number rate decks (corrected field name)
+      isActive: true
+    }).populate('rateDeckId').lean();
+
+    if (assignment && assignment.rateDeckId) {
+      return assignment.rateDeckId as any; // Populated rate deck
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting user assigned rate deck:', error);
+    return null;
+  }
+};
+
+// Helper function to find matching rate in a specific rate deck
+const findMatchingRateInDeck = async (phoneNumber: PhoneNumberDocument, rateDeckId: string) => {
+  if (!rateDeckId) return null;
+  
+  console.log(`[Rate Matching] Looking for rates for number: ${phoneNumber.number}, country: ${phoneNumber.country}, type: ${phoneNumber.numberType}, rateDeckId: ${rateDeckId}`);
+  
+  // Find all rates for this rate deck
+  const rates = await NumberRate.find({
+    rateDeckId: new mongoose.Types.ObjectId(rateDeckId),
+  }).lean();
+  
+  console.log(`[Rate Matching] Found ${rates.length} rates in deck ${rateDeckId}`);
+  
+  if (rates.length > 0) {
+    console.log(`[Rate Matching] Sample rates:`, rates.slice(0, 3).map(r => ({
+      prefix: r.prefix,
+      country: r.country,
+      type: r.type,
+      rate: r.rate
+    })));
+  }
+  
+  // Normalize phone number for prefix matching (remove + and any spaces)
+  const normalizedNumber = phoneNumber.number.replace(/^\+/, '').replace(/\s/g, '');
+  console.log(`[Rate Matching] Normalized phone number: ${normalizedNumber} (from ${phoneNumber.number})`);
+  
+  // First, try to find rates matching country and type
+  const countryTypeRates = rates.filter(rate => 
+    rate.country.toLowerCase() === phoneNumber.country.toLowerCase() && 
+    rate.type === phoneNumber.numberType
+  );
+  
+  console.log(`[Rate Matching] Found ${countryTypeRates.length} rates matching country and type`);
+  
+  if (countryTypeRates.length > 0) {
+    // Among matching country/type rates, find the one with longest matching prefix
+    let bestMatch = null;
+    let longestMatch = 0;
+    
+    for (const rate of countryTypeRates) {
+      // Normalize rate prefix for comparison (remove + and spaces)
+      const normalizedPrefix = rate.prefix.replace(/^\+/, '').replace(/\s/g, '');
+      const matches = normalizedNumber.startsWith(normalizedPrefix);
+      
+      console.log(`[Rate Matching] Checking prefix ${rate.prefix} (normalized: ${normalizedPrefix}) against ${normalizedNumber}: ${matches}`);
+      
+      if (matches && normalizedPrefix.length > longestMatch) {
+        bestMatch = rate;
+        longestMatch = normalizedPrefix.length;
+      }
+    }
+    
+    if (bestMatch) {
+      console.log(`[Rate Matching] Best match: prefix=${bestMatch.prefix}, rate=${bestMatch.rate}, setupFee=${bestMatch.setupFee}`);
+      return bestMatch;
+    }
+  }
+  
+  // Fallback: try prefix matching only
+  console.log(`[Rate Matching] No country/type match, trying prefix-only matching`);
+  let bestMatch = null;
+  let longestMatch = 0;
+  
+  for (const rate of rates) {
+    // Normalize rate prefix for comparison (remove + and spaces)
+    const normalizedPrefix = rate.prefix.replace(/^\+/, '').replace(/\s/g, '');
+    const matches = normalizedNumber.startsWith(normalizedPrefix);
+    
+    if (matches && normalizedPrefix.length > longestMatch) {
+      bestMatch = rate;
+      longestMatch = normalizedPrefix.length;
+    }
+  }
+  
+  if (bestMatch) {
+    console.log(`[Rate Matching] Fallback match: prefix=${bestMatch.prefix}, rate=${bestMatch.rate}, country=${bestMatch.country}, type=${bestMatch.type}`);
+  } else {
+    console.log(`[Rate Matching] No matching rate found for ${phoneNumber.number}`);
+  }
+  
+  return bestMatch;
+};

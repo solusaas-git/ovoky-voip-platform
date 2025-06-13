@@ -302,7 +302,7 @@ export interface CreatePhoneNumberForm {
   numberType: PhoneNumberType;
   provider: string;
   backorderOnly?: boolean;
-  rateDeckId?: string;
+  // rateDeckId removed - rate decks are now assigned to users, not phone numbers
   monthlyRate?: number;
   setupFee?: number;
   currency: string;
@@ -349,7 +349,7 @@ export interface UpdatePhoneNumberForm {
   provider?: string;
   status?: PhoneNumberStatus;
   backorderOnly?: boolean;
-  rateDeckId?: string;
+  // rateDeckId removed - rate decks are now assigned to users, not phone numbers
   monthlyRate?: number;
   setupFee?: number;
   billingCycle?: BillingCycle;

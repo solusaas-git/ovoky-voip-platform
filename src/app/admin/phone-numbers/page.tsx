@@ -56,19 +56,7 @@ interface User {
   };
 }
 
-interface RateDeck {
-  _id: string;
-  name: string;
-  description?: string;
-  currency: string;
-}
-
-interface RateDeckApiResponse {
-  id: string;
-  name: string;
-  description?: string;
-  currency: string;
-}
+// Rate deck interfaces removed - rate decks are now assigned to users, not phone numbers
 
 interface Country {
   _id: string;
@@ -89,7 +77,7 @@ export default function AdminPhoneNumbersPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [rateDeckOptions, setRateDeckOptions] = useState<RateDeck[]>([]);
+  // Rate deck options removed - rate decks are now assigned to users, not phone numbers
   const [countries, setCountries] = useState<Country[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -142,7 +130,7 @@ export default function AdminPhoneNumbersPage() {
     countryCode: '',
     numberType: 'Geographic/Local' as PhoneNumberType,
     provider: '',
-    rateDeckId: '',
+    // rateDeckId removed - rate decks are assigned to users, not phone numbers
     currency: 'USD',
     backorderOnly: false,
     billingCycle: 'monthly',
@@ -177,7 +165,7 @@ export default function AdminPhoneNumbersPage() {
     countryCode: '',
     numberType: 'Geographic/Local' as PhoneNumberType,
     provider: '',
-    rateDeckId: '',
+    // rateDeckId removed - rate decks are assigned to users, not phone numbers
     currency: 'USD',
     backorderOnly: false,
     billingCycle: 'monthly',
@@ -271,7 +259,7 @@ export default function AdminPhoneNumbersPage() {
   useEffect(() => {
     fetchPhoneNumbers();
     fetchUsers();
-    fetchRateDecks();
+    // fetchRateDecks() removed - rate decks are now assigned to users, not phone numbers
     fetchCountries();
     fetchProviders();
   }, [filters, fetchPhoneNumbers]);
@@ -294,24 +282,7 @@ export default function AdminPhoneNumbersPage() {
     }
   };
 
-  const fetchRateDecks = async () => {
-    try {
-      const response = await fetch('/api/rates/numbers/decks');
-      if (response.ok) {
-        const data = await response.json();
-        // Map the API response to match our interface
-        const mappedRateDecks = (data.rateDecks || []).map((deck: RateDeckApiResponse) => ({
-          _id: deck.id,
-          name: deck.name,
-          description: deck.description,
-          currency: deck.currency
-        }));
-        setRateDeckOptions(mappedRateDecks);
-      }
-    } catch (error) {
-      console.error('Error fetching rate decks:', error);
-    }
-  };
+  // fetchRateDecks function removed - rate decks are now assigned to users, not phone numbers
 
   const fetchCountries = async () => {
     try {
@@ -689,7 +660,7 @@ export default function AdminPhoneNumbersPage() {
       countryCode: '',
       numberType: 'Geographic/Local' as PhoneNumberType,
       provider: '',
-      rateDeckId: '',
+      // rateDeckId removed - rate decks are assigned to users, not phone numbers
       currency: 'USD',
       backorderOnly: false,
       billingCycle: 'monthly',
@@ -1244,7 +1215,6 @@ export default function AdminPhoneNumbersPage() {
                       <TableHead>{t('phoneNumbers.admin.table.headers.type')}</TableHead>
                       <TableHead>{t('phoneNumbers.admin.table.headers.status')}</TableHead>
                       <TableHead>{t('phoneNumbers.admin.table.headers.assignedTo')}</TableHead>
-                      <TableHead>{t('phoneNumbers.admin.table.headers.rateDeck')}</TableHead>
                       <TableHead>{t('phoneNumbers.admin.table.headers.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1278,9 +1248,6 @@ export default function AdminPhoneNumbersPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {number.rateDeck ? number.rateDeck.name : t('phoneNumbers.admin.table.content.noRateDeck')}
-                        </TableCell>
-                        <TableCell>
                           <div className="flex space-x-2">
                             {/* Primary Actions - Always Visible */}
                             <Button
@@ -1310,7 +1277,7 @@ export default function AdminPhoneNumbersPage() {
                                   countryCode: number.countryCode,
                                   numberType: number.numberType,
                                   provider: number.provider || '',
-                                  rateDeckId: number.rateDeck?._id || '',
+                                  // rateDeckId removed - rate decks are assigned to users, not phone numbers
                                   currency: number.currency || 'USD',
                                   backorderOnly: number.backorderOnly || false,
                                   billingCycle: number.billingCycle || 'monthly',
@@ -1586,28 +1553,7 @@ export default function AdminPhoneNumbersPage() {
                   </Select>
                 </div>
 
-                <div>
-                  <Label htmlFor="rateDeckId">{t('phoneNumbers.admin.modals.create.fields.rateDeck')} *</Label>
-                  <Select value={createForm.rateDeckId} onValueChange={(value) => setCreateForm({ ...createForm, rateDeckId: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('phoneNumbers.admin.modals.create.fields.rateDeck')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rateDeckOptions
-                        .filter(rateDeck => rateDeck._id) // Filter out rate decks with undefined/null IDs
-                        .map((rateDeck, index) => (
-                          <SelectItem key={`create-ratedeck-${rateDeck._id || index}`} value={rateDeck._id}>
-                            <div>
-                              <div>{rateDeck.name}</div>
-                              {rateDeck.description && (
-                                <div className="text-xs text-muted-foreground">{rateDeck.description}</div>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Rate deck selection removed - rate decks are now assigned to users, not phone numbers */}
               </div>
               
               <div className="col-span-2">
@@ -1736,7 +1682,7 @@ export default function AdminPhoneNumbersPage() {
               </Button>
               <Button
                 onClick={handleCreatePhoneNumber}
-                disabled={isSubmitting || !createForm.number || !createForm.country || !createForm.provider || !createForm.rateDeckId}
+                disabled={isSubmitting || !createForm.number || !createForm.country || !createForm.provider}
               >
                 {isSubmitting ? (
                   <>
@@ -1988,27 +1934,27 @@ export default function AdminPhoneNumbersPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Rate Info Card */}
-                  <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200">
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-purple-500 rounded-lg">
-                          <Hash className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-purple-700 dark:text-purple-300">{t('phoneNumbers.admin.modals.details.fields.rateDeck')}</p>
-                          <p className="text-lg font-bold text-purple-900 dark:text-purple-100">
-                            {selectedNumberDetails.rateDeck ? selectedNumberDetails.rateDeck.name : 'No Rate Deck'}
-                          </p>
-                          {selectedNumberDetails.monthlyRate && (
-                            <p className="text-sm text-purple-600 dark:text-purple-400">
+                  {/* Billing Rate Card - Only show for assigned numbers */}
+                  {selectedNumberDetails.assignedToUser && selectedNumberDetails.monthlyRate && (
+                    <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-purple-500 rounded-lg">
+                            <Hash className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Billing Rate</p>
+                            <p className="text-lg font-bold text-purple-900 dark:text-purple-100">
                               {formatCurrency(selectedNumberDetails.monthlyRate, selectedNumberDetails.currency || 'USD')}/month
                             </p>
-                          )}
+                            <p className="text-sm text-purple-600 dark:text-purple-400">
+                              From user's assigned rate deck
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
 
                 {/* Current Assignment Alert */}
@@ -2386,7 +2332,7 @@ export default function AdminPhoneNumbersPage() {
                                   countryCode: selectedNumberDetails.countryCode,
                                   numberType: selectedNumberDetails.numberType,
                                   provider: selectedNumberDetails.provider || '',
-                                  rateDeckId: selectedNumberDetails.rateDeck?._id || '',
+                                  // rateDeckId removed - rate decks are assigned to users, not phone numbers
                                   currency: selectedNumberDetails.currency || 'USD',
                                   backorderOnly: selectedNumberDetails.backorderOnly || false,
                                   billingCycle: selectedNumberDetails.billingCycle || 'monthly',
@@ -2697,7 +2643,7 @@ export default function AdminPhoneNumbersPage() {
                         countryCode: selectedNumber.countryCode,
                         numberType: selectedNumber.numberType,
                         provider: selectedNumber.provider || '',
-                        rateDeckId: selectedNumber.rateDeck?._id || '',
+                        // rateDeckId removed - rate decks are assigned to users, not phone numbers
                         currency: selectedNumber.currency || 'USD',
                         backorderOnly: selectedNumber.backorderOnly || false,
                         billingCycle: selectedNumber.billingCycle || 'monthly',
@@ -2820,23 +2766,7 @@ export default function AdminPhoneNumbersPage() {
                   </Select>
                 </div>
 
-                <div>
-                  <Label htmlFor="editRateDeck">{t('phoneNumbers.admin.modals.edit.fields.rateDeck')}</Label>
-                  <Select value={editForm.rateDeckId} onValueChange={(value) => setEditForm({ ...editForm, rateDeckId: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('phoneNumbers.admin.modals.edit.fields.rateDeckPlaceholder')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rateDeckOptions
-                        .filter(rateDeck => rateDeck._id)
-                        .map((rateDeck, index) => (
-                          <SelectItem key={`edit-rate-deck-${rateDeck._id || index}`} value={rateDeck._id}>
-                            {rateDeck.name} ({rateDeck.currency})
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Rate deck selection removed - rate decks are now assigned to users, not phone numbers */}
 
                 <div className="col-span-2">
                   <div className="flex items-center space-x-2">

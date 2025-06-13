@@ -490,13 +490,11 @@
         "type": "Type",
         "status": "Statut",
         "assignedTo": "Assigné à",
-        "rateDeck": "Grille Tarifaire",
         "actions": "Actions"
       },
       "content": {
         "unassigned": "Non assigné",
         "noCompany": "Aucune entreprise",
-        "noRateDeck": "Aucune Grille Tarifaire",
         "selectNumber": "Sélectionner {number}"
       },
       "bulkActions": {
@@ -539,7 +537,6 @@
           "countryCode": "Code Pays",
           "numberType": "Type de Numéro",
           "provider": "Fournisseur",
-          "rateDeck": "Grille Tarifaire",
           "currency": "Devise",
           "backorderOnly": "Commande Uniquement",
           "backorderDescription": "Nécessite l'approbation de l'administrateur pour l'achat",
@@ -615,8 +612,7 @@
           "numberType": "Type de Numéro",
           "provider": "Fournisseur",
           "providerPlaceholder": "Sélectionner un fournisseur",
-          "rateDeck": "Grille Tarifaire",
-          "rateDeckPlaceholder": "Sélectionner une grille tarifaire",
+
           "backorderOnly": "Nécessite une commande en attente (les utilisateurs doivent demander ce numéro au lieu de l'acheter directement)",
           "backorderDescription": "Lorsque activé, les utilisateurs devront soumettre une demande de commande en attente pour approbation administrative au lieu d'acheter ce numéro directement.",
           "billingCycle": "Cycle de Facturation",
@@ -732,7 +728,6 @@
           "country": "Pays",
           "type": "Type",
           "provider": "Fournisseur",
-          "rateDeck": "Grille Tarifaire",
           "assignedTo": "Assigné à",
           "assignedDate": "Date d'Assignation",
           "billingCycle": "Cycle de Facturation",
@@ -801,7 +796,7 @@
       "error": {
         "loadNumbers": "Échec du chargement des numéros de téléphone",
         "loadUsers": "Échec du chargement des utilisateurs",
-        "loadRateDecks": "Échec du chargement des grilles tarifaires",
+
         "loadCountries": "Échec du chargement des pays",
         "loadProviders": "Échec du chargement des fournisseurs",
         "loadDetails": "Échec du chargement des détails du numéro",
@@ -823,7 +818,7 @@
         "numberRequired": "Le numéro de téléphone est requis",
         "countryRequired": "Le pays est requis",
         "providerRequired": "Le fournisseur est requis",
-        "rateDeckRequired": "La grille tarifaire est requise",
+
         "userRequired": "La sélection d'utilisateur est requise",
         "reasonRequired": "La raison est requise"
       },

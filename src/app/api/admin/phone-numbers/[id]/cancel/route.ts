@@ -139,14 +139,14 @@ export async function POST(
       },
       { new: true, runValidators: true }
     )
-      .populate('rateDeckId', 'name description currency')
+      // .populate('rateDeckId') removed - rate decks are now assigned to users, not phone numbers
       .lean();
 
     // Transform the response
     const response = {
       ...updatedPhoneNumber,
       _id: updatedPhoneNumber!._id.toString(),
-      rateDeckId: updatedPhoneNumber!.rateDeckId ? (updatedPhoneNumber!.rateDeckId as unknown as PopulatedRateDeck)._id.toString() : undefined,
+      // rateDeckId removed - rate decks are now assigned to users, not phone numbers
       createdAt: updatedPhoneNumber!.createdAt.toISOString(),
       updatedAt: updatedPhoneNumber!.updatedAt.toISOString(),
     };

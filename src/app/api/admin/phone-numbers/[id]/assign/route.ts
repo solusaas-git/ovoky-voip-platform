@@ -4,8 +4,9 @@ import { connectToDatabase } from '@/lib/db';
 import PhoneNumber from '@/models/PhoneNumber';
 import PhoneNumberAssignment from '@/models/PhoneNumberAssignment';
 import PhoneNumberBilling from '@/models/PhoneNumberBilling';
-import NumberRateDeck from '@/models/NumberRateDeck';
 import NumberRate from '@/models/NumberRate';
+import NumberRateDeck from '@/models/NumberRateDeck';
+import RateDeckAssignment from '@/models/RateDeckAssignment';
 import User from '@/models/User';
 import BrandingSettings from '@/models/BrandingSettings';
 import mongoose from 'mongoose';
@@ -22,14 +23,57 @@ interface PopulatedUser {
   company?: string;
 }
 
-
-
 // Validation schema for assigning phone numbers
 const assignPhoneNumberSchema = z.object({
   userId: z.string().min(1, 'User ID is required'),
   billingStartDate: z.string().optional(),
   notes: z.string().max(1000).optional(),
 });
+
+// Helper function to get user's assigned number rate deck
+const getUserAssignedRateDeck = async (userId: string) => {
+  try {
+    // Find the user's active number rate deck assignment
+    const assignment = await RateDeckAssignment.findOne({
+      userId: new mongoose.Types.ObjectId(userId),
+      rateDeckType: 'number',
+      isActive: true,
+    }).populate('rateDeckId').lean();
+
+    if (!assignment || !assignment.rateDeckId) {
+      return null;
+    }
+
+    return assignment.rateDeckId as unknown as {
+      _id: mongoose.Types.ObjectId;
+      name: string;
+      description?: string;
+      currency: string;
+    };
+  } catch (error) {
+    console.error('Error fetching user assigned rate deck:', error);
+    return null;
+  }
+};
+
+// Helper function to find matching rate in rate deck
+const findMatchingRateInDeck = async (rateDeckId: mongoose.Types.ObjectId, country: string, numberType: string) => {
+  try {
+    const rate = await NumberRate.findOne({
+      rateDeckId: rateDeckId,
+      country: country,
+      type: numberType,
+      effectiveDate: { $lte: new Date() } // Only consider rates that are effective
+    })
+    .sort({ effectiveDate: -1 }) // Get the most recent effective rate
+    .lean();
+
+    return rate;
+  } catch (error) {
+    console.error('Error finding matching rate:', error);
+    return null;
+  }
+};
 
 // POST - Assign phone number to user
 export async function POST(
@@ -96,40 +140,50 @@ export async function POST(
       new Date(validatedData.billingStartDate) : 
       new Date();
 
-    // Lookup actual rates from rate deck if assigned
-    let actualMonthlyRate = phoneNumber.monthlyRate || 0;
-    let actualSetupFee = phoneNumber.setupFee || 0;
-    let actualCurrency = phoneNumber.currency || 'USD';
+    // Get user's assigned rate deck and lookup rates
+    let actualMonthlyRate = 0;
+    let actualSetupFee = 0;
+    let actualCurrency = 'USD';
+    let userRateDeck = null;
 
-    if (phoneNumber.rateDeckId) {
-      try {
-        // Get the rate deck first to get its currency
-        const rateDeck = await NumberRateDeck.findById(phoneNumber.rateDeckId);
-        if (rateDeck) {
-          actualCurrency = rateDeck.currency;
+    try {
+      // Get the user's assigned rate deck
+      userRateDeck = await getUserAssignedRateDeck(validatedData.userId);
+      
+      if (userRateDeck) {
+        actualCurrency = userRateDeck.currency;
+        
+        // Find the specific rate for this phone number in the user's rate deck
+        const rate = await findMatchingRateInDeck(
+          userRateDeck._id,
+          phoneNumber.country,
+          phoneNumber.numberType
+        );
 
-          // Find the specific rate for this country and number type
-          const rate = await NumberRate.findOne({
-            rateDeckId: phoneNumber.rateDeckId,
-            country: phoneNumber.country,
-            type: phoneNumber.numberType,
-            effectiveDate: { $lte: new Date() } // Only consider rates that are effective
-          })
-          .sort({ effectiveDate: -1 }) // Get the most recent effective rate
-          .lean();
-
-          if (rate) {
-            actualMonthlyRate = rate.rate;
-            actualSetupFee = rate.setupFee || 0;
-            console.log(`📊 Found rate for ${phoneNumber.country} ${phoneNumber.numberType}: ${actualMonthlyRate} ${actualCurrency}/month, setup: ${actualSetupFee} ${actualCurrency}`);
-          } else {
-            console.warn(`⚠️ No rate found for ${phoneNumber.country} ${phoneNumber.numberType} in rate deck ${phoneNumber.rateDeckId}`);
-          }
+        if (rate) {
+          actualMonthlyRate = rate.rate;
+          actualSetupFee = rate.setupFee || 0;
+          console.log(`📊 Found rate for ${phoneNumber.country} ${phoneNumber.numberType} in user's rate deck "${userRateDeck.name}": ${actualMonthlyRate} ${actualCurrency}/month, setup: ${actualSetupFee} ${actualCurrency}`);
+        } else {
+          console.warn(`⚠️ No rate found for ${phoneNumber.country} ${phoneNumber.numberType} in user's assigned rate deck "${userRateDeck.name}"`);
+          return NextResponse.json(
+            { error: `No rate found for ${phoneNumber.country} ${phoneNumber.numberType} numbers in user's assigned rate deck "${userRateDeck.name}". Please ensure the rate deck contains rates for this number type and country.` },
+            { status: 400 }
+          );
         }
-      } catch (error) {
-        console.error('Error looking up rates from rate deck:', error);
-        // Fall back to phone number's direct rates
+      } else {
+        console.warn(`⚠️ User ${validatedData.userId} has no assigned number rate deck`);
+        return NextResponse.json(
+          { error: 'User has no assigned number rate deck. Please assign a rate deck to the user before assigning phone numbers.' },
+          { status: 400 }
+        );
       }
+    } catch (error) {
+      console.error('Error looking up user rate deck and rates:', error);
+      return NextResponse.json(
+        { error: 'Failed to determine billing rates for this user' },
+        { status: 500 }
+      );
     }
 
     // Perform operations without transactions for standalone MongoDB
@@ -146,6 +200,8 @@ export async function POST(
       }
       
       // Update phone number status and assignment
+      // Note: We don't store rate deck info on the phone number anymore
+      // Rates are determined from the user's assigned rate deck
       await PhoneNumber.findByIdAndUpdate(
         phoneNumberId,
         {
@@ -157,9 +213,6 @@ export async function POST(
             unassignedAt: null,
             unassignedBy: null,
             unassignedReason: null,
-            monthlyRate: actualMonthlyRate,
-            setupFee: actualSetupFee,
-            currency: actualCurrency,
             nextBillingDate: nextBillingDate,
           }
         }
@@ -236,26 +289,33 @@ export async function POST(
         .populate('assignedTo', 'name email company')
         .lean();
 
-      // Fetch rate deck separately if rateDeckId exists to avoid schema registration issues
+      // Use the user's rate deck info instead of phone number's rate deck
       let rateDeckInfo = null;
-      if (updatedPhoneNumber?.rateDeckId) {
-        try {
-          // Import here to ensure the model is registered
-          const NumberRateDeckModel = (await import('@/models/NumberRateDeck')).default;
-          rateDeckInfo = await NumberRateDeckModel.findById(updatedPhoneNumber.rateDeckId)
-            .select('name description currency')
-            .lean();
-        } catch (error) {
-          console.warn('Could not fetch rate deck info:', error);
-        }
+      if (userRateDeck) {
+        rateDeckInfo = {
+          name: userRateDeck.name,
+          description: userRateDeck.description,
+          currency: userRateDeck.currency,
+        };
       }
 
       // Transform the response
       const response = {
         ...updatedPhoneNumber,
         _id: updatedPhoneNumber!._id.toString(),
-        rateDeckId: updatedPhoneNumber!.rateDeckId ? updatedPhoneNumber!.rateDeckId.toString() : undefined,
+        // Rate deck info comes from the user's assigned rate deck, not the phone number
+        rateDeckId: userRateDeck ? userRateDeck._id.toString() : undefined,
         rateDeckName: rateDeckInfo?.name || undefined,
+        rateDeck: userRateDeck ? {
+          _id: userRateDeck._id.toString(),
+          name: userRateDeck.name,
+          description: userRateDeck.description,
+          currency: userRateDeck.currency,
+        } : undefined,
+        // Include the calculated rates for display
+        monthlyRate: actualMonthlyRate,
+        setupFee: actualSetupFee,
+        currency: actualCurrency,
         assignedTo: updatedPhoneNumber!.assignedTo!._id.toString(),
         assignedToUser: {
           _id: (updatedPhoneNumber!.assignedTo as unknown as PopulatedUser)._id.toString(),
