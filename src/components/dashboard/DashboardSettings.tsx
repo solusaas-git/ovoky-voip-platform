@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { DashboardPreferences } from '@/models/DashboardPreferences';
 import { toast } from 'sonner';
 import { ThemeSettingsWidget } from '@/components/ThemeSettingsWidget';
+import { useTranslations } from '@/lib/i18n';
 
 interface DashboardSettingsProps {
   preferences: DashboardPreferences | null;
@@ -68,6 +69,7 @@ export function DashboardSettings({
   onExportPreferences,
   onImportPreferences,
 }: DashboardSettingsProps) {
+  const { t } = useTranslations();
   const [isExpanded, setIsExpanded] = useState(false);
   const [importData, setImportData] = useState('');
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -103,17 +105,17 @@ export function DashboardSettings({
 
   const getWidgetDisplayName = (widgetId: string): string => {
     const widgetNames: Record<string, string> = {
-      'welcome': 'Welcome',
-      'balance': 'Account Balance',
-      'indicator-1': 'Cost of Day',
-      'indicator-2': 'ASR (Success Rate)',
-      'indicator-3': 'ACD (Avg Call Duration)',
-      'indicator-4': 'Total Minutes',
-      'user-attention': 'Users Requiring Attention',
-      'low-balance-users': 'Low Balance Users',
-      'unsolved-tickets': 'Unsolved Tickets',
-      'phone-number-requests': 'Phone Number Requests',
-      'date-selector': 'Date Selector',
+      'welcome': t('dashboard.widgets.welcome.title'),
+      'balance': t('dashboard.widgets.balance.title'),
+      'indicator-1': t('dashboard.widgets.costOfDay.title'),
+      'indicator-2': t('dashboard.widgets.asr.title'),
+      'indicator-3': t('dashboard.widgets.acd.title'),
+      'indicator-4': t('dashboard.widgets.totalMinutes.title'),
+      'user-attention': t('dashboard.widgets.userAttention.title'),
+      'low-balance-users': t('dashboard.widgets.lowBalanceUsers.title'),
+      'unsolved-tickets': t('dashboard.widgets.unsolvedTickets.title'),
+      'phone-number-requests': t('dashboard.widgets.phoneNumberRequests.title'),
+      'date-selector': t('dashboard.widgets.dateSelector.title'),
     };
 
     return widgetNames[widgetId] || widgetId.charAt(0).toUpperCase() + widgetId.slice(1).replace(/-/g, ' ');
@@ -159,7 +161,7 @@ export function DashboardSettings({
               className="flex items-center space-x-2"
             >
               <Settings className="h-4 w-4" />
-              {isExpanded && <span>Dashboard Settings</span>}
+              {isExpanded && <span>{t('dashboard.settings.title')}</span>}
               {hasUnsavedChanges && (
                 <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
               )}
@@ -169,12 +171,12 @@ export function DashboardSettings({
               <div className="flex items-center space-x-1">
                 {isEditMode && (
                   <Badge variant="secondary" className="text-xs">
-                    Edit Mode
+                    {t('dashboard.settings.status.editMode')}
                   </Badge>
                 )}
                 {hasUnsavedChanges && (
                   <Badge variant="outline" className="text-xs">
-                    Unsaved
+                    {t('dashboard.settings.status.unsaved')}
                   </Badge>
                 )}
               </div>
@@ -192,7 +194,7 @@ export function DashboardSettings({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Edit3 className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Edit Mode</span>
+                  <span className="text-sm font-medium">{t('dashboard.settings.editMode.label')}</span>
                 </div>
                 <Switch
                   checked={isEditMode}
@@ -202,7 +204,7 @@ export function DashboardSettings({
               
               {isEditMode && (
                 <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-                  Drag widgets to reorder • Click eye icons to show/hide • Use resize buttons to change sizes • Lock/unlock widgets
+                  {t('dashboard.settings.editMode.helpText')}
                 </div>
               )}
             </div>
@@ -213,36 +215,36 @@ export function DashboardSettings({
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Eye className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Widget Status</span>
+                <span className="text-sm font-medium">{t('dashboard.settings.widgetStatus.title')}</span>
               </div>
               
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex justify-between">
-                  <span>Enabled:</span>
+                  <span>{t('dashboard.settings.widgetStatus.enabled')}</span>
                   <Badge variant="default" className="text-xs h-5">
                     {getEnabledWidgetsCount()}/{getTotalWidgetsCount()}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span>Collapsed:</span>
+                  <span>{t('dashboard.settings.widgetStatus.collapsed')}</span>
                   <Badge variant="outline" className="text-xs h-5">
                     {getCollapsedWidgetsCount()}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span>Locked:</span>
+                  <span>{t('dashboard.settings.widgetStatus.locked')}</span>
                   <Badge variant="secondary" className="text-xs h-5">
                     {getLockedWidgetsCount()}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span>Critical:</span>
+                  <span>{t('dashboard.settings.widgetStatus.critical')}</span>
                   <Badge variant="destructive" className="text-xs h-5">
                     {getCriticalWidgetsCount()}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span>Auto-refresh:</span>
+                  <span>{t('dashboard.settings.widgetStatus.autoRefresh')}</span>
                   <Badge variant="outline" className="text-xs h-5">
                     {getAutoRefreshWidgetsCount()}
                   </Badge>
@@ -256,7 +258,7 @@ export function DashboardSettings({
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Eye className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Widget Visibility</span>
+                <span className="text-sm font-medium">{t('dashboard.settings.widgetVisibility.title')}</span>
               </div>
               
               {preferences?.widgets && (
@@ -301,7 +303,7 @@ export function DashboardSettings({
               )}
               
               <div className="text-xs text-muted-foreground">
-                Toggle widgets on/off. Locked and critical widgets cannot be hidden.
+                {t('dashboard.settings.widgetVisibility.helpText')}
               </div>
             </div>
 
@@ -311,7 +313,7 @@ export function DashboardSettings({
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Plus className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Missing Widgets</span>
+                <span className="text-sm font-medium">{t('dashboard.settings.missingWidgets.title')}</span>
               </div>
               
               <Button
@@ -346,11 +348,11 @@ export function DashboardSettings({
                 }}
               >
                 <Plus className="h-3 w-3 mr-2" />
-                Add Missing Widgets
+                {t('dashboard.settings.missingWidgets.addButton')}
               </Button>
               
               <div className="text-xs text-muted-foreground">
-                Automatically adds any new widgets that have been added to the system
+                {t('dashboard.settings.missingWidgets.helpText')}
               </div>
             </div>
 
@@ -360,7 +362,7 @@ export function DashboardSettings({
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Layout className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Layout</span>
+                <span className="text-sm font-medium">{t('dashboard.settings.layout.title')}</span>
               </div>
               
               <Select
@@ -371,10 +373,10 @@ export function DashboardSettings({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="grid">Grid Layout</SelectItem>
-                  <SelectItem value="list">List Layout</SelectItem>
-                  <SelectItem value="masonry">Masonry Layout</SelectItem>
-                  <SelectItem value="custom">Custom Layout</SelectItem>
+                  <SelectItem value="grid">{t('dashboard.settings.layout.grid')}</SelectItem>
+                  <SelectItem value="list">{t('dashboard.settings.layout.list')}</SelectItem>
+                  <SelectItem value="masonry">{t('dashboard.settings.layout.masonry')}</SelectItem>
+                  <SelectItem value="custom">{t('dashboard.settings.layout.custom')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -384,7 +386,7 @@ export function DashboardSettings({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Grid3X3 className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Grid Columns</span>
+                  <span className="text-sm font-medium">{t('dashboard.settings.gridColumns.title')}</span>
                 </div>
                 <Badge variant="outline" className="text-xs">
                   {preferences?.gridColumns || 12}
@@ -400,8 +402,8 @@ export function DashboardSettings({
                 className="w-full"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>6 cols</span>
-                <span>24 cols</span>
+                <span>{t('dashboard.settings.gridColumns.min')}</span>
+                <span>{t('dashboard.settings.gridColumns.max')}</span>
               </div>
             </div>
 
@@ -410,7 +412,7 @@ export function DashboardSettings({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Tags className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Categories</span>
+                  <span className="text-sm font-medium">{t('dashboard.settings.categories.title')}</span>
                 </div>
                 <Switch
                   checked={preferences?.showCategories || false}
@@ -420,7 +422,7 @@ export function DashboardSettings({
               
               {preferences?.showCategories && (
                 <div className="space-y-2">
-                  <div className="text-xs text-muted-foreground">Available categories:</div>
+                  <div className="text-xs text-muted-foreground">{t('dashboard.settings.categories.available')}</div>
                   <div className="flex flex-wrap gap-1">
                     {getCategories().map((category) => (
                       <Badge key={category} variant="outline" className="text-xs">
@@ -436,7 +438,7 @@ export function DashboardSettings({
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Palette className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Theme</span>
+                <span className="text-sm font-medium">{t('dashboard.settings.theme.title')}</span>
               </div>
               
               <ThemeSettingsWidget />
@@ -444,13 +446,13 @@ export function DashboardSettings({
 
             {/* Advanced Options */}
             <div className="space-y-3">
-              <div className="text-sm font-medium">Advanced Options</div>
+              <div className="text-sm font-medium">{t('dashboard.settings.advanced.title')}</div>
               
               {/* Compact Mode */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Maximize2 className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Compact Mode</span>
+                  <span className="text-sm">{t('dashboard.settings.advanced.compactMode')}</span>
                 </div>
                 <Switch
                   checked={preferences?.compactMode || false}
@@ -462,7 +464,7 @@ export function DashboardSettings({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Save className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Auto Save</span>
+                  <span className="text-sm">{t('dashboard.settings.advanced.autoSave')}</span>
                 </div>
                 <Switch
                   checked={preferences?.autoSave || false}
@@ -477,7 +479,7 @@ export function DashboardSettings({
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Backup & Restore</span>
+                <span className="text-sm font-medium">{t('dashboard.settings.backupRestore.title')}</span>
               </div>
               
               <div className="flex space-x-2">
@@ -488,7 +490,7 @@ export function DashboardSettings({
                   className="flex-1 h-8 text-xs"
                 >
                   <Download className="h-3 w-3 mr-2" />
-                  Export
+                  {t('dashboard.settings.backupRestore.export')}
                 </Button>
                 
                 <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
@@ -499,19 +501,19 @@ export function DashboardSettings({
                       className="flex-1 h-8 text-xs"
                     >
                       <Upload className="h-3 w-3 mr-2" />
-                      Import
+                      {t('dashboard.settings.backupRestore.import')}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Import Dashboard Preferences</DialogTitle>
+                      <DialogTitle>{t('dashboard.settings.backupRestore.importDialog.title')}</DialogTitle>
                       <DialogDescription>
-                        Paste your exported dashboard preferences JSON data below.
+                        {t('dashboard.settings.backupRestore.importDialog.description')}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <Textarea
-                        placeholder="Paste JSON data here..."
+                        placeholder={t('dashboard.settings.backupRestore.importDialog.placeholder')}
                         value={importData}
                         onChange={(e) => setImportData(e.target.value)}
                         className="min-h-[200px]"
@@ -521,10 +523,10 @@ export function DashboardSettings({
                           variant="outline"
                           onClick={() => setShowImportDialog(false)}
                         >
-                          Cancel
+                          {t('dashboard.settings.backupRestore.importDialog.cancel')}
                         </Button>
                         <Button onClick={handleImport} disabled={!importData.trim()}>
-                          Import
+                          {t('dashboard.settings.backupRestore.importDialog.import')}
                         </Button>
                       </div>
                     </div>
@@ -544,7 +546,7 @@ export function DashboardSettings({
                 size="sm"
               >
                 <Save className="h-3 w-3 mr-2" />
-                {isSaving ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : preferences?.autoSave ? 'Auto-saved' : 'Saved'}
+                {isSaving ? t('dashboard.settings.actions.saving') : hasUnsavedChanges ? t('dashboard.settings.actions.saveChanges') : preferences?.autoSave ? t('dashboard.settings.actions.autoSaved') : t('dashboard.settings.actions.saved')}
               </Button>
               
               <Button
@@ -554,14 +556,14 @@ export function DashboardSettings({
                 size="sm"
               >
                 <RotateCcw className="h-3 w-3 mr-2" />
-                Reset to Defaults
+                {t('dashboard.settings.actions.resetToDefaults')}
               </Button>
             </div>
 
             {/* Status */}
             {preferences?.lastUpdated && (
               <div className="text-xs text-muted-foreground text-center">
-                Last updated: {new Date(preferences.lastUpdated).toLocaleTimeString()}
+                {t('dashboard.settings.status.lastUpdated', { time: new Date(preferences.lastUpdated).toLocaleTimeString() })}
               </div>
             )}
           </div>

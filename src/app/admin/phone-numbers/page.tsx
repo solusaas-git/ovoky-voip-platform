@@ -44,6 +44,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { PhoneNumber, PhoneNumberFilters, CreatePhoneNumberForm, AssignPhoneNumberForm, PhoneNumberType, PhoneNumberCapability, PhoneNumberStatus, BillingCycle, ConnectionType } from '@/types/phoneNumber';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useTranslations } from '@/lib/i18n';
 
 interface User {
   _id: string;
@@ -84,6 +85,7 @@ interface Provider {
 }
 
 export default function AdminPhoneNumbersPage() {
+  const { t } = useTranslations();
   const { user, isLoading: isAuthLoading } = useAuth();
   const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -222,14 +224,14 @@ export default function AdminPhoneNumbersPage() {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedStates(prev => ({ ...prev, [key]: true }));
-      toast.success('Copied to clipboard');
+      toast.success(t('phoneNumbers.admin.messages.success.copied'));
       
       // Reset the copied state after 2 seconds
       setTimeout(() => {
         setCopiedStates(prev => ({ ...prev, [key]: false }));
       }, 2000);
     } catch {
-      toast.error('Failed to copy to clipboard');
+      toast.error(t('phoneNumbers.admin.messages.error.copyFailed'));
     }
   };
 
@@ -259,8 +261,8 @@ export default function AdminPhoneNumbersPage() {
       setCurrentPage(data.page || 1);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
-      console.error('Error fetching phone numbers:', error);
-      toast.error('Failed to load phone numbers');
+              console.error('Error fetching phone numbers:', error);
+        toast.error(t('phoneNumbers.admin.messages.error.loadNumbers'));
     } finally {
       setIsLoading(false);
     }
@@ -349,13 +351,13 @@ export default function AdminPhoneNumbersPage() {
         throw new Error(error.error || 'Failed to create phone number');
       }
 
-      toast.success('Phone number created successfully');
+      toast.success(t('phoneNumbers.admin.messages.success.numberCreated'));
       setShowCreateModal(false);
       resetCreateForm();
       fetchPhoneNumbers();
     } catch (error) {
       console.error('Error creating phone number:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to create phone number');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.admin.messages.error.createNumber'));
     } finally {
       setIsSubmitting(false);
     }
@@ -377,7 +379,7 @@ export default function AdminPhoneNumbersPage() {
         throw new Error(error.error || 'Failed to assign phone number');
       }
 
-      toast.success('Phone number assigned successfully');
+      toast.success(t('phoneNumbers.admin.messages.success.numberAssigned'));
       setShowAssignModal(false);
       setAssignForm({
         userId: '',
@@ -388,7 +390,7 @@ export default function AdminPhoneNumbersPage() {
       fetchPhoneNumbers();
     } catch (error) {
       console.error('Error assigning phone number:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to assign phone number');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.admin.messages.error.assignNumber'));
     } finally {
       setIsSubmitting(false);
     }
@@ -411,7 +413,7 @@ export default function AdminPhoneNumbersPage() {
       }
 
       await response.json();
-      toast.success('Phone number unassigned successfully');
+      toast.success(t('phoneNumbers.admin.messages.success.numberUnassigned'));
       setShowUnassignModal(false);
       setUnassignForm({
         reason: '',
@@ -453,7 +455,7 @@ export default function AdminPhoneNumbersPage() {
         throw new Error(errorData.error || 'Failed to update phone number');
       }
 
-      toast.success('Phone number updated successfully');
+      toast.success(t('phoneNumbers.admin.messages.success.numberUpdated'));
       setShowEditModal(false);
       setSelectedNumber(null);
       fetchPhoneNumbers(); // Refresh the list
@@ -478,11 +480,11 @@ export default function AdminPhoneNumbersPage() {
         throw new Error(error.error || 'Failed to delete phone number');
       }
 
-      toast.success('Phone number deleted successfully');
+      toast.success(t('phoneNumbers.admin.messages.success.numberDeleted'));
       fetchPhoneNumbers();
     } catch (error) {
       console.error('Error deleting phone number:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to delete phone number');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.admin.messages.error.deleteNumber'));
     }
   };
 
@@ -541,7 +543,7 @@ export default function AdminPhoneNumbersPage() {
       const failed = results.length - successful;
       
       if (successful > 0) {
-        toast.success(`${successful} phone numbers assigned successfully`);
+        toast.success(t('phoneNumbers.admin.messages.success.bulkAssigned'));
       }
       if (failed > 0) {
         toast.error(`${failed} phone numbers failed to assign`);
@@ -594,7 +596,7 @@ export default function AdminPhoneNumbersPage() {
       const failed = results.length - successful;
       
       if (successful > 0) {
-        toast.success(`${successful} phone numbers deleted successfully`);
+        toast.success(t('phoneNumbers.admin.messages.success.bulkDeleted'));
       }
       if (failed > 0) {
         toast.error(`${failed} phone numbers failed to delete`);
@@ -832,14 +834,14 @@ export default function AdminPhoneNumbersPage() {
         throw new Error(errorData.error || 'Failed to reserve phone number');
       }
 
-      toast.success('Phone number reserved successfully');
+      toast.success(t('phoneNumbers.admin.messages.success.numberReserved'));
       setShowReserveModal(false);
       setReserveForm({ reason: '', reservedUntil: '', notes: '' });
       setSelectedNumber(null);
       fetchPhoneNumbers();
     } catch (error) {
       console.error('Error reserving phone number:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to reserve phone number');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.admin.messages.error.reserveNumber'));
     } finally {
       setIsSubmitting(false);
     }
@@ -864,14 +866,14 @@ export default function AdminPhoneNumbersPage() {
         throw new Error(errorData.error || 'Failed to suspend phone number');
       }
 
-      toast.success('Phone number suspended successfully');
+      toast.success(t('phoneNumbers.admin.messages.success.numberSuspended'));
       setShowSuspendModal(false);
       setSuspendForm({ reason: '', suspendBilling: true, autoResumeDate: '', notes: '' });
       setSelectedNumber(null);
       fetchPhoneNumbers();
     } catch (error) {
       console.error('Error suspending phone number:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to suspend phone number');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.admin.messages.error.suspendNumber'));
     } finally {
       setIsSubmitting(false);
     }
@@ -897,7 +899,7 @@ export default function AdminPhoneNumbersPage() {
       }
 
       const result = await response.json();
-      toast.success('Phone number cancelled successfully');
+      toast.success(t('phoneNumbers.admin.messages.success.numberCancelled'));
       if (result.gracePeriodDays > 0) {
         toast.info(`Number will be permanently deleted after ${result.gracePeriodDays} days`);
       }
@@ -908,7 +910,7 @@ export default function AdminPhoneNumbersPage() {
       fetchPhoneNumbers();
     } catch (error) {
       console.error('Error cancelling phone number:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to cancel phone number');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.admin.messages.error.cancelNumber'));
     } finally {
       setIsSubmitting(false);
     }
@@ -933,7 +935,7 @@ export default function AdminPhoneNumbersPage() {
         throw new Error(errorData.error || 'Failed to unreserve phone number');
       }
 
-      toast.success('Phone number unreserved successfully');
+      toast.success(t('phoneNumbers.admin.messages.success.numberUnreserved'));
       
       setShowUnreserveModal(false);
       setUnreserveForm({ reason: '', notes: '' });
@@ -941,7 +943,7 @@ export default function AdminPhoneNumbersPage() {
       fetchPhoneNumbers();
     } catch (error) {
       console.error('Error unreserving phone number:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to unreserve phone number');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.admin.messages.error.unreserveNumber'));
     } finally {
       setIsSubmitting(false);
     }
@@ -952,12 +954,12 @@ export default function AdminPhoneNumbersPage() {
     return (
       <MainLayout>
         <PageLayout
-          title="Loading..."
-          description="Checking permissions"
+          title={t('phoneNumbers.admin.page.loading.title')}
+          description={t('phoneNumbers.admin.page.loading.description')}
           breadcrumbs={[
-            { label: 'Dashboard', href: '/dashboard' },
-            { label: 'Admin', href: '/admin' },
-            { label: 'Phone Numbers' }
+            { label: t('phoneNumbers.admin.page.breadcrumbs.dashboard'), href: '/dashboard' },
+            { label: t('phoneNumbers.admin.page.breadcrumbs.admin'), href: '/admin' },
+            { label: t('phoneNumbers.admin.page.breadcrumbs.phoneNumbers') }
           ]}
         >
           <div className="flex items-center justify-center py-8">
@@ -973,17 +975,17 @@ export default function AdminPhoneNumbersPage() {
     return (
       <MainLayout>
         <PageLayout
-          title="Access Denied"
-          description="You don't have permission to access this page"
+          title={t('phoneNumbers.admin.page.accessDenied.title')}
+          description={t('phoneNumbers.admin.page.accessDenied.description')}
           breadcrumbs={[
-            { label: 'Dashboard', href: '/dashboard' },
-            { label: 'Phone Numbers' }
+            { label: t('phoneNumbers.admin.page.breadcrumbs.dashboard'), href: '/dashboard' },
+            { label: t('phoneNumbers.admin.page.breadcrumbs.phoneNumbers') }
           ]}
         >
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              You don&apos;t have permission to access this page.
+              {t('phoneNumbers.admin.page.accessDenied.message')}
             </AlertDescription>
           </Alert>
         </PageLayout>
@@ -994,19 +996,19 @@ export default function AdminPhoneNumbersPage() {
   return (
     <MainLayout>
       <PageLayout
-        title="Phone Numbers"
-        description="Manage phone number inventory and assignments"
+        title={t('phoneNumbers.admin.page.title')}
+        description={t('phoneNumbers.admin.page.description')}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Admin', href: '/admin' },
-          { label: 'Phone Numbers' }
+          { label: t('phoneNumbers.admin.page.breadcrumbs.dashboard'), href: '/dashboard' },
+          { label: t('phoneNumbers.admin.page.breadcrumbs.admin'), href: '/admin' },
+          { label: t('phoneNumbers.admin.page.breadcrumbs.phoneNumbers') }
         ]}
         headerActions={
           <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Number
+                {t('phoneNumbers.admin.actions.addNumber')}
               </Button>
             </DialogTrigger>
           </Dialog>
@@ -1015,7 +1017,7 @@ export default function AdminPhoneNumbersPage() {
         {/* Filters */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Filters</CardTitle>
+            <CardTitle className="text-lg">{t('phoneNumbers.admin.filters.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -1023,7 +1025,7 @@ export default function AdminPhoneNumbersPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   type="text"
-                  placeholder="Search numbers..."
+                  placeholder={t('phoneNumbers.admin.filters.searchPlaceholder')}
                   value={filters.search || ''}
                   onChange={(e) => updateFilters({ search: e.target.value })}
                   className="pl-10"
@@ -1032,16 +1034,16 @@ export default function AdminPhoneNumbersPage() {
               
               <Select value={Array.isArray(filters.status) ? filters.status[0] || 'all' : filters.status || 'all'} onValueChange={(value) => updateFilters({ status: value === 'all' ? undefined : [value] as PhoneNumberStatus[] })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
+                  <SelectValue placeholder={t('phoneNumbers.admin.filters.statuses.all')} />
                 </SelectTrigger>
                 <SelectContent>
                   {[
-                    { id: 'all', label: 'All Statuses', value: 'all' },
-                    { id: 'available', label: 'Available', value: 'available' },
-                    { id: 'assigned', label: 'Assigned', value: 'assigned' },
-                    { id: 'reserved', label: 'Reserved', value: 'reserved' },
-                    { id: 'suspended', label: 'Suspended', value: 'suspended' },
-                    { id: 'cancelled', label: 'Cancelled', value: 'cancelled' }
+                    { id: 'all', label: t('phoneNumbers.admin.filters.statuses.all'), value: 'all' },
+                    { id: 'available', label: t('phoneNumbers.admin.filters.statuses.available'), value: 'available' },
+                    { id: 'assigned', label: t('phoneNumbers.admin.filters.statuses.assigned'), value: 'assigned' },
+                    { id: 'reserved', label: t('phoneNumbers.admin.filters.statuses.reserved'), value: 'reserved' },
+                    { id: 'suspended', label: t('phoneNumbers.admin.filters.statuses.suspended'), value: 'suspended' },
+                    { id: 'cancelled', label: t('phoneNumbers.admin.filters.statuses.cancelled'), value: 'cancelled' }
                   ].map(option => (
                     <SelectItem key={option.id} value={option.value}>
                       {option.label}
@@ -1052,11 +1054,11 @@ export default function AdminPhoneNumbersPage() {
 
               <Select value={Array.isArray(filters.country) ? filters.country[0] || 'all' : filters.country || 'all'} onValueChange={(value) => updateFilters({ country: value === 'all' ? undefined : [value] })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Countries" />
+                  <SelectValue placeholder={t('phoneNumbers.admin.filters.countries.all')} />
                 </SelectTrigger>
                 <SelectContent>
                   {[
-                    { id: 'all', label: 'All Countries', value: 'all' },
+                    { id: 'all', label: t('phoneNumbers.admin.filters.countries.all'), value: 'all' },
                     ...countries
                       .filter(country => country._id) // Filter out countries with undefined/null IDs
                       .map((country, index) => ({
@@ -1074,18 +1076,18 @@ export default function AdminPhoneNumbersPage() {
 
               <Select value={Array.isArray(filters.numberType) ? filters.numberType[0] || 'all' : filters.numberType || 'all'} onValueChange={(value) => updateFilters({ numberType: value === 'all' ? undefined : [value] as PhoneNumberType[] })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Types" />
+                  <SelectValue placeholder={t('phoneNumbers.admin.filters.types.all')} />
                 </SelectTrigger>
                 <SelectContent>
                   {[
-                    { id: 'all', label: 'All Types', value: 'all' },
-                    { id: 'geographic', label: 'Geographic/Local', value: 'Geographic/Local' },
-                    { id: 'mobile', label: 'Mobile', value: 'Mobile' },
-                    { id: 'national', label: 'National', value: 'National' },
-                    { id: 'tollfree', label: 'Toll-free', value: 'Toll-free' },
-                    { id: 'shared', label: 'Shared Cost', value: 'Shared Cost' },
-                    { id: 'npv', label: 'NPV (Verified Numbers)', value: 'NPV (Verified Numbers)' },
-                    { id: 'premium', label: 'Premium', value: 'Premium' }
+                    { id: 'all', label: t('phoneNumbers.admin.filters.types.all'), value: 'all' },
+                    { id: 'geographic', label: t('phoneNumbers.admin.filters.types.geographic'), value: 'Geographic/Local' },
+                    { id: 'mobile', label: t('phoneNumbers.admin.filters.types.mobile'), value: 'Mobile' },
+                    { id: 'national', label: t('phoneNumbers.admin.filters.types.national'), value: 'National' },
+                    { id: 'tollfree', label: t('phoneNumbers.admin.filters.types.tollfree'), value: 'Toll-free' },
+                    { id: 'shared', label: t('phoneNumbers.admin.filters.types.shared'), value: 'Shared Cost' },
+                    { id: 'npv', label: t('phoneNumbers.admin.filters.types.npv'), value: 'NPV (Verified Numbers)' },
+                    { id: 'premium', label: t('phoneNumbers.admin.filters.types.premium'), value: 'Premium' }
                   ].map(option => (
                     <SelectItem key={option.id} value={option.value}>
                       {option.label}
@@ -1096,12 +1098,12 @@ export default function AdminPhoneNumbersPage() {
 
               <Select value={filters.assignedTo || 'all'} onValueChange={(value) => updateFilters({ assignedTo: value === 'all' ? undefined : value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Users" />
+                  <SelectValue placeholder={t('phoneNumbers.admin.filters.users.all')} />
                 </SelectTrigger>
                 <SelectContent>
                   {[
-                    { id: 'all', label: 'All Users', value: 'all' },
-                    { id: 'unassigned', label: 'Unassigned', value: 'unassigned' },
+                    { id: 'all', label: t('phoneNumbers.admin.filters.users.all'), value: 'all' },
+                    { id: 'unassigned', label: t('phoneNumbers.admin.filters.users.unassigned'), value: 'unassigned' },
                     ...users
                       .filter(user => user._id && user._id !== '') // More specific filter - allow users with valid non-empty IDs
                       .map((user, index) => ({
@@ -1125,7 +1127,7 @@ export default function AdminPhoneNumbersPage() {
           <Card key="total">
             <CardContent className="p-4">
               <div className="text-2xl font-bold">{total}</div>
-              <p className="text-xs text-muted-foreground">Total Numbers</p>
+              <p className="text-xs text-muted-foreground">{t('phoneNumbers.admin.stats.totalNumbers')}</p>
             </CardContent>
           </Card>
           <Card key="available">
@@ -1133,7 +1135,7 @@ export default function AdminPhoneNumbersPage() {
               <div className="text-2xl font-bold text-green-600">
                 {phoneNumbers.filter(n => n.status === 'available').length}
               </div>
-              <p className="text-xs text-muted-foreground">Available</p>
+              <p className="text-xs text-muted-foreground">{t('phoneNumbers.admin.stats.available')}</p>
             </CardContent>
           </Card>
           <Card key="assigned">
@@ -1141,7 +1143,7 @@ export default function AdminPhoneNumbersPage() {
               <div className="text-2xl font-bold text-blue-600">
                 {phoneNumbers.filter(n => n.status === 'assigned').length}
               </div>
-              <p className="text-xs text-muted-foreground">Assigned</p>
+              <p className="text-xs text-muted-foreground">{t('phoneNumbers.admin.stats.assigned')}</p>
             </CardContent>
           </Card>
           <Card key="reserved">
@@ -1149,7 +1151,7 @@ export default function AdminPhoneNumbersPage() {
               <div className="text-2xl font-bold text-orange-600">
                 {phoneNumbers.filter(n => n.status === 'reserved').length}
               </div>
-              <p className="text-xs text-muted-foreground">Reserved</p>
+              <p className="text-xs text-muted-foreground">{t('phoneNumbers.admin.stats.reserved')}</p>
             </CardContent>
           </Card>
           <Card key="inactive">
@@ -1157,7 +1159,7 @@ export default function AdminPhoneNumbersPage() {
               <div className="text-2xl font-bold text-red-600">
                 {phoneNumbers.filter(n => n.status === 'suspended' || n.status === 'cancelled').length}
               </div>
-              <p className="text-xs text-muted-foreground">Inactive</p>
+              <p className="text-xs text-muted-foreground">{t('phoneNumbers.admin.stats.inactive')}</p>
             </CardContent>
           </Card>
         </div>
@@ -1166,7 +1168,7 @@ export default function AdminPhoneNumbersPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Phone Numbers ({total})</CardTitle>
+              <CardTitle>{t('phoneNumbers.admin.table.title', { count: total.toString() })}</CardTitle>
               <div className="flex space-x-2">
                 {selectedNumbers.size > 0 && (
                   <>
@@ -1177,7 +1179,7 @@ export default function AdminPhoneNumbersPage() {
                       disabled={phoneNumbers.filter(n => selectedNumbers.has(n._id) && n.status === 'available').length === 0}
                     >
                       <UserPlus className="h-4 w-4 mr-2" />
-                      Bulk Assign ({phoneNumbers.filter(n => selectedNumbers.has(n._id) && n.status === 'available').length})
+                      {t('phoneNumbers.admin.table.bulkActions.bulkAssign', { count: phoneNumbers.filter(n => selectedNumbers.has(n._id) && n.status === 'available').length.toString() })}
                     </Button>
                     <Button
                       variant="outline"
@@ -1186,7 +1188,7 @@ export default function AdminPhoneNumbersPage() {
                       disabled={phoneNumbers.filter(n => selectedNumbers.has(n._id) && n.status === 'assigned').length === 0}
                     >
                       <UserMinus className="h-4 w-4 mr-2" />
-                      Bulk Unassign ({phoneNumbers.filter(n => selectedNumbers.has(n._id) && n.status === 'assigned').length})
+                      {t('phoneNumbers.admin.table.bulkActions.bulkUnassign', { count: phoneNumbers.filter(n => selectedNumbers.has(n._id) && n.status === 'assigned').length.toString() })}
                     </Button>
                     <Button
                       variant="outline"
@@ -1195,7 +1197,7 @@ export default function AdminPhoneNumbersPage() {
                       disabled={phoneNumbers.filter(n => selectedNumbers.has(n._id) && n.status !== 'assigned').length === 0 || isSubmitting}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Bulk Delete ({phoneNumbers.filter(n => selectedNumbers.has(n._id) && n.status !== 'assigned').length})
+                      {t('phoneNumbers.admin.table.bulkActions.bulkDelete', { count: phoneNumbers.filter(n => selectedNumbers.has(n._id) && n.status !== 'assigned').length.toString() })}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1205,17 +1207,17 @@ export default function AdminPhoneNumbersPage() {
                         setIsSelectAllChecked(false);
                       }}
                     >
-                      Clear Selection
+                      {t('phoneNumbers.admin.actions.clearSelection')}
                     </Button>
                   </>
                 )}
                 <Button key="export" variant="outline" size="sm">
                   <Download className="h-4 w-4 mr-2" />
-                  Export
+                  {t('phoneNumbers.admin.actions.export')}
                 </Button>
                 <Button key="import" variant="outline" size="sm">
                   <Upload className="h-4 w-4 mr-2" />
-                  Import
+                  {t('phoneNumbers.admin.actions.import')}
                 </Button>
               </div>
             </div>
@@ -1234,16 +1236,16 @@ export default function AdminPhoneNumbersPage() {
                         <Checkbox
                           checked={isSelectAllChecked}
                           onCheckedChange={handleSelectAll}
-                          aria-label="Select all"
+                          aria-label={t('phoneNumbers.admin.table.headers.selectAll')}
                         />
                       </TableHead>
-                      <TableHead>Number</TableHead>
-                      <TableHead>Country</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Assigned To</TableHead>
-                      <TableHead>Rate Deck</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t('phoneNumbers.admin.table.headers.number')}</TableHead>
+                      <TableHead>{t('phoneNumbers.admin.table.headers.country')}</TableHead>
+                      <TableHead>{t('phoneNumbers.admin.table.headers.type')}</TableHead>
+                      <TableHead>{t('phoneNumbers.admin.table.headers.status')}</TableHead>
+                      <TableHead>{t('phoneNumbers.admin.table.headers.assignedTo')}</TableHead>
+                      <TableHead>{t('phoneNumbers.admin.table.headers.rateDeck')}</TableHead>
+                      <TableHead>{t('phoneNumbers.admin.table.headers.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1253,7 +1255,7 @@ export default function AdminPhoneNumbersPage() {
                           <Checkbox
                             checked={selectedNumbers.has(number._id)}
                             onCheckedChange={(checked) => handleSelectNumber(number._id, !!checked)}
-                            aria-label={`Select ${number.number}`}
+                            aria-label={t('phoneNumbers.admin.table.content.selectNumber', { number: number.number })}
                           />
                         </TableCell>
                         <TableCell className="font-mono">{number.number}</TableCell>
@@ -1269,14 +1271,14 @@ export default function AdminPhoneNumbersPage() {
                           {number.assignedToUser ? (
                             <div>
                               <p className="font-medium">{number.assignedToUser.name || number.assignedToUser.email}</p>
-                              <p className="text-xs text-muted-foreground">{number.assignedToUser.onboarding?.companyName || number.assignedToUser.company || 'No company'}</p>
+                              <p className="text-xs text-muted-foreground">{number.assignedToUser.onboarding?.companyName || number.assignedToUser.company || t('phoneNumbers.admin.table.content.noCompany')}</p>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground">Unassigned</span>
+                            <span className="text-muted-foreground">{t('phoneNumbers.admin.table.content.unassigned')}</span>
                           )}
                         </TableCell>
                         <TableCell>
-                          {number.rateDeck ? number.rateDeck.name : 'No Rate Deck'}
+                          {number.rateDeck ? number.rateDeck.name : t('phoneNumbers.admin.table.content.noRateDeck')}
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
@@ -1290,7 +1292,7 @@ export default function AdminPhoneNumbersPage() {
                                 await fetchPhoneNumberDetails(number._id);
                                 setShowDetailsModal(true);
                               }}
-                              title="View Details"
+                              title={t('phoneNumbers.admin.table.actionButtons.viewDetails')}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -1325,7 +1327,7 @@ export default function AdminPhoneNumbersPage() {
                                 });
                                 setShowEditModal(true);
                               }}
-                              title="Edit Number"
+                              title={t('phoneNumbers.admin.table.actionButtons.edit')}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -1340,7 +1342,7 @@ export default function AdminPhoneNumbersPage() {
                                 setShowAssignModal(true);
                               }}
                               disabled={number.status !== 'available'}
-                              title={number.status === 'available' ? "Assign Number" : `Cannot assign (${number.status})`}
+                              title={number.status === 'available' ? t('phoneNumbers.admin.table.actionButtons.assign') : `Cannot assign (${number.status})`}
                             >
                               <UserPlus className="h-4 w-4" />
                             </Button>
@@ -1355,7 +1357,7 @@ export default function AdminPhoneNumbersPage() {
                                 setShowUnassignModal(true);
                               }}
                               disabled={number.status !== 'assigned'}
-                              title={number.status === 'assigned' ? "Unassign Number" : `Cannot unassign (${number.status})`}
+                              title={number.status === 'assigned' ? t('phoneNumbers.admin.table.actionButtons.unassign') : `Cannot unassign (${number.status})`}
                             >
                               <UserMinus className="h-4 w-4" />
                             </Button>
@@ -1363,7 +1365,7 @@ export default function AdminPhoneNumbersPage() {
                             {/* More Actions Dropdown */}
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" title="More Actions">
+                                <Button variant="ghost" size="sm" title={t('phoneNumbers.admin.table.actionButtons.more')}>
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -1377,7 +1379,7 @@ export default function AdminPhoneNumbersPage() {
                                     }}
                                   >
                                     <Shield className="h-4 w-4 mr-2" />
-                                    Reserve Number
+                                    {t('phoneNumbers.admin.table.actionButtons.reserve')}
                                   </DropdownMenuItem>
                                 )}
 
@@ -1390,7 +1392,7 @@ export default function AdminPhoneNumbersPage() {
                                     }}
                                   >
                                     <Pause className="h-4 w-4 mr-2" />
-                                    Suspend Number
+                                    {t('phoneNumbers.admin.table.actionButtons.suspend')}
                                   </DropdownMenuItem>
                                 )}
 
@@ -1403,7 +1405,7 @@ export default function AdminPhoneNumbersPage() {
                                     }}
                                   >
                                     <Shield className="h-4 w-4 mr-2" />
-                                    Unreserve Number
+                                    {t('phoneNumbers.admin.table.actionButtons.unreserve')}
                                   </DropdownMenuItem>
                                 )}
 
@@ -1422,7 +1424,7 @@ export default function AdminPhoneNumbersPage() {
                                     className="text-orange-600 focus:text-orange-600"
                                   >
                                     <Ban className="h-4 w-4 mr-2" />
-                                    Cancel Number
+                                    {t('phoneNumbers.admin.table.actionButtons.cancel')}
                                   </DropdownMenuItem>
                                 )}
 
@@ -1433,7 +1435,7 @@ export default function AdminPhoneNumbersPage() {
                                     className="text-red-600 focus:text-red-600"
                                   >
                                     <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete Number
+                                    {t('phoneNumbers.admin.table.actionButtons.delete')}
                                   </DropdownMenuItem>
                                 )}
                               </DropdownMenuContent>
@@ -1449,7 +1451,11 @@ export default function AdminPhoneNumbersPage() {
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between mt-6">
                     <p className="text-sm text-muted-foreground">
-                      Showing {((currentPage - 1) * filters.limit!) + 1} to {Math.min(currentPage * filters.limit!, total)} of {total} results
+                      {t('phoneNumbers.admin.pagination.showing', { 
+                        start: (((currentPage - 1) * filters.limit!) + 1).toString(), 
+                        end: Math.min(currentPage * filters.limit!, total).toString(), 
+                        total: total.toString() 
+                      })}
                     </p>
                     <div className="flex space-x-2">
                       <Button
@@ -1460,7 +1466,7 @@ export default function AdminPhoneNumbersPage() {
                         disabled={currentPage <= 1}
                       >
                         <ChevronLeft className="h-4 w-4" />
-                        Previous
+                        {t('phoneNumbers.admin.pagination.previous')}
                       </Button>
                       <Button
                         key="next"
@@ -1469,7 +1475,7 @@ export default function AdminPhoneNumbersPage() {
                         onClick={() => changePage(currentPage + 1)}
                         disabled={currentPage >= totalPages}
                       >
-                        Next
+                        {t('phoneNumbers.admin.pagination.next')}
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
@@ -1484,26 +1490,26 @@ export default function AdminPhoneNumbersPage() {
         <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add New Phone Number</DialogTitle>
+              <DialogTitle>{t('phoneNumbers.admin.modals.create.title')}</DialogTitle>
               <DialogDescription>
-                Add a new phone number to the inventory
+                {t('phoneNumbers.admin.modals.create.description')}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <Label htmlFor="number">Phone Number *</Label>
+                  <Label htmlFor="number">{t('phoneNumbers.admin.modals.create.fields.number')} *</Label>
                   <Input
                     id="number"
                     value={createForm.number}
                     onChange={(e) => setCreateForm({ ...createForm, number: e.target.value })}
-                    placeholder="+1234567890"
+                    placeholder={t('phoneNumbers.admin.modals.create.fields.numberPlaceholder')}
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="country">Country *</Label>
+                  <Label htmlFor="country">{t('phoneNumbers.admin.modals.create.fields.country')} *</Label>
                   <Select 
                     value={createForm.country} 
                     onValueChange={(countryName) => {
@@ -1516,7 +1522,7 @@ export default function AdminPhoneNumbersPage() {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select country" />
+                      <SelectValue placeholder={t('phoneNumbers.admin.modals.create.fields.country')} />
                     </SelectTrigger>
                     <SelectContent>
                       {countries
@@ -1531,20 +1537,20 @@ export default function AdminPhoneNumbersPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="numberType">Number Type *</Label>
+                  <Label htmlFor="numberType">{t('phoneNumbers.admin.modals.create.fields.numberType')} *</Label>
                   <Select value={createForm.numberType} onValueChange={(value: PhoneNumberType) => setCreateForm({ ...createForm, numberType: value })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {[
-                        { id: 'geographic', label: 'Geographic/Local', value: 'Geographic/Local' },
-                        { id: 'mobile', label: 'Mobile', value: 'Mobile' },
-                        { id: 'national', label: 'National', value: 'National' },
-                        { id: 'tollfree', label: 'Toll-free', value: 'Toll-free' },
-                        { id: 'shared', label: 'Shared Cost', value: 'Shared Cost' },
-                        { id: 'npv', label: 'NPV (Verified Numbers)', value: 'NPV (Verified Numbers)' },
-                        { id: 'premium', label: 'Premium', value: 'Premium' }
+                        { id: 'geographic', label: t('phoneNumbers.admin.filters.types.geographic'), value: 'Geographic/Local' },
+                        { id: 'mobile', label: t('phoneNumbers.admin.filters.types.mobile'), value: 'Mobile' },
+                        { id: 'national', label: t('phoneNumbers.admin.filters.types.national'), value: 'National' },
+                        { id: 'tollfree', label: t('phoneNumbers.admin.filters.types.tollfree'), value: 'Toll-free' },
+                        { id: 'shared', label: t('phoneNumbers.admin.filters.types.shared'), value: 'Shared Cost' },
+                        { id: 'npv', label: t('phoneNumbers.admin.filters.types.npv'), value: 'NPV (Verified Numbers)' },
+                        { id: 'premium', label: t('phoneNumbers.admin.filters.types.premium'), value: 'Premium' }
                       ].map(option => (
                         <SelectItem key={option.id} value={option.value}>
                           {option.label}
@@ -1555,13 +1561,13 @@ export default function AdminPhoneNumbersPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="provider">Provider *</Label>
+                  <Label htmlFor="provider">{t('phoneNumbers.admin.modals.create.fields.provider')} *</Label>
                   <Select 
                     value={createForm.provider} 
                     onValueChange={(value) => setCreateForm({ ...createForm, provider: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select provider" />
+                      <SelectValue placeholder={t('phoneNumbers.admin.modals.create.fields.provider')} />
                     </SelectTrigger>
                     <SelectContent>
                       {providers
@@ -1581,10 +1587,10 @@ export default function AdminPhoneNumbersPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="rateDeckId">Rate Deck *</Label>
+                  <Label htmlFor="rateDeckId">{t('phoneNumbers.admin.modals.create.fields.rateDeck')} *</Label>
                   <Select value={createForm.rateDeckId} onValueChange={(value) => setCreateForm({ ...createForm, rateDeckId: value })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a rate deck" />
+                      <SelectValue placeholder={t('phoneNumbers.admin.modals.create.fields.rateDeck')} />
                     </SelectTrigger>
                     <SelectContent>
                       {rateDeckOptions
@@ -1611,11 +1617,11 @@ export default function AdminPhoneNumbersPage() {
                     onCheckedChange={(checked) => setCreateForm({ ...createForm, backorderOnly: !!checked })}
                   />
                   <Label htmlFor="backorderOnly" className="text-sm font-medium">
-                    Require backorder (users must request this number instead of purchasing directly)
+                    {t('phoneNumbers.admin.modals.create.fields.backorderOnly')}
                   </Label>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  When enabled, users will need to submit a backorder request for admin approval instead of purchasing this number directly.
+                  {t('phoneNumbers.admin.modals.create.fields.backorderDescription')}
                 </p>
               </div>
               
@@ -1623,17 +1629,17 @@ export default function AdminPhoneNumbersPage() {
               <div className="col-span-2">
                 <div className="flex items-center space-x-2">
                   <Hash className="h-4 w-4 text-muted-foreground" />
-                  <Label className="text-sm font-medium text-muted-foreground">Technical Connection Parameters</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t('phoneNumbers.admin.modals.create.tabs.technical')}</Label>
                 </div>
                 <div className="mt-2 space-y-3">
                   <div>
-                    <Label htmlFor="connectionType">Connection Type</Label>
+                    <Label htmlFor="connectionType">{t('phoneNumbers.admin.modals.create.fields.connectionType')}</Label>
                     <Select 
                       value={createForm.connectionType || 'none'} 
                       onValueChange={(value: ConnectionType | 'none') => setCreateForm({ ...createForm, connectionType: value === 'none' ? undefined : value })}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select connection type" />
+                        <SelectValue placeholder={t('phoneNumbers.admin.modals.create.fields.connectionType')} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">None</SelectItem>
@@ -1646,7 +1652,7 @@ export default function AdminPhoneNumbersPage() {
                   {createForm.connectionType === 'ip_routing' && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="ipAddress">IP Address</Label>
+                        <Label htmlFor="ipAddress">{t('phoneNumbers.admin.modals.create.fields.ipAddress')}</Label>
                         <Input
                           id="ipAddress"
                           value={createForm.ipAddress}
@@ -1655,7 +1661,7 @@ export default function AdminPhoneNumbersPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="port">Port</Label>
+                        <Label htmlFor="port">{t('phoneNumbers.admin.modals.create.fields.port')}</Label>
                         <Input
                           id="port"
                           type="number"
@@ -1670,7 +1676,7 @@ export default function AdminPhoneNumbersPage() {
                   {createForm.connectionType === 'credentials' && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="login">Login</Label>
+                        <Label htmlFor="login">{t('phoneNumbers.admin.modals.create.fields.login')}</Label>
                         <Input
                           id="login"
                           value={createForm.login}
@@ -1679,7 +1685,7 @@ export default function AdminPhoneNumbersPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">{t('phoneNumbers.admin.modals.create.fields.password')}</Label>
                         <Input
                           id="password"
                           type="password"
@@ -1689,7 +1695,7 @@ export default function AdminPhoneNumbersPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="domain">Domain/IP</Label>
+                        <Label htmlFor="domain">{t('phoneNumbers.admin.modals.create.fields.domain')}</Label>
                         <Input
                           id="domain"
                           value={createForm.domain}
@@ -1698,7 +1704,7 @@ export default function AdminPhoneNumbersPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="credentialsPort">Port</Label>
+                        <Label htmlFor="credentialsPort">{t('phoneNumbers.admin.modals.create.fields.credentialsPort')}</Label>
                         <Input
                           id="credentialsPort"
                           type="number"
@@ -1726,7 +1732,7 @@ export default function AdminPhoneNumbersPage() {
             
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-                Cancel
+                {t('phoneNumbers.admin.modals.create.buttons.cancel')}
               </Button>
               <Button
                 onClick={handleCreatePhoneNumber}
@@ -1735,10 +1741,10 @@ export default function AdminPhoneNumbersPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Creating...
+                    {t('phoneNumbers.admin.modals.create.buttons.creating')}
                   </>
                 ) : (
-                  'Create Phone Number'
+                  t('phoneNumbers.admin.modals.create.buttons.create')
                 )}
               </Button>
             </div>
@@ -1749,17 +1755,17 @@ export default function AdminPhoneNumbersPage() {
         <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Assign Phone Number</DialogTitle>
+              <DialogTitle>{t('phoneNumbers.admin.modals.assign.title')}</DialogTitle>
               <DialogDescription>
-                Assign {selectedNumber?.number} to a user
+                {t('phoneNumbers.admin.modals.assign.description', { number: selectedNumber?.number || '' })}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="userId">User *</Label>
+                <Label htmlFor="userId">{t('phoneNumbers.admin.modals.assign.fields.user')} *</Label>
                 <Select value={assignForm.userId} onValueChange={(value) => setAssignForm({ ...assignForm, userId: value })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a user" />
+                    <SelectValue placeholder={t('phoneNumbers.admin.modals.assign.fields.user')} />
                   </SelectTrigger>
                   <SelectContent>
                     {(() => {
@@ -1789,7 +1795,7 @@ export default function AdminPhoneNumbersPage() {
               </div>
               
               <div>
-                <Label htmlFor="billingStartDate">Billing Start Date</Label>
+                <Label htmlFor="billingStartDate">{t('phoneNumbers.admin.modals.assign.fields.billingStartDate')}</Label>
                 <Input
                   id="billingStartDate"
                   type="date"
@@ -1799,12 +1805,12 @@ export default function AdminPhoneNumbersPage() {
               </div>
               
               <div>
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes">{t('phoneNumbers.admin.modals.assign.fields.notes')}</Label>
                 <Textarea
                   id="notes"
                   value={assignForm.notes}
                   onChange={(e) => setAssignForm({ ...assignForm, notes: e.target.value })}
-                  placeholder="Optional assignment notes"
+                  placeholder={t('phoneNumbers.admin.modals.assign.fields.notes')}
                   rows={3}
                 />
               </div>
@@ -1812,7 +1818,7 @@ export default function AdminPhoneNumbersPage() {
             
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" onClick={() => setShowAssignModal(false)}>
-                Cancel
+                {t('phoneNumbers.admin.modals.assign.buttons.cancel')}
               </Button>
               <Button
                 onClick={handleAssignPhoneNumber}
@@ -1821,10 +1827,10 @@ export default function AdminPhoneNumbersPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Assigning...
+                    {t('phoneNumbers.admin.modals.assign.buttons.assigning')}
                   </>
                 ) : (
-                  'Assign Number'
+                  t('phoneNumbers.admin.modals.assign.buttons.assign')
                 )}
               </Button>
             </div>
@@ -1835,19 +1841,19 @@ export default function AdminPhoneNumbersPage() {
         <Dialog open={showUnassignModal} onOpenChange={setShowUnassignModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Unassign Phone Number</DialogTitle>
+              <DialogTitle>{t('phoneNumbers.admin.modals.unassign.title')}</DialogTitle>
               <DialogDescription>
-                Unassign {selectedNumber?.number} from {selectedNumber?.assignedToUser?.name || selectedNumber?.assignedToUser?.email}
+                {t('phoneNumbers.admin.modals.unassign.description', { number: selectedNumber?.number || '' })}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="reason">Reason for Unassignment</Label>
+                <Label htmlFor="reason">{t('phoneNumbers.admin.modals.unassign.fields.reason')}</Label>
                 <Textarea
                   id="reason"
                   value={unassignForm.reason}
                   onChange={(e) => setUnassignForm({ ...unassignForm, reason: e.target.value })}
-                  placeholder="Enter reason for unassigning this number..."
+                  placeholder={t('phoneNumbers.admin.modals.unassign.fields.reason')}
                   rows={3}
                 />
               </div>
@@ -1859,7 +1865,7 @@ export default function AdminPhoneNumbersPage() {
                     onCheckedChange={(checked) => setUnassignForm({ ...unassignForm, cancelPendingBilling: !!checked })}
                   />
                   <Label htmlFor="bulkCancelPendingBilling" className="text-sm font-medium">
-                    Cancel pending billing records
+                    {t('phoneNumbers.admin.modals.unassign.fields.cancelPendingBilling')}
                   </Label>
                 </div>
                 
@@ -1869,13 +1875,13 @@ export default function AdminPhoneNumbersPage() {
                     onCheckedChange={(checked) => setUnassignForm({ ...unassignForm, createRefund: !!checked })}
                   />
                   <Label htmlFor="bulkCreateRefund" className="text-sm font-medium">
-                    Create refund for each number
+                    {t('phoneNumbers.admin.modals.unassign.fields.createRefund')}
                   </Label>
                 </div>
                 
                 {unassignForm.createRefund && (
                   <div>
-                    <Label htmlFor="bulkRefundAmount">Refund Amount</Label>
+                    <Label htmlFor="bulkRefundAmount">{t('phoneNumbers.admin.modals.unassign.fields.refundAmount')}</Label>
                     <Input
                       id="bulkRefundAmount"
                       type="number"
@@ -1895,7 +1901,7 @@ export default function AdminPhoneNumbersPage() {
             
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" onClick={() => setShowUnassignModal(false)}>
-                Cancel
+                {t('phoneNumbers.admin.modals.unassign.buttons.cancel')}
               </Button>
               <Button
                 onClick={handleUnassignPhoneNumber}
@@ -1905,10 +1911,10 @@ export default function AdminPhoneNumbersPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Unassigning...
+                    {t('phoneNumbers.admin.modals.unassign.buttons.unassigning')}
                   </>
                 ) : (
-                  'Unassign Number'
+                  t('phoneNumbers.admin.modals.unassign.buttons.unassign')
                 )}
               </Button>
             </div>
@@ -1921,7 +1927,7 @@ export default function AdminPhoneNumbersPage() {
             <DialogHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <DialogTitle className="text-2xl font-bold">Phone Number Details</DialogTitle>
+                  <DialogTitle className="text-2xl font-bold">{t('phoneNumbers.admin.modals.details.title')}</DialogTitle>
                   <DialogDescription className="text-base mt-1">
                     Complete information and history for {selectedNumber?.number}
                   </DialogDescription>
@@ -1945,7 +1951,7 @@ export default function AdminPhoneNumbersPage() {
             {isLoadingDetails ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="h-8 w-8 animate-spin mr-3" />
-                <span className="text-lg">Loading details...</span>
+                <span className="text-lg">{t('phoneNumbers.admin.messages.loading.details')}</span>
               </div>
             ) : selectedNumberDetails && (
               <div className="overflow-y-auto max-h-[calc(95vh-120px)]">
@@ -1959,7 +1965,7 @@ export default function AdminPhoneNumbersPage() {
                           <Hash className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Phone Number</p>
+                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">{t('phoneNumbers.admin.modals.details.fields.number')}</p>
                           <p className="text-xl font-bold font-mono text-blue-900 dark:text-blue-100">{selectedNumberDetails.number}</p>
                         </div>
                       </div>
@@ -1990,7 +1996,7 @@ export default function AdminPhoneNumbersPage() {
                           <Hash className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Rate Deck</p>
+                          <p className="text-sm font-medium text-purple-700 dark:text-purple-300">{t('phoneNumbers.admin.modals.details.fields.rateDeck')}</p>
                           <p className="text-lg font-bold text-purple-900 dark:text-purple-100">
                             {selectedNumberDetails.rateDeck ? selectedNumberDetails.rateDeck.name : 'No Rate Deck'}
                           </p>
@@ -3248,26 +3254,26 @@ export default function AdminPhoneNumbersPage() {
         <Dialog open={showReserveModal} onOpenChange={setShowReserveModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Reserve Phone Number</DialogTitle>
+              <DialogTitle>{t('phoneNumbers.admin.modals.reserve.title')}</DialogTitle>
               <DialogDescription>
-                Reserve {selectedNumber?.number} for future assignment
+                {t('phoneNumbers.admin.modals.reserve.description', { number: selectedNumber?.number || '' })}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="reserveReason">Reason for Reservation *</Label>
+                <Label htmlFor="reserveReason">{t('phoneNumbers.admin.modals.reserve.fields.reason')} *</Label>
                 <Textarea
                   id="reserveReason"
                   value={reserveForm.reason}
                   onChange={(e) => setReserveForm({ ...reserveForm, reason: e.target.value })}
-                  placeholder="Enter reason for reserving this number..."
+                  placeholder={t('phoneNumbers.admin.modals.reserve.fields.reason')}
                   rows={3}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="reservedUntil">Reserved Until (Optional)</Label>
+                <Label htmlFor="reservedUntil">{t('phoneNumbers.admin.modals.reserve.fields.reservedUntil')}</Label>
                 <Input
                   id="reservedUntil"
                   type="datetime-local"
@@ -3280,12 +3286,12 @@ export default function AdminPhoneNumbersPage() {
               </div>
               
               <div>
-                <Label htmlFor="reserveNotes">Additional Notes</Label>
+                <Label htmlFor="reserveNotes">{t('phoneNumbers.admin.modals.reserve.fields.notes')}</Label>
                 <Textarea
                   id="reserveNotes"
                   value={reserveForm.notes}
                   onChange={(e) => setReserveForm({ ...reserveForm, notes: e.target.value })}
-                  placeholder="Optional additional notes..."
+                  placeholder={t('phoneNumbers.admin.modals.reserve.fields.notes')}
                   rows={2}
                 />
               </div>
@@ -3293,7 +3299,7 @@ export default function AdminPhoneNumbersPage() {
             
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" onClick={() => setShowReserveModal(false)}>
-                Cancel
+                {t('phoneNumbers.admin.modals.reserve.buttons.cancel')}
               </Button>
               <Button
                 onClick={handleReservePhoneNumber}
@@ -3302,10 +3308,10 @@ export default function AdminPhoneNumbersPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Reserving...
+                    {t('phoneNumbers.admin.modals.reserve.buttons.reserving')}
                   </>
                 ) : (
-                  'Reserve Number'
+                  t('phoneNumbers.admin.modals.reserve.buttons.reserve')
                 )}
               </Button>
             </div>
@@ -3316,19 +3322,19 @@ export default function AdminPhoneNumbersPage() {
         <Dialog open={showSuspendModal} onOpenChange={setShowSuspendModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Suspend Phone Number</DialogTitle>
+              <DialogTitle>{t('phoneNumbers.admin.modals.suspend.title')}</DialogTitle>
               <DialogDescription>
-                Suspend {selectedNumber?.number} temporarily
+                {t('phoneNumbers.admin.modals.suspend.description', { number: selectedNumber?.number || '' })}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="suspendReason">Reason for Suspension *</Label>
+                <Label htmlFor="suspendReason">{t('phoneNumbers.admin.modals.suspend.fields.reason')} *</Label>
                 <Textarea
                   id="suspendReason"
                   value={suspendForm.reason}
                   onChange={(e) => setSuspendForm({ ...suspendForm, reason: e.target.value })}
-                  placeholder="Enter reason for suspending this number..."
+                  placeholder={t('phoneNumbers.admin.modals.suspend.fields.reason')}
                   rows={3}
                   required
                 />
@@ -3349,8 +3355,8 @@ export default function AdminPhoneNumbersPage() {
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="autoResumeDate">Auto Resume Date (Optional)</Label>
+                              <div>
+                <Label htmlFor="autoResumeDate">{t('phoneNumbers.admin.modals.suspend.fields.suspendedUntil')}</Label>
                 <Input
                   id="autoResumeDate"
                   type="datetime-local"
@@ -3363,12 +3369,12 @@ export default function AdminPhoneNumbersPage() {
               </div>
               
               <div>
-                <Label htmlFor="suspendNotes">Additional Notes</Label>
+                <Label htmlFor="suspendNotes">{t('phoneNumbers.admin.modals.suspend.fields.notes')}</Label>
                 <Textarea
                   id="suspendNotes"
                   value={suspendForm.notes}
                   onChange={(e) => setSuspendForm({ ...suspendForm, notes: e.target.value })}
-                  placeholder="Optional additional notes..."
+                  placeholder={t('phoneNumbers.admin.modals.suspend.fields.notes')}
                   rows={2}
                 />
               </div>
@@ -3376,7 +3382,7 @@ export default function AdminPhoneNumbersPage() {
             
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" onClick={() => setShowSuspendModal(false)}>
-                Cancel
+                {t('phoneNumbers.admin.modals.suspend.buttons.cancel')}
               </Button>
               <Button
                 onClick={handleSuspendPhoneNumber}
@@ -3386,10 +3392,10 @@ export default function AdminPhoneNumbersPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Suspending...
+                    {t('phoneNumbers.admin.modals.suspend.buttons.suspending')}
                   </>
                 ) : (
-                  'Suspend Number'
+                  t('phoneNumbers.admin.modals.suspend.buttons.suspend')
                 )}
               </Button>
             </div>
@@ -3400,19 +3406,19 @@ export default function AdminPhoneNumbersPage() {
         <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Cancel Phone Number</DialogTitle>
+              <DialogTitle>{t('phoneNumbers.admin.modals.cancel.title')}</DialogTitle>
               <DialogDescription>
-                Cancel {selectedNumber?.number} permanently (with grace period)
+                {t('phoneNumbers.admin.modals.cancel.description', { number: selectedNumber?.number || '' })}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="cancelReason">Reason for Cancellation *</Label>
+                <Label htmlFor="cancelReason">{t('phoneNumbers.admin.modals.cancel.fields.reason')} *</Label>
                 <Textarea
                   id="cancelReason"
                   value={cancelForm.reason}
                   onChange={(e) => setCancelForm({ ...cancelForm, reason: e.target.value })}
-                  placeholder="Enter reason for cancelling this number..."
+                  placeholder={t('phoneNumbers.admin.modals.cancel.fields.reason')}
                   rows={3}
                   required
                 />

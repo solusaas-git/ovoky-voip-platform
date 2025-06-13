@@ -16,14 +16,15 @@ import { KpiMetricsSettings } from '@/components/admin/KpiMetricsSettings';
 import { PaymentGatewaySettings } from '@/components/settings/PaymentGatewaySettings';
 import { SupportSettings } from '@/components/settings/SupportSettings';
 import { DataSettings } from '@/components/settings/DataSettings';
+import { GeneralSettings } from '@/components/settings/GeneralSettings';
 
 function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading } = useAuth();
   
-  // Get tab from URL or default to 'sippy-api'
-  const tabFromUrl = searchParams.get('tab') || 'sippy-api';
+  // Get tab from URL or default to 'general'
+  const tabFromUrl = searchParams.get('tab') || 'general';
   const [activeTab, setActiveTab] = useState(tabFromUrl);
   
   // Update URL when tab changes
@@ -36,7 +37,7 @@ function SettingsContent() {
 
   // Update activeTab when URL changes (e.g., browser back/forward)
   useEffect(() => {
-    const urlTab = searchParams.get('tab') || 'sippy-api';
+    const urlTab = searchParams.get('tab') || 'general';
     if (urlTab !== activeTab) {
       setActiveTab(urlTab);
     }
@@ -79,6 +80,7 @@ function SettingsContent() {
             className="w-full"
           >
             <TabsList className="mb-6">
+              <TabsTrigger value="general">General</TabsTrigger>
               <TabsTrigger value="sippy-api">Sippy API</TabsTrigger>
               <TabsTrigger value="smtp">SMTP</TabsTrigger>
               <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -89,6 +91,10 @@ function SettingsContent() {
               <TabsTrigger value="support">Support</TabsTrigger>
               <TabsTrigger value="data">Data</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="general" className="mt-0">
+              <GeneralSettings />
+            </TabsContent>
             
             <TabsContent value="sippy-api" className="mt-0">
               <SippyApiSettings />

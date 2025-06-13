@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useTranslations } from '@/lib/i18n';
 
 interface PendingUser {
   id: string;
@@ -52,6 +53,7 @@ interface UserAttentionCardProps {
 }
 
 export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
+  const { t } = useTranslations();
   const [data, setData] = useState<PendingUsersResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -99,7 +101,7 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
       badges.push(
         <Badge key="sippy" variant="destructive" className="text-xs">
           <Phone className="h-3 w-3 mr-1" />
-          No Sippy ID
+          {t('dashboard.widgets.userAttention.badges.noSippyId')}
         </Badge>
       );
     }
@@ -108,7 +110,7 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
       badges.push(
         <Badge key="email" variant="secondary" className="text-xs">
           <Mail className="h-3 w-3 mr-1" />
-          Unverified
+          {t('dashboard.widgets.userAttention.badges.unverified')}
         </Badge>
       );
     }
@@ -117,7 +119,7 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
       badges.push(
         <Badge key="recent" variant="outline" className="text-xs">
           <Clock className="h-3 w-3 mr-1" />
-          Recent
+          {t('dashboard.widgets.userAttention.badges.recent')}
         </Badge>
       );
     }
@@ -128,7 +130,7 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
   const getRoleBadge = (role: string) => {
     return (
       <Badge variant={role === 'admin' ? 'default' : 'outline'} className="text-xs">
-        {role === 'admin' ? 'Admin' : 'Client'}
+        {role === 'admin' ? t('dashboard.widgets.userAttention.badges.admin') : t('dashboard.widgets.userAttention.badges.client')}
       </Badge>
     );
   };
@@ -136,15 +138,15 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
   const getCreationMethodBadge = (method: string) => {
     return (
       <Badge variant={method === 'admin' ? 'default' : 'secondary'} className="text-xs">
-        {method === 'admin' ? 'Admin Created' : 'Self Signup'}
+        {method === 'admin' ? t('dashboard.widgets.userAttention.badges.adminCreated') : t('dashboard.widgets.userAttention.badges.selfSignup')}
       </Badge>
     );
   };
 
   const getFilterOptions = () => [
-    { value: 'all', label: `All Pending (${data?.counts?.totalPending || 0})` },
-    { value: 'missing_sippy', label: `Missing Sippy ID (${data?.counts?.missingSippy || 0})` },
-    { value: 'pending_verification', label: `Pending Verification (${data?.counts?.pendingVerification || 0})` }
+    { value: 'all', label: t('dashboard.widgets.userAttention.filters.all', { count: (data?.counts?.totalPending || 0).toString() }) },
+    { value: 'missing_sippy', label: t('dashboard.widgets.userAttention.filters.missingSippy', { count: (data?.counts?.missingSippy || 0).toString() }) },
+    { value: 'pending_verification', label: t('dashboard.widgets.userAttention.filters.pendingVerification', { count: (data?.counts?.pendingVerification || 0).toString() }) }
   ];
 
   if (isLoading && !data) {
@@ -152,7 +154,7 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          <span className="ml-2">Loading...</span>
+          <span className="ml-2">{t('dashboard.widgets.userAttention.loading')}</span>
         </div>
       </div>
     );
@@ -163,7 +165,7 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
       {/* Header Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          Users missing Sippy account IDs or pending email verification
+          {t('dashboard.widgets.userAttention.description')}
         </p>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <Button 
@@ -174,12 +176,12 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
             className="w-full sm:w-auto"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('dashboard.widgets.userAttention.buttons.refresh')}
           </Button>
           <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
             <a href="/users" className="flex items-center justify-center space-x-2">
               <ExternalLink className="h-4 w-4 mr-2" />
-              Manage All Users
+              {t('dashboard.widgets.userAttention.buttons.manageAllUsers')}
             </a>
           </Button>
         </div>
@@ -204,16 +206,16 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
         </div>
         
         <div className="flex items-center space-x-2 w-full lg:w-auto">
-          <span className="text-sm text-muted-foreground flex-shrink-0">Show:</span>
+          <span className="text-sm text-muted-foreground flex-shrink-0">{t('dashboard.widgets.userAttention.filters.show')}</span>
           <Select value={limit.toString()} onValueChange={handleLimitChange}>
             <SelectTrigger className="w-full lg:w-[100px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="5">5 users</SelectItem>
-              <SelectItem value="10">10 users</SelectItem>
-              <SelectItem value="20">20 users</SelectItem>
-              <SelectItem value="50">50 users</SelectItem>
+              <SelectItem value="5">{t('dashboard.widgets.userAttention.limits.5')}</SelectItem>
+              <SelectItem value="10">{t('dashboard.widgets.userAttention.limits.10')}</SelectItem>
+              <SelectItem value="20">{t('dashboard.widgets.userAttention.limits.20')}</SelectItem>
+              <SelectItem value="50">{t('dashboard.widgets.userAttention.limits.50')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -226,7 +228,7 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
         <div className="flex items-center space-x-3 p-3 md:p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
           <Phone className="h-5 w-5 text-amber-600 flex-shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium truncate">Missing Sippy ID</p>
+            <p className="text-sm font-medium truncate">{t('dashboard.widgets.userAttention.stats.missingSippyId')}</p>
             <p className="text-xl md:text-2xl font-bold text-amber-600">{data?.counts.missingSippy || 0}</p>
           </div>
         </div>
@@ -234,7 +236,7 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
         <div className="flex items-center space-x-3 p-3 md:p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <Mail className="h-5 w-5 text-blue-600 flex-shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium truncate">Pending Verification</p>
+            <p className="text-sm font-medium truncate">{t('dashboard.widgets.userAttention.stats.pendingVerification')}</p>
             <p className="text-xl md:text-2xl font-bold text-blue-600">{data?.counts.pendingVerification || 0}</p>
           </div>
         </div>
@@ -242,7 +244,7 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
         <div className="flex items-center space-x-3 p-3 md:p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
           <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium truncate">Total Pending</p>
+            <p className="text-sm font-medium truncate">{t('dashboard.widgets.userAttention.stats.totalPending')}</p>
             <p className="text-xl md:text-2xl font-bold text-red-600">{data?.counts.totalPending || 0}</p>
           </div>
         </div>
@@ -270,9 +272,9 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-muted-foreground">
-                    <span>Created: {format(new Date(user.createdAt), 'MMM dd, yyyy')}</span>
+                    <span>{t('dashboard.widgets.userAttention.userInfo.created')} {format(new Date(user.createdAt), 'MMM dd, yyyy')}</span>
                     {user.sippyAccountId && (
-                      <span className="sm:ml-2">Sippy ID: {user.sippyAccountId}</span>
+                      <span className="sm:ml-2">{t('dashboard.widgets.userAttention.userInfo.sippyId')} {user.sippyAccountId}</span>
                     )}
                   </div>
                 </div>
@@ -291,11 +293,11 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
       ) : (
         <div className="text-center py-8">
           <UserX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-muted-foreground">No users need attention</h3>
+          <h3 className="text-lg font-semibold text-muted-foreground">{t('dashboard.widgets.userAttention.emptyState.title')}</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
             {filter === 'all' 
-              ? 'All users have Sippy IDs and verified emails'
-              : `No users match the current filter: ${filter.replace('_', ' ')}`
+              ? t('dashboard.widgets.userAttention.emptyState.allClear')
+              : t('dashboard.widgets.userAttention.emptyState.noMatches', { filter: filter.replace('_', ' ') })
             }
           </p>
         </div>
@@ -306,10 +308,13 @@ export function UserAttentionCard({ onRefresh }: UserAttentionCardProps) {
         <div className="pt-4 border-t">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-muted-foreground">
             <span>
-              Showing {data.users.length} of {data.counts.totalPending} users requiring attention
+              {t('dashboard.widgets.userAttention.footer.showing', { 
+                current: data.users.length.toString(), 
+                total: data.counts.totalPending.toString() 
+              })}
             </span>
             <Button variant="link" size="sm" asChild className="w-fit">
-              <a href="/users">View all users →</a>
+              <a href="/users">{t('dashboard.widgets.userAttention.footer.viewAll')}</a>
             </Button>
           </div>
         </div>

@@ -30,22 +30,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useTranslations } from '@/lib/i18n';
 
-// Form validation schema
-const formSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
-  email: z.string().email({ message: 'Please enter a valid email' }),
+// Form validation schema with dynamic error messages
+const createFormSchema = (t: (key: string) => string) => z.object({
+  name: z.string().min(2, { message: t('auth.validation.nameMin') }),
+  email: z.string().email({ message: t('auth.validation.emailInvalid') }),
   password: z.string()
-    .min(8, { message: 'Password must be at least 8 characters' })
+    .min(8, { message: t('auth.validation.passwordMin') })
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-      message: 'Password must contain uppercase, lowercase, and number'
+      message: t('auth.errors.passwordTooWeak')
     }),
   confirmPassword: z.string(),
   acceptTerms: z.boolean().refine(val => val === true, {
-    message: 'You must accept the terms and conditions'
+    message: t('auth.validation.agreementRequired')
   }),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: t('auth.validation.passwordMatch'),
   path: ["confirmPassword"],
 });
 
@@ -63,10 +64,12 @@ export function SignupForm() {
   
   const router = useRouter();
   const { settings, isLoading: brandingLoading } = useBranding();
-  const companyName = brandingLoading ? 'the company' : (settings.companyName || 'the company');
+  const companyName = brandingLoading ? 'OVOKY' : (settings.companyName || 'OVOKY');
   const { login } = useAuth();
+  const { t } = useTranslations();
 
-  // Form definition
+  // Form definition with dynamic schema
+  const formSchema = createFormSchema(t);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -114,7 +117,7 @@ export function SignupForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
+        throw new Error(data.message || t('auth.errors.serverError'));
       }
 
       if (data.requiresVerification) {
@@ -125,21 +128,21 @@ export function SignupForm() {
           password: values.password
         });
         setShowVerificationModal(true);
-        toast.success('Account created! Please check your email for a verification code.');
+        toast.success(t('auth.register.checkEmail'));
       } else {
         // Registration successful without verification (fallback)
         try {
-          toast.success('Account created successfully! Logging you in...');
+          toast.success(t('auth.register.success'));
           await login(values.email, values.password);
           // User will be redirected automatically by the AuthContext
         } catch {
-          toast.error('Account created successfully, but auto-login failed. Please sign in manually.');
+          toast.error(t('auth.errors.serverError'));
           router.push('/');
         }
       }
 
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Registration failed';
+      const message = error instanceof Error ? error.message : t('auth.errors.serverError');
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -151,12 +154,12 @@ export function SignupForm() {
     
     if (verificationData) {
       try {
-        toast.success('Email verified successfully! Logging you in...');
+        toast.success(t('auth.verification.success'));
         // Automatically log the user in
         await login(verificationData.email, verificationData.password);
         // User will be redirected automatically by the AuthContext
       } catch {
-        toast.error('Verification successful, but auto-login failed. Please sign in manually.');
+        toast.error(t('auth.errors.serverError'));
         router.push('/');
       }
     } else {
@@ -192,7 +195,7 @@ export function SignupForm() {
                     </div>
                     <Input
                       type="text"
-                      placeholder="Full name"
+                      placeholder={t('auth.register.namePlaceholder')}
                       className="pl-12 h-12 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10 rounded-xl transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 hover:border-gray-300 dark:hover:border-gray-600"
                       {...field}
                     />
@@ -216,7 +219,7 @@ export function SignupForm() {
                     </div>
                     <Input
                       type="email"
-                      placeholder="Email address"
+                      placeholder={t('auth.register.emailPlaceholder')}
                       className="pl-12 h-12 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10 rounded-xl transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 hover:border-gray-300 dark:hover:border-gray-600"
                       {...field}
                     />
@@ -240,7 +243,7 @@ export function SignupForm() {
                     </div>
                     <Input
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Password (8+ chars, uppercase, lowercase, number)"
+                      placeholder={t('auth.register.passwordPlaceholder')}
                       className="pl-12 pr-12 h-12 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10 rounded-xl transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 hover:border-gray-300 dark:hover:border-gray-600"
                       {...field}
                     />
@@ -260,21 +263,31 @@ export function SignupForm() {
                 
                 {/* Compact Password Strength Indicator */}
                 {password && (
-                  <div className="flex space-x-1 mt-2">
-                    {[...Array(5)].map((_, i) => (
-                      <div
-                        key={i}
-                        className={`h-1 flex-1 rounded-full transition-colors ${
-                          i < passwordStrength
-                            ? passwordStrength <= 2
-                              ? 'bg-red-400'
-                              : passwordStrength <= 4
-                              ? 'bg-yellow-400'
-                              : 'bg-green-400'
-                            : 'bg-gray-200 dark:bg-gray-700'
-                        }`}
-                      />
-                    ))}
+                  <div className="space-y-1">
+                    <div className="flex space-x-1">
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <div
+                          key={level}
+                          className={`h-1 flex-1 rounded transition-colors duration-200 ${
+                            passwordStrength >= level
+                              ? passwordStrength <= 2
+                                ? 'bg-red-400'
+                                : passwordStrength <= 3
+                                ? 'bg-yellow-400' 
+                                : passwordStrength <= 4
+                                ? 'bg-blue-400'
+                                : 'bg-green-400'
+                              : 'bg-gray-200 dark:bg-gray-700'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {passwordStrength <= 2 && t('common.status.weak')} 
+                      {passwordStrength === 3 && t('common.status.fair')}
+                      {passwordStrength === 4 && t('common.status.good')}
+                      {passwordStrength === 5 && t('common.status.strong')}
+                    </p>
                   </div>
                 )}
                 
@@ -296,7 +309,7 @@ export function SignupForm() {
                     </div>
                     <Input
                       type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Confirm password"
+                      placeholder={t('auth.register.confirmPasswordPlaceholder')}
                       className="pl-12 pr-12 h-12 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10 rounded-xl transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 hover:border-gray-300 dark:hover:border-gray-600"
                       {...field}
                     />
@@ -323,27 +336,33 @@ export function SignupForm() {
             control={form.control}
             name="acceptTerms"
             render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center space-x-3">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      className="data-[state=checked]:bg-[var(--brand-primary)] data-[state=checked]:border-[var(--brand-primary)]"
-                    />
-                  </FormControl>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    I agree to {companyName && companyName !== 'the company' ? `${companyName}'s` : 'the'}{' '}
-                    <Link href="/terms" className="text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 font-medium">
-                      Terms of Service
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="mt-1"
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('auth.register.termsPrefix')}{' '}
+                    <Link 
+                      href="/terms" 
+                      className="text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 font-medium transition-colors duration-200"
+                    >
+                      {t('auth.register.termsLink')}
                     </Link>{' '}
-                    and{' '}
-                    <Link href="/privacy" className="text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 font-medium">
-                      Privacy Policy
+                    {t('auth.register.termsConnector')}{' '}
+                    <Link 
+                      href="/privacy" 
+                      className="text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 font-medium transition-colors duration-200"
+                    >
+                      {t('auth.register.privacyLink')}
                     </Link>
-                  </div>
+                  </p>
+                  <FormMessage className="text-red-500 dark:text-red-400 text-sm" />
                 </div>
-                <FormMessage className="text-red-500 dark:text-red-400 text-sm" />
               </FormItem>
             )}
           />
@@ -361,11 +380,11 @@ export function SignupForm() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  Creating account...
+                  {t('auth.register.submitting')}
                 </>
               ) : (
                 <>
-                  Create Account
+                  {t('auth.register.submitButton')}
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
                 </>
               )}
@@ -378,7 +397,9 @@ export function SignupForm() {
               <span className="w-full border-t border-gray-200 dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-gray-900 px-4 text-gray-500 dark:text-gray-400 font-medium">or continue with</span>
+              <span className="bg-white dark:bg-gray-900 px-4 text-gray-500 dark:text-gray-400 font-medium">
+                {t('common.responses.or')}
+              </span>
             </div>
           </div>
 
@@ -410,33 +431,33 @@ export function SignupForm() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Continue with Google
+              {t('auth.register.googleButton')}
             </Button>
           </motion.div>
 
           {/* Sign In Link */}
-          <div className="text-center pt-2 border-t border-gray-100 dark:border-gray-800">
-            <span className="text-gray-600 dark:text-gray-400">Already have an account? </span>
-            <Link 
-              href="/" 
-              className="text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 font-semibold transition-colors duration-200"
-            >
-              Sign in
-            </Link>
+          <div className="text-center">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {t('auth.register.hasAccount')}{' '}
+              <Link 
+                href="/" 
+                className="text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 font-semibold transition-colors duration-200"
+              >
+                {t('auth.register.signIn')}
+              </Link>
+            </p>
           </div>
         </form>
       </Form>
 
       {/* Email Verification Modal */}
       <Dialog open={showVerificationModal} onOpenChange={(open) => {
-        // Only allow closing if explicitly called (not from outside click)
-        // The modal should only close via the back button or verification success
+        // Only allow closing if explicitly called
         if (!open) {
-          // Don't auto-close on outside click, but show feedback
           triggerModalShake();
           return;
         }
-        setShowVerificationModal(open);
+        handleBackToRegister();
       }}>
         <DialogContent 
           className="sm:max-w-md"
@@ -454,9 +475,9 @@ export function SignupForm() {
             transition={{ duration: 0.4, ease: "easeInOut" }}
           >
             <DialogHeader>
-              <DialogTitle>Verify Your Email</DialogTitle>
+              <DialogTitle>{t('auth.verification.title')}</DialogTitle>
               <DialogDescription>
-                We've sent a verification code to your email address. Please enter it below to complete your registration.
+                {t('auth.verification.instruction')}
               </DialogDescription>
             </DialogHeader>
             

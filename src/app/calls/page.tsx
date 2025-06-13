@@ -1,18 +1,21 @@
 'use client';
 
+import { useTranslations } from '@/lib/i18n';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ActiveCalls } from '@/components/calls/ActiveCalls';
 
 export default function CallsPage() {
+  const { t } = useTranslations();
+
   return (
     <MainLayout>
       <PageLayout
-        title="Active Calls"
-        description="Monitor live calls in real-time with automatic refresh every 5 seconds"
+        title={t('calls.page.title')}
+        description={t('calls.page.description')}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Active Calls' }
+          { label: t('calls.page.breadcrumbs.dashboard'), href: '/dashboard' },
+          { label: t('calls.page.breadcrumbs.activeCalls') }
         ]}
       >
         <ActiveCalls />

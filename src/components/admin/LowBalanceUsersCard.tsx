@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from '@/lib/i18n';
 // Card components not used since this is embedded in a larger component
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,7 @@ export function LowBalanceUsersCard({
   onThresholdChange,
   isEditMode = false
 }: LowBalanceUsersCardProps) {
+  const { t } = useTranslations();
   const [users, setUsers] = useState<LowBalanceUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -142,6 +144,9 @@ export function LowBalanceUsersCard({
             <div className="w-16 h-6 bg-muted rounded animate-pulse" />
           </div>
         ))}
+        <div className="text-center text-sm text-muted-foreground">
+          {t('dashboard.widgets.lowBalanceUsers.loading')}
+        </div>
       </div>
     );
   }
@@ -151,12 +156,12 @@ export function LowBalanceUsersCard({
       <div className="text-center py-8">
         <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
-          Error Loading Users
+          {t('dashboard.widgets.lowBalanceUsers.error.title')}
         </h3>
         <p className="text-sm text-muted-foreground mb-4">{error}</p>
         <Button onClick={handleRefresh} variant="outline" size="sm">
           <RefreshCw className="h-4 w-4 mr-2" />
-          Try Again
+          {t('dashboard.widgets.lowBalanceUsers.error.tryAgain')}
         </Button>
       </div>
     );
@@ -170,7 +175,9 @@ export function LowBalanceUsersCard({
           <div className="p-3 bg-muted/30 rounded-lg border-2 border-dashed border-primary/20">
             <div className="flex items-center space-x-2 mb-3">
               <Settings className="h-4 w-4 text-primary" />
-              <Label className="text-sm font-medium">Low Balance Threshold</Label>
+              <Label className="text-sm font-medium">
+                {t('dashboard.widgets.lowBalanceUsers.threshold.label')}
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-sm text-muted-foreground">€</span>
@@ -182,12 +189,14 @@ export function LowBalanceUsersCard({
                 value={localThreshold}
                 onChange={(e) => handleThresholdChange(e.target.value)}
                 className="w-24 h-8"
-                placeholder="5.00"
+                placeholder={t('dashboard.widgets.lowBalanceUsers.threshold.placeholder')}
               />
-              <span className="text-sm text-muted-foreground">EUR</span>
+              <span className="text-sm text-muted-foreground">
+                {t('dashboard.widgets.lowBalanceUsers.threshold.currency')}
+              </span>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              Users with balance below this amount will be shown as low balance.
+              {t('dashboard.widgets.lowBalanceUsers.threshold.description')}
             </p>
           </div>
         )}
@@ -195,14 +204,16 @@ export function LowBalanceUsersCard({
         <div className="text-center py-8">
           <DollarSign className="h-12 w-12 text-green-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-green-700 dark:text-green-300 mb-2">
-            All Good!
+            {t('dashboard.widgets.lowBalanceUsers.emptyState.title')}
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            No users have low balance (below {threshold.toFixed(4)} €)
+            {t('dashboard.widgets.lowBalanceUsers.emptyState.description', { 
+              threshold: threshold.toFixed(4) 
+            })}
           </p>
           <Button onClick={handleRefresh} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            {t('dashboard.widgets.lowBalanceUsers.emptyState.refresh')}
           </Button>
         </div>
       </div>
@@ -216,7 +227,9 @@ export function LowBalanceUsersCard({
         <div className="p-3 bg-muted/30 rounded-lg border-2 border-dashed border-primary/20">
           <div className="flex items-center space-x-2 mb-3">
             <Settings className="h-4 w-4 text-primary" />
-            <Label className="text-sm font-medium">Low Balance Threshold</Label>
+            <Label className="text-sm font-medium">
+              {t('dashboard.widgets.lowBalanceUsers.threshold.label')}
+            </Label>
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">€</span>
@@ -228,12 +241,14 @@ export function LowBalanceUsersCard({
               value={localThreshold}
               onChange={(e) => handleThresholdChange(e.target.value)}
               className="w-24 h-8"
-              placeholder="5.00"
+              placeholder={t('dashboard.widgets.lowBalanceUsers.threshold.placeholder')}
             />
-            <span className="text-sm text-muted-foreground">EUR</span>
+            <span className="text-sm text-muted-foreground">
+              {t('dashboard.widgets.lowBalanceUsers.threshold.currency')}
+            </span>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Users with balance below this amount will be shown as low balance.
+            {t('dashboard.widgets.lowBalanceUsers.threshold.description')}
           </p>
         </div>
       )}
@@ -243,10 +258,15 @@ export function LowBalanceUsersCard({
         <div className="flex items-center space-x-2">
           <AlertTriangle className="h-4 w-4 text-orange-500" />
           <span className="text-sm font-medium">
-            {users.length} user{users.length !== 1 ? 's' : ''} with low balance
+            {users.length === 1 
+              ? t('dashboard.widgets.lowBalanceUsers.header.userCount', { count: users.length.toString() })
+              : t('dashboard.widgets.lowBalanceUsers.header.userCountPlural', { count: users.length.toString() })
+            }
           </span>
           <Badge variant="outline" className="text-xs">
-            Below {threshold.toFixed(4)} €
+            {t('dashboard.widgets.lowBalanceUsers.threshold.below', { 
+              amount: threshold.toFixed(4) 
+            })}
           </Badge>
         </div>
         <Button
@@ -303,14 +323,16 @@ export function LowBalanceUsersCard({
                     {user.sippyAccountId && (
                       <div className="flex items-center space-x-1">
                         <User className="h-3 w-3" />
-                        <span>ID: {user.sippyAccountId}</span>
+                        <span>
+                          {t('dashboard.widgets.lowBalanceUsers.userInfo.sippyId')} {user.sippyAccountId}
+                        </span>
                       </div>
                     )}
                   </div>
 
                   {user.lastActivity && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      Last active: {new Date(user.lastActivity).toLocaleDateString()}
+                      {t('dashboard.widgets.lowBalanceUsers.userInfo.lastActive')} {new Date(user.lastActivity).toLocaleDateString()}
                     </p>
                   )}
                 </div>
@@ -320,7 +342,7 @@ export function LowBalanceUsersCard({
                   <Link href={`/admin/users/${user.id}`} passHref>
                     <Button variant="outline" size="sm" className="h-8">
                       <ExternalLink className="h-3 w-3 mr-1" />
-                      View
+                      {t('dashboard.widgets.lowBalanceUsers.userInfo.view')}
                     </Button>
                   </Link>
                 </div>
@@ -337,10 +359,13 @@ export function LowBalanceUsersCard({
         <div className="pt-3 border-t">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>
-              Total affected: {users.length} user{users.length !== 1 ? 's' : ''}
+              {t('dashboard.widgets.lowBalanceUsers.footer.totalAffected')} {users.length} {users.length === 1 
+                ? t('dashboard.widgets.lowBalanceUsers.footer.user')
+                : t('dashboard.widgets.lowBalanceUsers.footer.users')
+              }
             </span>
             <span>
-              Threshold: {threshold.toFixed(4)} €
+              {t('dashboard.widgets.lowBalanceUsers.footer.threshold')} {threshold.toFixed(4)} €
             </span>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useBranding } from '@/lib/BrandingContext';
 import { useBranding as useBrandingHook } from '@/hooks/useBranding';
+import { useTranslations } from '@/lib/i18n';
 import { Phone, BarChart3, Shield } from 'lucide-react';
 
 interface AuthLayoutProps {
@@ -16,6 +17,7 @@ interface AuthLayoutProps {
 export function AuthLayout({ children, title, subtitle, inverted = false }: AuthLayoutProps) {
   const { settings } = useBranding();
   const { getAuthFormBackgroundColor } = useBrandingHook();
+  const { t } = useTranslations();
 
   // Don't show any content until branding is loaded to prevent FOUC
   const companyName = settings.companyName || 'Sippy Communications';
@@ -65,24 +67,24 @@ export function AuthLayout({ children, title, subtitle, inverted = false }: Auth
     }
   };
 
-  // Simplified features data
+  // Features data with translations
   const features = [
     {
       icon: Phone,
-      title: "Real-Time Call Management",
-      description: "Monitor and control calls with precision",
+      title: t('auth.brandingPanel.features.callManagement.title'),
+      description: t('auth.brandingPanel.features.callManagement.description'),
       color: "text-cyan-800"
     },
     {
       icon: BarChart3,
-      title: "Advanced Analytics",
-      description: "AI-powered insights and reporting",
+      title: t('auth.brandingPanel.features.analytics.title'),
+      description: t('auth.brandingPanel.features.analytics.description'),
       color: "text-emerald-800"
     },
     {
       icon: Shield,
-      title: "Enterprise Security",
-      description: "Bank-level encryption and compliance",
+      title: t('auth.brandingPanel.features.security.title'),
+      description: t('auth.brandingPanel.features.security.description'),
       color: "text-purple-800"
     }
   ];
@@ -175,25 +177,24 @@ export function AuthLayout({ children, title, subtitle, inverted = false }: Auth
                 <h1 className="text-3xl font-bold tracking-tight">{companyName}</h1>
                 <div className="flex items-center space-x-2 mt-1">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-white/80">Live & Operational</span>
+                  <span className="text-sm text-white/80">{t('auth.brandingPanel.status')}</span>
                 </div>
               </div>
             </div>
             
             <div className="space-y-6">
               <h2 className="text-5xl font-bold leading-tight">
-                Transform Your
+                {t('auth.brandingPanel.mainTitle.line1')}
                 <span className="block bg-gradient-to-r from-cyan-300 via-white to-violet-300 bg-clip-text text-transparent">
-                  Communication
+                  {t('auth.brandingPanel.mainTitle.line2')}
                 </span>
                 <span className="block text-3xl text-white/90 font-medium">
-                  Infrastructure
+                  {t('auth.brandingPanel.mainTitle.line3')}
                 </span>
               </h2>
               
               <p className="text-xl text-white/85 leading-relaxed max-w-lg">
-                Enterprise-grade voice solutions powered by AI and built for scale. 
-                Join thousands of businesses revolutionizing their workflows.
+                {t('auth.brandingPanel.mainDescription')}
               </p>
             </div>
           </div>
@@ -263,8 +264,8 @@ export function AuthLayout({ children, title, subtitle, inverted = false }: Auth
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-white drop-shadow-sm">10,000+ Users</div>
-                  <div className="text-xs text-white/70 drop-shadow-sm">Trusted by leading companies</div>
+                  <div className="text-sm font-medium text-white drop-shadow-sm">{t('auth.brandingPanel.trustIndicators.userCount')}</div>
+                  <div className="text-xs text-white/70 drop-shadow-sm">{t('auth.brandingPanel.trustIndicators.trustedBy')}</div>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -279,7 +280,7 @@ export function AuthLayout({ children, title, subtitle, inverted = false }: Auth
                     ></div>
                   ))}
                 </div>
-                <span className="text-sm text-white/90 drop-shadow-sm font-medium">4.9/5</span>
+                <span className="text-sm text-white/90 drop-shadow-sm font-medium">{t('auth.brandingPanel.trustIndicators.rating')}</span>
               </div>
             </div>
           </motion.div>

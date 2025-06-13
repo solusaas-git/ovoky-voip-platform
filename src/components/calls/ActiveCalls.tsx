@@ -11,6 +11,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from '@/lib/i18n';
 import { 
   Card, 
   CardContent, 
@@ -151,75 +152,77 @@ interface ActiveCallsProps {
   accountId?: number;
 }
 
-// Call state configuration with colors and icons
-const CALL_STATES = {
-  'Connected': { 
-    label: 'Connected', 
-    color: 'text-green-600 dark:text-green-400', 
-    bgColor: 'bg-green-50 dark:bg-green-950/50', 
-    borderColor: 'border-green-200 dark:border-green-800',
-    icon: CheckCircle,
-    description: 'Call is active and in progress'
-  },
-  'ARComplete': { 
-    label: 'Connecting', 
-    color: 'text-blue-600 dark:text-blue-400', 
-    bgColor: 'bg-blue-50 dark:bg-blue-950/50', 
-    borderColor: 'border-blue-200 dark:border-blue-800',
-    icon: PhoneCall,
-    description: 'Authentication and routing complete, establishing connection'
-  },
-  'WaitRoute': { 
-    label: 'Routing', 
-    color: 'text-amber-600 dark:text-amber-400', 
-    bgColor: 'bg-amber-50 dark:bg-amber-950/50', 
-    borderColor: 'border-amber-200 dark:border-amber-800',
-    icon: Clock,
-    description: 'Waiting for routing information'
-  },
-  'WaitAuth': { 
-    label: 'Authenticating', 
-    color: 'text-purple-600 dark:text-purple-400', 
-    bgColor: 'bg-purple-50 dark:bg-purple-950/50', 
-    borderColor: 'border-purple-200 dark:border-purple-800',
-    icon: AlertCircle,
-    description: 'Authentication in progress'
-  },
-  'Idle': { 
-    label: 'Idle', 
-    color: 'text-gray-600 dark:text-gray-400', 
-    bgColor: 'bg-gray-50 dark:bg-gray-950/50', 
-    borderColor: 'border-gray-200 dark:border-gray-800',
-    icon: Timer,
-    description: 'Call received, processing started'
-  },
-  'Disconnecting': { 
-    label: 'Disconnecting', 
-    color: 'text-orange-600 dark:text-orange-400', 
-    bgColor: 'bg-orange-50 dark:bg-orange-950/50', 
-    borderColor: 'border-orange-200 dark:border-orange-800',
-    icon: PhoneOff,
-    description: 'Call is being disconnected'
-  },
-  'Dead': { 
-    label: 'Ended', 
-    color: 'text-red-600 dark:text-red-400', 
-    bgColor: 'bg-red-50 dark:bg-red-950/50', 
-    borderColor: 'border-red-200 dark:border-red-800',
-    icon: XCircle,
-    description: 'Call disconnected, waiting for cleanup'
-  }
-};
-
 export function ActiveCalls({ accountId }: ActiveCallsProps) {
+  const { t } = useTranslations();
   const { user } = useAuth();
-  const { colors, getGradientStyle, features } = useBranding();
+  const { colors, features, getGradientStyle } = useBranding();
+  
   const [calls, setCalls] = useState<ActiveCall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-
+  
   const targetAccountId = accountId || user?.sippyAccountId;
+
+  // Dynamic call states with translations
+  const getCallStates = () => ({
+    'Connected': { 
+      label: t('calls.activeCalls.states.connected.label'), 
+      color: 'text-green-600 dark:text-green-400', 
+      bgColor: 'bg-green-50 dark:bg-green-950/50', 
+      borderColor: 'border-green-200 dark:border-green-800',
+      icon: CheckCircle,
+      description: t('calls.activeCalls.states.connected.description')
+    },
+    'ARComplete': { 
+      label: t('calls.activeCalls.states.arComplete.label'), 
+      color: 'text-blue-600 dark:text-blue-400', 
+      bgColor: 'bg-blue-50 dark:bg-blue-950/50', 
+      borderColor: 'border-blue-200 dark:border-blue-800',
+      icon: PhoneCall,
+      description: t('calls.activeCalls.states.arComplete.description')
+    },
+    'WaitRoute': { 
+      label: t('calls.activeCalls.states.waitRoute.label'), 
+      color: 'text-amber-600 dark:text-amber-400', 
+      bgColor: 'bg-amber-50 dark:bg-amber-950/50', 
+      borderColor: 'border-amber-200 dark:border-amber-800',
+      icon: Clock,
+      description: t('calls.activeCalls.states.waitRoute.description')
+    },
+    'WaitAuth': { 
+      label: t('calls.activeCalls.states.waitAuth.label'), 
+      color: 'text-purple-600 dark:text-purple-400', 
+      bgColor: 'bg-purple-50 dark:bg-purple-950/50', 
+      borderColor: 'border-purple-200 dark:border-purple-800',
+      icon: AlertCircle,
+      description: t('calls.activeCalls.states.waitAuth.description')
+    },
+    'Idle': { 
+      label: t('calls.activeCalls.states.idle.label'), 
+      color: 'text-gray-600 dark:text-gray-400', 
+      bgColor: 'bg-gray-50 dark:bg-gray-950/50', 
+      borderColor: 'border-gray-200 dark:border-gray-800',
+      icon: Timer,
+      description: t('calls.activeCalls.states.idle.description')
+    },
+    'Disconnecting': { 
+      label: t('calls.activeCalls.states.disconnecting.label'), 
+      color: 'text-orange-600 dark:text-orange-400', 
+      bgColor: 'bg-orange-50 dark:bg-orange-950/50', 
+      borderColor: 'border-orange-200 dark:border-orange-800',
+      icon: PhoneOff,
+      description: t('calls.activeCalls.states.disconnecting.description')
+    },
+    'Dead': { 
+      label: t('calls.activeCalls.states.dead.label'), 
+      color: 'text-red-600 dark:text-red-400', 
+      bgColor: 'bg-red-50 dark:bg-red-950/50', 
+      borderColor: 'border-red-200 dark:border-red-800',
+      icon: XCircle,
+      description: t('calls.activeCalls.states.dead.description')
+    }
+  });
 
   // Calculate call statistics
   const calculateStats = (calls: ActiveCall[]): CallStats => {
@@ -293,9 +296,8 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
 
       const apiUrl = `/api/sippy/account/${targetAccountId}/calls/active`;
       
-      // Add timeout to the fetch request
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       
       const response = await fetch(apiUrl, {
         signal: controller.signal,
@@ -335,7 +337,7 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
 
   const disconnectCall = async (callId: string) => {
     if (!callId) {
-      toast.error('Invalid call ID');
+      toast.error(t('calls.activeCalls.table.noValidCallId'));
       return;
     }
 
@@ -349,17 +351,11 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to disconnect call`);
+        throw new Error(errorData.error || 'Failed to disconnect call');
       }
 
-      await response.json();
-      
       toast.success('Call disconnected successfully');
-      
-      // Refresh the calls list after a short delay to allow the disconnect to process
-      setTimeout(() => {
-        fetchActiveCalls();
-      }, 1000);
+      fetchActiveCalls(); // Refresh the calls list
     } catch (err) {
       console.error('Error disconnecting call:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to disconnect call';
@@ -371,17 +367,20 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
     if (!targetAccountId) return;
 
     try {
-      const response = await fetch(`/api/sippy/calls/account/${targetAccountId}/disconnect`, {
-        method: 'POST'
+      const response = await fetch(`/api/sippy/account/${targetAccountId}/calls/disconnect`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         throw new Error(errorData.error || 'Failed to disconnect all calls');
       }
 
       toast.success('All calls disconnected successfully');
-      fetchActiveCalls();
+      fetchActiveCalls(); // Refresh the calls list
     } catch (err) {
       console.error('Error disconnecting all calls:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to disconnect all calls';
@@ -390,35 +389,33 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
   };
 
   const formatDuration = (seconds: number) => {
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.round(seconds % 60);
-    return `${minutes}m ${remainingSeconds}s`;
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    return hours > 0 ? `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}` : `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
 
   const getCallStateInfo = (state: string) => {
-    return CALL_STATES[state as keyof typeof CALL_STATES] || {
+    const states = getCallStates();
+    return states[state as keyof typeof states] || {
       label: state,
       color: 'text-gray-600 dark:text-gray-400',
       bgColor: 'bg-gray-50 dark:bg-gray-950/50',
       borderColor: 'border-gray-200 dark:border-gray-800',
       icon: Activity,
-      description: 'Unknown state'
+      description: t('calls.activeCalls.states.unknown.description')
     };
   };
 
   useEffect(() => {
     fetchActiveCalls();
-    const interval = setInterval(fetchActiveCalls, 10000); // Refresh every 10 seconds
+    const interval = setInterval(fetchActiveCalls, 10000);
     return () => clearInterval(interval);
   }, [fetchActiveCalls]);
 
   if (isLoading && calls.length === 0) {
     return (
-      <div 
-        className="min-h-[400px] flex items-center justify-center text-foreground"
-        style={features.gradientBackground ? getGradientStyle() : {}}
-      >
+      <div className="min-h-[400px] flex items-center justify-center text-foreground">
         <div className="text-center space-y-4">
           <div 
             className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
@@ -428,9 +425,9 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-foreground">
-              Loading Active Calls
+              {t('calls.activeCalls.loading.title')}
             </h3>
-            <p className="text-muted-foreground">Fetching real-time call data...</p>
+            <p className="text-muted-foreground">{t('calls.activeCalls.loading.description')}</p>
           </div>
         </div>
       </div>
@@ -446,8 +443,8 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
               <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <CardTitle className="text-destructive">Error Loading Active Calls</CardTitle>
-              <CardDescription>There was an error loading the active calls data</CardDescription>
+              <CardTitle className="text-destructive">{t('calls.activeCalls.error.title')}</CardTitle>
+              <CardDescription>{t('calls.activeCalls.error.description')}</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -459,7 +456,7 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
             className="gap-2"
           >
             <RefreshCw className="h-4 w-4" />
-            Try Again
+            {t('calls.activeCalls.error.tryAgain')}
           </Button>
         </CardContent>
       </Card>
@@ -475,14 +472,14 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
               <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <CardTitle className="text-destructive">No Sippy Account ID</CardTitle>
-              <CardDescription>Your user account doesn&apos;t have a Sippy Account ID configured.</CardDescription>
+              <CardTitle className="text-destructive">{t('calls.activeCalls.noSippyAccount.title')}</CardTitle>
+              <CardDescription>{t('calls.activeCalls.noSippyAccount.description')}</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-destructive">
-            Please contact an administrator to set up your Sippy account.
+            {t('calls.activeCalls.noSippyAccount.contactAdmin')}
           </p>
         </CardContent>
       </Card>
@@ -500,14 +497,23 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
               style={{ backgroundColor: `${colors.primary}20` }}
             >
               <Activity className="h-4 w-4" style={{ color: colors.primary }} />
-              <span className="text-brand">Real-time Monitoring</span>
+              <span className="text-brand">{t('calls.activeCalls.header.realTimeMonitoring')}</span>
             </div>
           </div>
           <p className="text-muted-foreground">
-            {stats.total} active call{stats.total !== 1 ? 's' : ''} for account {targetAccountId}
+            {stats.total === 1 
+              ? t('calls.activeCalls.header.callCount', { 
+                  count: stats.total.toString(), 
+                  accountId: targetAccountId?.toString() || ''
+                })
+              : t('calls.activeCalls.header.callCountPlural', { 
+                  count: stats.total.toString(), 
+                  accountId: targetAccountId?.toString() || ''
+                })
+            }
             {lastRefresh && (
               <span className="ml-2">
-                • Last updated {format(lastRefresh, 'HH:mm:ss')}
+                • {t('calls.activeCalls.header.lastUpdated', { time: format(lastRefresh, 'HH:mm:ss') })}
               </span>
             )}
           </p>
@@ -522,7 +528,7 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
             className="gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('calls.activeCalls.header.refresh')}
           </Button>
           {targetAccountId && stats.total > 0 && (
             <Button 
@@ -532,7 +538,7 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
               className="gap-2"
             >
               <PhoneOff className="h-4 w-4" />
-              Disconnect All
+              {t('calls.activeCalls.header.disconnectAll')}
             </Button>
           )}
         </div>
@@ -541,13 +547,11 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Calls */}
-        <Card 
-          className={features.glassMorphism ? 'bg-background/90 backdrop-blur-sm' : ''}
-        >
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Calls</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('calls.activeCalls.stats.totalCalls')}</p>
                 <p className="text-2xl font-bold text-brand">
                   {stats.total}
                 </p>
@@ -563,18 +567,18 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
         </Card>
 
         {/* Connected Calls */}
-        <Card 
-          className={features.glassMorphism ? 'bg-background/90 backdrop-blur-sm' : ''}
-        >
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Connected</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('calls.activeCalls.stats.connected')}</p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {stats.connected}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {stats.total > 0 ? Math.round((stats.connected / stats.total) * 100) : 0}% of total
+                  {t('calls.activeCalls.stats.ofTotal', { 
+                    percentage: (stats.total > 0 ? Math.round((stats.connected / stats.total) * 100) : 0).toString()
+                  })}
                 </p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-950/50 flex items-center justify-center">
@@ -585,13 +589,11 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
         </Card>
 
         {/* Average Duration */}
-        <Card 
-          className={features.glassMorphism ? 'bg-background/90 backdrop-blur-sm' : ''}
-        >
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Avg Duration</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('calls.activeCalls.stats.avgDuration')}</p>
                 <p className="text-2xl font-bold text-brand">
                   {formatDuration(stats.avgDuration)}
                 </p>
@@ -607,13 +609,11 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
         </Card>
 
         {/* Average Delay */}
-        <Card 
-          className={features.glassMorphism ? 'bg-background/90 backdrop-blur-sm' : ''}
-        >
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Avg Delay</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('calls.activeCalls.stats.avgDelay')}</p>
                 <p className="text-2xl font-bold text-brand">
                   {stats.avgDelay.toFixed(2)}s
                 </p>
@@ -631,18 +631,16 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
 
       {/* Call States Overview */}
       {stats.total > 0 && (
-        <Card 
-          className={features.glassMorphism ? 'bg-background/90 backdrop-blur-sm' : ''}
-        >
+        <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="h-5 w-5" style={{ color: colors.primary }} />
-              Call States Distribution
+              {t('calls.activeCalls.states.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-              {Object.entries(CALL_STATES).map(([state, config]) => {
+              {Object.entries(getCallStates()).map(([state, config]) => {
                 // Map the state name to the correct stats property
                 const getStateCount = (stateName: string): number => {
                   switch (stateName) {
@@ -692,7 +690,7 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
         </Card>
       )}
 
-      {/* Calls Table */}
+      {/* Calls Table or Empty State */}
       {stats.total === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
@@ -705,23 +703,23 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-foreground">
-                  No Active Calls
+                  {t('calls.activeCalls.emptyState.title')}
                 </h3>
                 <p className="text-muted-foreground">
-                  There are currently no active calls for account {targetAccountId}
+                  {t('calls.activeCalls.emptyState.description', { 
+                    accountId: targetAccountId?.toString() || ''
+                  })}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
       ) : (
-        <Card 
-          className={features.glassMorphism ? 'bg-background/90 backdrop-blur-sm' : ''}
-        >
+        <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Eye className="h-5 w-5" style={{ color: colors.primary }} />
-              Active Calls Details
+              {t('calls.activeCalls.table.title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -729,110 +727,73 @@ export function ActiveCalls({ accountId }: ActiveCallsProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Call</TableHead>
-                    <TableHead>State</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Setup Time</TableHead>
-                    <TableHead>Direction</TableHead>
-                    <TableHead>IPs</TableHead>
-                    <TableHead>Delay</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead>{t('calls.activeCalls.table.headers.call')}</TableHead>
+                    <TableHead>{t('calls.activeCalls.table.headers.state')}</TableHead>
+                    <TableHead>{t('calls.activeCalls.table.headers.duration')}</TableHead>
+                    <TableHead>{t('calls.activeCalls.table.headers.setupTime')}</TableHead>
+                    <TableHead>{t('calls.activeCalls.table.headers.direction')}</TableHead>
+                    <TableHead>{t('calls.activeCalls.table.headers.ips')}</TableHead>
+                    <TableHead>{t('calls.activeCalls.table.headers.delay')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {calls.map((call, index) => {
-                    const stateInfo = getCallStateInfo(call.CC_STATE);
-                    const StateIcon = stateInfo.icon;
-                    const setupDate = parseSippyDate(call.SETUP_TIME);
-                    
-                    return (
-                      <TableRow key={call.CALL_ID || index} className="hover:bg-muted/50">
-                        <TableCell>
-                          <div className="space-y-1 text-foreground">
-                            <div className="font-medium">
-                              {call.CLI} → {call.CLD}
-                            </div>
-                            <div className="text-xs text-muted-foreground font-mono">
-                              {call.CALL_ID}
-                            </div>
+                  {calls.map((call, index) => (
+                    <TableRow key={call.CALL_ID || index} className="hover:bg-muted/50">
+                      <TableCell>
+                        <div className="space-y-1 text-foreground">
+                          <div className="font-medium">
+                            {call.CLI} → {call.CLD}
                           </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <Badge 
-                            variant="outline" 
-                            className={`${stateInfo.color} ${stateInfo.borderColor} gap-1`}
-                          >
-                            <StateIcon className="h-3 w-3" />
-                            {stateInfo.label}
-                          </Badge>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <div className="font-medium text-foreground">
-                            {formatDuration(call.DURATION || 0)}
+                          <div className="text-xs text-muted-foreground font-mono">
+                            {call.CALL_ID}
                           </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <div className="text-sm text-foreground">
-                            {setupDate ? format(setupDate, 'HH:mm:ss') : 'N/A'}
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <Badge variant="outline">
+                          {call.CC_STATE}
+                        </Badge>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="font-medium text-foreground">
+                          {formatDuration(call.DURATION || 0)}
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="text-sm text-foreground">
+                          {call.SETUP_TIME || 'N/A'}
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">
+                          {call.DIRECTION || 'N/A'}
+                        </Badge>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="space-y-1 text-xs text-foreground">
+                          <div className="flex items-center gap-1">
+                            <Globe className="h-3 w-3 text-muted-foreground" />
+                            <span className="font-mono">{call.CALLER_MEDIA_IP || 'N/A'}</span>
                           </div>
-                          {setupDate && (
-                            <div className="text-xs text-muted-foreground">
-                              {format(setupDate, 'MMM dd')}
-                            </div>
-                          )}
-                        </TableCell>
-                        
-                        <TableCell>
-                          <Badge variant="secondary" className="text-xs">
-                            {call.DIRECTION || 'N/A'}
-                          </Badge>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <div className="space-y-1 text-xs text-foreground">
-                            <div className="flex items-center gap-1">
-                              <Globe className="h-3 w-3 text-muted-foreground" />
-                              <span className="font-mono">{call.CALLER_MEDIA_IP || 'N/A'}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3 text-muted-foreground" />
-                              <span className="font-mono">{call.CALLEE_MEDIA_IP || 'N/A'}</span>
-                            </div>
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3 text-muted-foreground" />
+                            <span className="font-mono">{call.CALLEE_MEDIA_IP || 'N/A'}</span>
                           </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <div className="font-medium text-foreground">
-                            {call.DELAY?.toFixed?.(2) || call.DELAY || 'N/A'}s
-                          </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/50" 
-                            onClick={() => {
-                              // Try different call ID fields in order of preference
-                              const callId = call.I_CONNECTION?.toString() || call.ID || call.CALL_ID;
-                              
-                              if (callId) {
-                                disconnectCall(callId);
-                              } else {
-                                toast.error('No valid call ID found');
-                              }
-                            }}
-                            title="Disconnect Call"
-                          >
-                            <PhoneOff className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="font-medium text-foreground">
+                          {call.DELAY?.toFixed?.(2) || call.DELAY || 'N/A'}s
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>

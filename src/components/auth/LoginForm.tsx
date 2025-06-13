@@ -28,15 +28,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { handleAuthError } from '@/lib/apiErrorHandler';
+import { useTranslations } from '@/lib/i18n';
 
-// Form validation schema
-const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email' }),
-  password: z.string().min(1, { message: 'Password is required' }),
+// Form validation schema with dynamic error messages
+const createFormSchema = (t: (key: string) => string) => z.object({
+  email: z.string().email({ message: t('auth.validation.emailInvalid') }),
+  password: z.string().min(1, { message: t('auth.validation.required') }),
 });
 
 export function LoginForm() {
   const { login } = useAuth();
+  const { t } = useTranslations();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -49,7 +51,8 @@ export function LoginForm() {
     description: ''
   });
 
-  // Form definition
+  // Form definition with dynamic schema
+  const formSchema = createFormSchema(t);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -71,7 +74,7 @@ export function LoginForm() {
       if (authError?.code === 'EMAIL_NOT_VERIFIED') {
         setVerificationEmail(values.email);
         setShowVerificationModal(true);
-        toast.error(authError.message || 'Email verification required');
+        toast.error(authError.message || t('auth.errors.emailNotVerified'));
       } else {
         const errorData = handleAuthError(error as { message?: string; status?: number; code?: string; error?: string; [key: string]: unknown });
         setErrorDialogContent({
@@ -92,10 +95,10 @@ export function LoginForm() {
     // Automatically attempt login after verification
     try {
       const formValues = form.getValues();
-      toast.success('Email verified successfully! Logging you in...');
+      toast.success(t('auth.verification.success'));
       await login(formValues.email, formValues.password);
     } catch {
-      toast.error('Verification successful, but auto-login failed. Please sign in manually.');
+      toast.error(t('auth.errors.serverError'));
     }
   };
 
@@ -128,7 +131,7 @@ export function LoginForm() {
                     </div>
                     <Input
                       type="email"
-                      placeholder="Email address"
+                      placeholder={t('auth.login.emailPlaceholder')}
                       className="pl-12 h-12 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10 rounded-xl transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 hover:border-gray-300 dark:hover:border-gray-600"
                       {...field}
                     />
@@ -152,7 +155,7 @@ export function LoginForm() {
                     </div>
                     <Input
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Password"
+                      placeholder={t('auth.login.passwordPlaceholder')}
                       className="pl-12 pr-12 h-12 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10 rounded-xl transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 hover:border-gray-300 dark:hover:border-gray-600"
                       {...field}
                     />
@@ -180,7 +183,7 @@ export function LoginForm() {
               href="/forgot-password" 
               className="text-sm text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 transition-colors duration-200 font-medium"
             >
-              Forgot password?
+              {t('auth.login.forgotPassword')}
             </Link>
           </div>
 
@@ -197,11 +200,11 @@ export function LoginForm() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  Signing in...
+                  {t('auth.login.submitting')}
                 </>
               ) : (
                 <>
-                  Sign In
+                  {t('auth.login.submitButton')}
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
                 </>
               )}
@@ -216,7 +219,9 @@ export function LoginForm() {
           <span className="w-full border-t border-gray-200 dark:border-gray-700" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white dark:bg-gray-900 px-4 text-gray-500 dark:text-gray-400 font-medium">or continue with</span>
+          <span className="bg-white dark:bg-gray-900 px-4 text-gray-500 dark:text-gray-400 font-medium">
+            {t('common.responses.or')}
+          </span>
         </div>
       </div>
 
@@ -255,12 +260,12 @@ export function LoginForm() {
       {/* Sign Up Link */}
       <div className="text-center pt-4">
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account?{' '}
+          {t('auth.login.noAccount')}{' '}
           <Link 
             href="/register" 
             className="text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 font-semibold transition-colors duration-200"
           >
-            Sign up for free
+            {t('auth.login.createAccount')}
           </Link>
         </p>
       </div>
@@ -292,9 +297,9 @@ export function LoginForm() {
             transition={{ duration: 0.4, ease: "easeInOut" }}
           >
             <DialogHeader>
-              <DialogTitle>Verify Your Email</DialogTitle>
+              <DialogTitle>{t('auth.verification.title')}</DialogTitle>
               <DialogDescription>
-                Your email address needs to be verified before you can sign in. Please enter the verification code that was sent to your email.
+                {t('auth.verification.description')}
               </DialogDescription>
             </DialogHeader>
             
@@ -321,8 +326,8 @@ export function LoginForm() {
               {errorDialogContent.title}
             </DialogTitle>
             <DialogDescription className="space-y-2">
-              <div className="font-medium text-gray-900 dark:text-gray-100">{errorDialogContent.message}</div>
-              <div className="text-gray-600 dark:text-gray-400">{errorDialogContent.description}</div>
+              <span className="font-medium text-gray-900 dark:text-gray-100 block">{errorDialogContent.message}</span>
+              <span className="text-gray-600 dark:text-gray-400 block">{errorDialogContent.description}</span>
             </DialogDescription>
           </DialogHeader>
           
@@ -331,7 +336,7 @@ export function LoginForm() {
               onClick={() => setShowErrorDialog(false)}
               className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90"
             >
-              Try Again
+              {t('common.actions.close')}
             </Button>
           </div>
         </DialogContent>

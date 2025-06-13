@@ -5,22 +5,24 @@ import { Badge } from '@/components/ui/badge';
 import { Activity, CheckCircle, XCircle, Loader2, Target, TrendingUp, Zap } from 'lucide-react';
 import { useCdr } from '@/contexts/CdrContext';
 import { useKpiThresholds } from '@/hooks/useKpiThresholds';
+import { useTranslations } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export function AsrWidget() {
   const { kpis, isLoading, error, selectedDate, hasDataLoaded } = useCdr();
   const { thresholds } = useKpiThresholds();
+  const { t } = useTranslations();
 
   const formatSelectedDate = (date: Date): string => {
     const today = new Date();
     const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
     
     if (date.toDateString() === today.toDateString()) {
-      return 'today';
+      return t('dashboard.widgets.asr.dateFormats.today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'yesterday';
+      return t('dashboard.widgets.asr.dateFormats.yesterday');
     } else {
-      return `on ${date.toLocaleDateString()}`;
+      return t('dashboard.widgets.asr.dateFormats.onDate', { date: date.toLocaleDateString() });
     }
   };
 
@@ -30,7 +32,7 @@ export function AsrWidget() {
       <Card className="h-full bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-slate-950/50 dark:via-gray-950/50 dark:to-zinc-950/50 border-slate-200/50 dark:border-slate-800/50">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
           <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            ASR (Success Rate)
+            {t('dashboard.widgets.asr.title')}
           </CardTitle>
           <div className="relative">
             <div className="relative z-10 p-2 rounded-full bg-slate-500/10 dark:bg-slate-400/10">
@@ -46,10 +48,10 @@ export function AsrWidget() {
             </div>
             <div className="text-center space-y-1">
               <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                No data loaded
+                {t('dashboard.widgets.asr.states.noDataLoaded.title')}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Use the date selector to load metrics
+                {t('dashboard.widgets.asr.states.noDataLoaded.subtitle')}
               </p>
             </div>
           </div>
@@ -63,7 +65,7 @@ export function AsrWidget() {
       <Card className="h-full bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-950/50 dark:via-cyan-950/50 dark:to-teal-950/50 border-blue-200/50 dark:border-blue-800/50">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
           <CardTitle className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-            ASR (Success Rate)
+            {t('dashboard.widgets.asr.title')}
           </CardTitle>
           <div className="relative">
             <div className="absolute inset-0 rounded-full animate-ping bg-blue-500/20 dark:bg-blue-400/20"></div>
@@ -77,10 +79,10 @@ export function AsrWidget() {
           <div className="flex flex-col items-center justify-center py-8 space-y-3">
             <div className="text-center space-y-1">
               <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                Loading metrics...
+                {t('dashboard.widgets.asr.states.loading.title')}
               </p>
               <p className="text-xs text-blue-600/70 dark:text-blue-400/70">
-                Please wait while we fetch your data
+                {t('dashboard.widgets.asr.states.loading.subtitle')}
               </p>
             </div>
           </div>
@@ -93,16 +95,16 @@ export function AsrWidget() {
     return (
       <Card className="h-full bg-gradient-to-br from-red-50 via-rose-50 to-pink-50 border-red-200/50 shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold text-red-900">ASR (Success Rate)</CardTitle>
+          <CardTitle className="text-sm font-semibold text-red-900">{t('dashboard.widgets.asr.title')}</CardTitle>
           <div className="relative">
             <div className="absolute inset-0 bg-red-500/20 rounded-full animate-pulse"></div>
             <Target className="h-5 w-5 text-red-600 relative z-10" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-red-600 mb-2">Error</div>
+          <div className="text-2xl font-bold text-red-600 mb-2">{t('dashboard.widgets.asr.states.error.title')}</div>
           <p className="text-xs text-red-600/80">
-            Failed to load ASR data
+            {t('dashboard.widgets.asr.states.error.subtitle')}
           </p>
         </CardContent>
       </Card>
@@ -114,7 +116,7 @@ export function AsrWidget() {
     return (
       <Card className="h-full bg-card border-border shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold">ASR (Success Rate)</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t('dashboard.widgets.asr.title')}</CardTitle>
           <div className="relative">
             <div className="absolute inset-0 bg-muted/10 rounded-full"></div>
             <Target className="h-5 w-5 text-muted-foreground relative z-10" />
@@ -127,16 +129,16 @@ export function AsrWidget() {
             </div>
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                No calls to analyze {formatSelectedDate(selectedDate)}
+                {t('dashboard.widgets.asr.states.noActivity.subtitle', { date: formatSelectedDate(selectedDate) })}
               </p>
               <Badge variant="outline" className="text-xs font-medium">
-                No Activity
+                {t('dashboard.widgets.asr.states.noActivity.badge')}
               </Badge>
             </div>
           </div>
           <div className="text-xs text-muted-foreground flex items-center space-x-1">
             <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
-            <span>Waiting for call activity...</span>
+            <span>{t('dashboard.widgets.asr.states.noActivity.waiting')}</span>
           </div>
         </CardContent>
       </Card>
@@ -162,7 +164,7 @@ export function AsrWidget() {
           textSecondary: 'text-emerald-700 dark:text-emerald-300',
           textMuted: 'text-emerald-600/70 dark:text-emerald-400/70',
           badge: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800',
-          badgeText: 'Excellent',
+          badgeText: t('dashboard.widgets.asr.status.badges.excellent'),
           iconBg: 'bg-emerald-500/10 dark:bg-emerald-400/10',
           iconColor: 'text-emerald-600 dark:text-emerald-400',
           progressBg: 'bg-gradient-to-r from-emerald-400 to-green-500',
@@ -177,7 +179,7 @@ export function AsrWidget() {
           textSecondary: 'text-green-700 dark:text-green-300',
           textMuted: 'text-green-600/70 dark:text-green-400/70',
           badge: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-800',
-          badgeText: 'Good',
+          badgeText: t('dashboard.widgets.asr.status.badges.good'),
           iconBg: 'bg-green-500/10 dark:bg-green-400/10',
           iconColor: 'text-green-600 dark:text-green-400',
           progressBg: 'bg-gradient-to-r from-green-400 to-lime-500',
@@ -192,7 +194,7 @@ export function AsrWidget() {
           textSecondary: 'text-yellow-700 dark:text-yellow-300',
           textMuted: 'text-yellow-600/70 dark:text-yellow-400/70',
           badge: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-400 dark:border-yellow-800',
-          badgeText: 'Fair',
+          badgeText: t('dashboard.widgets.asr.status.badges.fair'),
           iconBg: 'bg-yellow-500/10 dark:bg-yellow-400/10',
           iconColor: 'text-yellow-600 dark:text-yellow-400',
           progressBg: 'bg-gradient-to-r from-yellow-400 to-amber-500',
@@ -207,7 +209,7 @@ export function AsrWidget() {
           textSecondary: 'text-orange-700 dark:text-orange-300',
           textMuted: 'text-orange-600/70 dark:text-orange-400/70',
           badge: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-400 dark:border-orange-800',
-          badgeText: 'Poor',
+          badgeText: t('dashboard.widgets.asr.status.badges.poor'),
           iconBg: 'bg-orange-500/10 dark:bg-orange-400/10',
           iconColor: 'text-orange-600 dark:text-orange-400',
           progressBg: 'bg-gradient-to-r from-orange-400 to-red-500',
@@ -222,7 +224,7 @@ export function AsrWidget() {
           textSecondary: 'text-red-700 dark:text-red-300',
           textMuted: 'text-red-600/70 dark:text-red-400/70',
           badge: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-800',
-          badgeText: 'Critical',
+          badgeText: t('dashboard.widgets.asr.status.badges.critical'),
           iconBg: 'bg-red-500/10 dark:bg-red-400/10',
           iconColor: 'text-red-600 dark:text-red-400',
           progressBg: 'bg-gradient-to-r from-red-400 to-rose-500',
@@ -240,9 +242,9 @@ export function AsrWidget() {
           badgeText: 'No Data',
           iconBg: 'bg-muted/10',
           iconColor: 'text-muted-foreground',
-          progressBg: 'bg-gradient-to-r from-muted to-muted-foreground',
+          progressBg: 'bg-muted/50',
           pulse: 'bg-muted/20',
-          icon: <Activity className="h-4 w-4 text-muted-foreground" />
+          icon: <Target className="h-4 w-4 text-muted-foreground" />
         };
     }
   };
@@ -257,12 +259,12 @@ export function AsrWidget() {
     )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className={cn("text-sm font-semibold", config.textPrimary)}>
-          ASR (Success Rate)
+          {t('dashboard.widgets.asr.title')}
         </CardTitle>
         <div className="relative">
           <div className={cn("absolute inset-0 rounded-full animate-ping", config.pulse)}></div>
           <div className={cn("relative z-10 p-2 rounded-full", config.iconBg)}>
-            <Activity className={cn("h-5 w-5", config.iconColor)} />
+            <Target className={cn("h-5 w-5", config.iconColor)} />
           </div>
         </div>
       </CardHeader>
@@ -272,7 +274,7 @@ export function AsrWidget() {
         <div className="space-y-2">
           <div className="flex items-baseline space-x-2">
             <div className={cn("text-3xl font-bold tracking-tight", config.textPrimary)}>
-              {kpis.asr.toFixed(1)}%
+              {kpis.asr.toFixed(2)}%
             </div>
             <div className="flex items-center space-x-1">
               {config.icon}
@@ -281,7 +283,7 @@ export function AsrWidget() {
           
           <div className="flex items-center justify-between">
             <p className={cn("text-xs", config.textMuted)}>
-              Call success rate {formatSelectedDate(selectedDate)}
+              {t('dashboard.widgets.asr.labels.successRate')}
             </p>
             <Badge variant="outline" className={cn("text-xs font-medium", config.badge)}>
               {config.badgeText}
@@ -289,80 +291,31 @@ export function AsrWidget() {
           </div>
         </div>
 
-        {/* Progress Circle */}
-        <div className="relative flex items-center justify-center">
-          <div className="relative w-24 h-24">
-            {/* Background circle */}
-            <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                stroke="currentColor"
-                strokeWidth="8"
-                fill="transparent"
-                className="text-muted/30"
-              />
-              {/* Progress circle */}
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                stroke="currentColor"
-                strokeWidth="8"
-                fill="transparent"
-                strokeDasharray={`${2 * Math.PI * 40}`}
-                strokeDashoffset={`${2 * Math.PI * 40 * (1 - kpis.asr / 100)}`}
-                className={cn(
-                  "transition-all duration-1000 ease-out",
-                  getAsrStatus() === 'excellent' && "text-emerald-500 dark:text-emerald-400",
-                  getAsrStatus() === 'good' && "text-green-500 dark:text-green-400",
-                  getAsrStatus() === 'fair' && "text-yellow-500 dark:text-yellow-400",
-                  getAsrStatus() === 'poor' && "text-orange-500 dark:text-orange-400",
-                  getAsrStatus() === 'critical' && "text-red-500 dark:text-red-400"
-                )}
-                strokeLinecap="round"
-              />
-            </svg>
-            {/* Center percentage */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className={cn("text-lg font-bold", config.textPrimary)}>
-                {Math.round(kpis.asr)}%
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Statistics */}
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div className={cn("text-center p-2 rounded-lg bg-muted/30", config.textSecondary)}>
-              <div className="flex items-center justify-center space-x-1 mb-1">
-                <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" />
-                <span className="text-xs font-medium">Success</span>
-              </div>
-              <div className="font-semibold">{kpis.successfulCalls.toLocaleString()}</div>
+          <div className={cn("flex items-center justify-between text-sm", config.textSecondary)}>
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-3 w-3" />
+              <span>{t('dashboard.widgets.asr.labels.successfulCalls')}</span>
             </div>
-            
-            <div className={cn("text-center p-2 rounded-lg bg-muted/30", config.textSecondary)}>
-              <div className="flex items-center justify-center space-x-1 mb-1">
-                <XCircle className="h-3 w-3 text-red-600 dark:text-red-400" />
-                <span className="text-xs font-medium">Failed</span>
-              </div>
-              <div className="font-semibold">{kpis.failedCalls.toLocaleString()}</div>
+            <span className="font-semibold">{kpis.successfulCalls.toLocaleString()}</span>
+          </div>
+          
+          <div className={cn("flex items-center justify-between text-sm", config.textSecondary)}>
+            <div className="flex items-center space-x-2">
+              <XCircle className="h-3 w-3" />
+              <span>{t('dashboard.widgets.asr.labels.failedCalls')}</span>
             </div>
+            <span className="font-semibold">{kpis.failedCalls.toLocaleString()}</span>
           </div>
         </div>
 
-        {/* Performance Indicator */}
+        {/* Progress Bar */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs">
-            <span className={config.textMuted}>Performance</span>
+            <span className={config.textMuted}>{t('dashboard.widgets.asr.labels.connectionQuality')}</span>
             <span className={config.textSecondary}>
-              {getAsrStatus() === 'excellent' ? '🎯 Outstanding' : 
-               getAsrStatus() === 'good' ? '✅ Great' :
-               getAsrStatus() === 'fair' ? '⚠️ Needs Attention' :
-               getAsrStatus() === 'poor' ? '🔴 Poor' : '❌ Critical'}
+              {kpis.asr.toFixed(1)}%
             </span>
           </div>
           <div className="w-full bg-muted/50 rounded-full h-2 overflow-hidden">
@@ -371,7 +324,9 @@ export function AsrWidget() {
                 "h-2 rounded-full transition-all duration-1000 ease-out",
                 config.progressBg
               )}
-              style={{ width: `${Math.min(kpis.asr, 100)}%` }}
+              style={{ 
+                width: `${Math.min(kpis.asr, 100)}%`
+              }}
             />
           </div>
         </div>
@@ -379,10 +334,16 @@ export function AsrWidget() {
         {/* Footer */}
         <div className={cn("flex items-center justify-between text-xs pt-2 border-t border-muted/20", config.textMuted)}>
           <div className="flex items-center space-x-1">
-            <Zap className="h-3 w-3" />
-            <span>Real-time</span>
+            <div className={cn("w-2 h-2 rounded-full", 
+              getAsrStatus() === 'excellent' ? 'bg-emerald-400' :
+              getAsrStatus() === 'good' ? 'bg-green-400' :
+              getAsrStatus() === 'fair' ? 'bg-yellow-400' :
+              getAsrStatus() === 'poor' ? 'bg-orange-400' :
+              'bg-red-400'
+            )}></div>
+            <span>{t('dashboard.widgets.asr.labels.liveData')}</span>
           </div>
-          <span>{kpis.totalCalls.toLocaleString()} total calls</span>
+          <span>{new Date().toLocaleTimeString()}</span>
         </div>
       </CardContent>
     </Card>

@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SimpleLoadingScreen } from '@/components/SimpleLoadingScreen';
 import { useBranding } from '@/lib/BrandingContext';
+import { useTranslations } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -28,18 +29,19 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-// Form validation schema
-const formSchema = z.object({
-  password: z.string().min(6, { message: 'Password must be at least 6 characters long' }),
-  confirmPassword: z.string().min(1, { message: 'Please confirm your password' }),
+// Form validation schema with dynamic error messages
+const createFormSchema = (t: (key: string) => string) => z.object({
+  password: z.string().min(6, { message: t('auth.resetPassword.validation.passwordMinLength') }),
+  confirmPassword: z.string().min(1, { message: t('auth.resetPassword.validation.confirmPasswordRequired') }),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: t('auth.resetPassword.validation.passwordsMustMatch'),
   path: ["confirmPassword"],
 });
 
 function ResetPasswordForm() {
   // Move all hooks to the top before any conditional logic
   const { isLoading: brandingLoading } = useBranding();
+  const { t, isLoading: translationsLoading } = useTranslations();
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
@@ -59,6 +61,7 @@ function ResetPasswordForm() {
   const token = searchParams.get('token');
 
   // Form definition - moved to top to ensure hooks are called in same order
+  const formSchema = createFormSchema(t);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -74,9 +77,9 @@ function ResetPasswordForm() {
         setTokenValid(false);
         setIsVerifying(false);
         setErrorContent({
-          title: 'Invalid Reset Link',
-          message: 'No reset token found',
-          description: 'The password reset link appears to be invalid or incomplete. Please request a new password reset.'
+          title: t('auth.resetPassword.errors.invalidLink.title'),
+          message: t('auth.resetPassword.errors.invalidLink.message'),
+          description: t('auth.resetPassword.errors.invalidLink.description')
         });
         setShowErrorDialog(true);
         return;
@@ -92,9 +95,9 @@ function ResetPasswordForm() {
         } else {
           setTokenValid(false);
           setErrorContent({
-            title: 'Invalid or Expired Token',
-            message: data.message || 'Reset token is invalid or has expired',
-            description: 'Password reset tokens expire after 10 minutes for security. Please request a new password reset.'
+            title: t('auth.resetPassword.errors.expiredToken.title'),
+            message: data.message || t('auth.resetPassword.errors.expiredToken.message'),
+            description: t('auth.resetPassword.errors.expiredToken.description')
           });
           setShowErrorDialog(true);
         }
@@ -102,9 +105,9 @@ function ResetPasswordForm() {
         console.error('Token verification error:', error);
         setTokenValid(false);
         setErrorContent({
-          title: 'Verification Error',
-          message: 'Unable to verify reset token',
-          description: 'Please check your internet connection and try again.'
+          title: t('auth.resetPassword.errors.verificationError.title'),
+          message: t('auth.resetPassword.errors.verificationError.message'),
+          description: t('auth.resetPassword.errors.verificationError.description')
         });
         setShowErrorDialog(true);
       } finally {
@@ -113,10 +116,10 @@ function ResetPasswordForm() {
     };
 
     verifyToken();
-  }, [token]);
+  }, [token, t]);
 
-  // Show simple loading screen until branding is ready
-  if (brandingLoading) {
+  // Show simple loading screen until branding and translations are ready
+  if (brandingLoading || translationsLoading) {
     return <SimpleLoadingScreen />;
   }
 
@@ -145,34 +148,34 @@ function ResetPasswordForm() {
         switch (data.code) {
           case 'MISSING_FIELDS':
             setErrorContent({
-              title: 'Missing Information',
-              message: 'Password is required',
-              description: 'Please enter your new password to continue.'
+              title: t('auth.resetPassword.errors.missingFields.title'),
+              message: t('auth.resetPassword.errors.missingFields.message'),
+              description: t('auth.resetPassword.errors.missingFields.description')
             });
             break;
           case 'WEAK_PASSWORD':
             setErrorContent({
-              title: 'Weak Password',
-              message: 'Password must be at least 6 characters long',
-              description: 'Please choose a stronger password for better security.'
+              title: t('auth.resetPassword.errors.weakPassword.title'),
+              message: t('auth.resetPassword.errors.weakPassword.message'),
+              description: t('auth.resetPassword.errors.weakPassword.description')
             });
             form.setError('password', {
               type: 'manual',
-              message: 'Password must be at least 6 characters long'
+              message: t('auth.resetPassword.validation.passwordMinLength')
             });
             break;
           case 'RESET_FAILED':
             setErrorContent({
-              title: 'Reset Failed',
-              message: data.message || 'Failed to reset password',
-              description: 'The reset token may have expired. Please request a new password reset.'
+              title: t('auth.resetPassword.errors.resetFailed.title'),
+              message: data.message || t('auth.resetPassword.errors.resetFailed.message'),
+              description: t('auth.resetPassword.errors.resetFailed.description')
             });
             break;
           default:
             setErrorContent({
-              title: 'Reset Failed',
-              message: data.message || 'Failed to reset password',
-              description: 'Please try again. If the problem persists, contact support.'
+              title: t('auth.resetPassword.errors.resetFailed.title'),
+              message: data.message || t('auth.resetPassword.errors.resetFailed.message'),
+              description: t('auth.resetPassword.errors.resetFailed.description')
             });
             break;
         }
@@ -185,9 +188,9 @@ function ResetPasswordForm() {
     } catch (error) {
       console.error('Reset password error:', error);
       setErrorContent({
-        title: 'Network Error',
-        message: 'Unable to reset password',
-        description: 'Please check your internet connection and try again.'
+        title: t('auth.resetPassword.errors.networkError.title'),
+        message: t('auth.resetPassword.errors.networkError.message'),
+        description: t('auth.resetPassword.errors.networkError.description')
       });
       setShowErrorDialog(true);
     } finally {
@@ -213,7 +216,7 @@ function ResetPasswordForm() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 flex items-center justify-center px-4">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--brand-primary)]" />
-          <p className="text-gray-600 dark:text-gray-400">Verifying reset token...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('auth.resetPassword.verifying')}</p>
         </div>
       </div>
     );
@@ -225,13 +228,13 @@ function ResetPasswordForm() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <AlertTriangle className="w-16 h-16 text-red-500 dark:text-red-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Invalid Reset Link</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">{t('auth.resetPassword.errors.invalidTokenState.title')}</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            This password reset link is invalid or has expired. Please request a new password reset.
+            {t('auth.resetPassword.errors.invalidTokenState.message')}
           </p>
           <Link href="/forgot-password">
             <Button className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90">
-              Request New Reset
+              {t('auth.resetPassword.errors.invalidTokenState.requestNew')}
             </Button>
           </Link>
         </div>
@@ -257,10 +260,10 @@ function ResetPasswordForm() {
           >
             <Lock className="w-8 h-8 text-white" />
           </motion.div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Reset Your Password</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">{t('auth.resetPassword.title')}</h1>
           {userInfo && (
             <p className="text-gray-600 dark:text-gray-400">
-              Hi {userInfo.name}, please enter your new password below.
+              {t('auth.resetPassword.greeting', { name: userInfo.name })}
             </p>
           )}
         </div>
@@ -287,7 +290,7 @@ function ResetPasswordForm() {
                         </div>
                         <Input
                           type={showPassword ? 'text' : 'password'}
-                          placeholder="Enter new password"
+                          placeholder={t('auth.resetPassword.passwordPlaceholder')}
                           className="pl-12 pr-12 h-12 bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-700 focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10 rounded-xl transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 hover:border-gray-300 dark:hover:border-gray-500"
                           {...field}
                         />
@@ -322,7 +325,7 @@ function ResetPasswordForm() {
                         </div>
                         <Input
                           type={showConfirmPassword ? 'text' : 'password'}
-                          placeholder="Confirm new password"
+                          placeholder={t('auth.resetPassword.confirmPasswordPlaceholder')}
                           className="pl-12 pr-12 h-12 bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-700 focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10 rounded-xl transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 hover:border-gray-300 dark:hover:border-gray-500"
                           {...field}
                         />
@@ -357,11 +360,11 @@ function ResetPasswordForm() {
                   {isLoading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      Resetting Password...
+                      {t('auth.resetPassword.submitting')}
                     </>
                   ) : (
                     <>
-                      Reset Password
+                      {t('auth.resetPassword.submitButton')}
                     </>
                   )}
                 </Button>
@@ -375,7 +378,7 @@ function ResetPasswordForm() {
               href="/login"
               className="text-sm text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 transition-colors duration-200 font-medium"
             >
-              Back to Login
+              {t('auth.resetPassword.backToLogin')}
             </Link>
           </div>
         </motion.div>
@@ -387,13 +390,11 @@ function ResetPasswordForm() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-green-600">
               <CheckCircle className="w-5 h-5" />
-              Password Reset Successful!
+              {t('auth.resetPassword.success.title')}
             </DialogTitle>
             <DialogDescription className="space-y-2">
-              <span className="font-medium text-gray-900 dark:text-gray-100 block">Your password has been successfully reset.</span>
-              <span className="text-gray-600 dark:text-gray-400 block">
-                You can now log in with your new password.
-              </span>
+              <span className="font-medium text-gray-900 dark:text-gray-100 block">{t('auth.resetPassword.success.message')}</span>
+              <span className="text-gray-600 dark:text-gray-400 block">{t('auth.resetPassword.success.instruction')}</span>
             </DialogDescription>
           </DialogHeader>
           
@@ -402,7 +403,7 @@ function ResetPasswordForm() {
               onClick={handleSuccessClose}
               className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90"
             >
-              Go to Login
+              {t('auth.resetPassword.success.goToLogin')}
             </Button>
           </div>
         </DialogContent>
@@ -429,7 +430,7 @@ function ResetPasswordForm() {
               onClick={handleErrorClose}
               className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90"
             >
-              {tokenValid ? 'Try Again' : 'Request New Reset'}
+              {tokenValid ? t('common.actions.tryAgain') : t('auth.resetPassword.errors.invalidTokenState.requestNew')}
             </Button>
           </div>
         </DialogContent>

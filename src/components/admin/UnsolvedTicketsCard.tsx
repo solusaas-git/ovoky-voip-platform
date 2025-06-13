@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from '@/lib/i18n';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -75,6 +76,7 @@ export function UnsolvedTicketsCard({
   limit = 10,
   isEditMode = false
 }: UnsolvedTicketsCardProps) {
+  const { t } = useTranslations();
   const [tickets, setTickets] = useState<UnsolvedTicket[]>([]);
   const [stats, setStats] = useState<TicketStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -144,33 +146,43 @@ export function UnsolvedTicketsCard({
 
   const getStatusDisplayName = (status: string) => {
     switch (status) {
-      case 'open': return 'Open';
-      case 'in_progress': return 'In Progress';
-      case 'waiting_user': return 'Waiting User';
-      case 'waiting_admin': return 'Waiting Admin';
+      case 'open': return t('dashboard.widgets.unsolvedTickets.status.open');
+      case 'in_progress': return t('dashboard.widgets.unsolvedTickets.status.inProgress');
+      case 'waiting_user': return t('dashboard.widgets.unsolvedTickets.status.waitingUser');
+      case 'waiting_admin': return t('dashboard.widgets.unsolvedTickets.status.waitingAdmin');
       default: return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   };
 
   const getServiceDisplayName = (service: string) => {
-    const serviceNames = {
-      'outbound_calls': 'Outbound Calls',
-      'inbound_calls': 'Inbound Calls',
-      'did_numbers': 'DID Numbers',
-      'sms': 'SMS',
-      'emailing': 'Email',
-      'whatsapp_business': 'WhatsApp Business',
-      'billing': 'Billing',
-      'technical': 'Technical',
-      'other': 'Other'
+    const serviceMap: { [key: string]: string } = {
+      'outbound_calls': t('dashboard.widgets.unsolvedTickets.services.outboundCalls'),
+      'inbound_calls': t('dashboard.widgets.unsolvedTickets.services.inboundCalls'),
+      'did_numbers': t('dashboard.widgets.unsolvedTickets.services.didNumbers'),
+      'sms': t('dashboard.widgets.unsolvedTickets.services.sms'),
+      'emailing': t('dashboard.widgets.unsolvedTickets.services.emailing'),
+      'whatsapp_business': t('dashboard.widgets.unsolvedTickets.services.whatsappBusiness'),
+      'billing': t('dashboard.widgets.unsolvedTickets.services.billing'),
+      'technical': t('dashboard.widgets.unsolvedTickets.services.technical'),
+      'other': t('dashboard.widgets.unsolvedTickets.services.other')
     };
-    return serviceNames[service as keyof typeof serviceNames] || service.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return serviceMap[service] || service.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const getPriorityDisplayName = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return t('dashboard.widgets.unsolvedTickets.priority.urgent');
+      case 'high': return t('dashboard.widgets.unsolvedTickets.priority.high');
+      case 'medium': return t('dashboard.widgets.unsolvedTickets.priority.medium');
+      case 'low': return t('dashboard.widgets.unsolvedTickets.priority.low');
+      default: return priority.toUpperCase();
+    }
   };
 
   const formatDaysAgo = (daysOpen: number) => {
-    if (daysOpen === 0) return 'Today';
-    if (daysOpen === 1) return '1 day ago';
-    return `${daysOpen} days ago`;
+    if (daysOpen === 0) return t('dashboard.widgets.unsolvedTickets.timeAgo.today');
+    if (daysOpen === 1) return t('dashboard.widgets.unsolvedTickets.timeAgo.dayAgo');
+    return t('dashboard.widgets.unsolvedTickets.timeAgo.daysAgo', { days: daysOpen.toString() });
   };
 
   if (isLoading) {
@@ -193,6 +205,9 @@ export function UnsolvedTicketsCard({
             <div className="w-16 h-6 bg-muted rounded animate-pulse" />
           </div>
         ))}
+        <div className="text-center text-sm text-muted-foreground">
+          {t('dashboard.widgets.unsolvedTickets.loading')}
+        </div>
       </div>
     );
   }
@@ -202,12 +217,12 @@ export function UnsolvedTicketsCard({
       <div className="text-center py-8">
         <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
-          Error Loading Tickets
+          {t('dashboard.widgets.unsolvedTickets.error.title')}
         </h3>
         <p className="text-sm text-muted-foreground mb-4">{error}</p>
         <Button onClick={handleRefresh} variant="outline" size="sm">
           <RefreshCw className="h-4 w-4 mr-2" />
-          Try Again
+          {t('dashboard.widgets.unsolvedTickets.error.tryAgain')}
         </Button>
       </div>
     );
@@ -219,14 +234,14 @@ export function UnsolvedTicketsCard({
         <div className="text-center py-8">
           <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-green-700 dark:text-green-300 mb-2">
-            All Caught Up!
+            {t('dashboard.widgets.unsolvedTickets.emptyState.title')}
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            No unsolved tickets at the moment. Great work!
+            {t('dashboard.widgets.unsolvedTickets.emptyState.description')}
           </p>
           <Button onClick={handleRefresh} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            {t('dashboard.widgets.unsolvedTickets.emptyState.refresh')}
           </Button>
         </div>
       </div>
@@ -240,11 +255,17 @@ export function UnsolvedTicketsCard({
         <div className="flex items-center space-x-2">
           <Ticket className="h-4 w-4 text-orange-500" />
           <span className="text-sm font-medium">
-            {tickets.length} unsolved ticket{tickets.length !== 1 ? 's' : ''}
+            {tickets.length === 1 
+              ? t('dashboard.widgets.unsolvedTickets.header.ticketCount', { count: tickets.length.toString() })
+              : t('dashboard.widgets.unsolvedTickets.header.ticketCountPlural', { count: tickets.length.toString() })
+            }
           </span>
           {stats && stats.averageDaysOpen > 0 && (
             <Badge variant="outline" className="text-xs">
-              Avg {stats.averageDaysOpen} day{stats.averageDaysOpen !== 1 ? 's' : ''} open
+              {stats.averageDaysOpen === 1 
+                ? t('dashboard.widgets.unsolvedTickets.header.averageDays', { days: stats.averageDaysOpen.toString() })
+                : t('dashboard.widgets.unsolvedTickets.header.averageDaysPlural', { days: stats.averageDaysOpen.toString() })
+              }
             </Badge>
           )}
         </div>
@@ -263,11 +284,15 @@ export function UnsolvedTicketsCard({
         <div className="grid grid-cols-2 gap-2 p-3 bg-muted/30 rounded-lg border-2 border-dashed border-primary/20">
           <div className="text-center">
             <div className="text-lg font-bold text-red-600">{stats.byPriority.urgent + stats.byPriority.high}</div>
-            <div className="text-xs text-muted-foreground">High Priority</div>
+            <div className="text-xs text-muted-foreground">
+              {t('dashboard.widgets.unsolvedTickets.stats.highPriority')}
+            </div>
           </div>
           <div className="text-center">
             <div className="text-lg font-bold text-orange-600">{stats.oldestTicketDays}</div>
-            <div className="text-xs text-muted-foreground">Oldest (days)</div>
+            <div className="text-xs text-muted-foreground">
+              {t('dashboard.widgets.unsolvedTickets.stats.oldest')}
+            </div>
           </div>
         </div>
       )}
@@ -295,7 +320,7 @@ export function UnsolvedTicketsCard({
                     variant={getPriorityBadgeVariant(ticket.priority)} 
                     className="text-xs font-semibold"
                   >
-                    {ticket.priority.toUpperCase()}
+                    {getPriorityDisplayName(ticket.priority)}
                   </Badge>
                   <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3" />
@@ -323,7 +348,7 @@ export function UnsolvedTicketsCard({
                 <Link href={`/support/tickets/${ticket.id}`} passHref>
                   <Button variant="outline" size="sm" className="h-7 text-xs flex-shrink-0">
                     <ExternalLink className="h-3 w-3 mr-1" />
-                    View
+                    {t('dashboard.widgets.unsolvedTickets.ticketInfo.view')}
                   </Button>
                 </Link>
               </div>
@@ -362,7 +387,7 @@ export function UnsolvedTicketsCard({
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-xs text-muted-foreground">
-                      Unassigned
+                      {t('dashboard.widgets.unsolvedTickets.ticketInfo.unassigned')}
                     </Badge>
                   )}
                 </div>
@@ -379,10 +404,22 @@ export function UnsolvedTicketsCard({
         <div className="pt-3 border-t">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>
-              Showing {tickets.length} of {stats.total} unsolved ticket{stats.total !== 1 ? 's' : ''}
+              {stats.total === 1 
+                ? t('dashboard.widgets.unsolvedTickets.footer.showing', { 
+                    current: tickets.length.toString(), 
+                    total: stats.total.toString() 
+                  })
+                : t('dashboard.widgets.unsolvedTickets.footer.showingPlural', { 
+                    current: tickets.length.toString(), 
+                    total: stats.total.toString() 
+                  })
+              }
             </span>
             <span>
-              {stats.byPriority.urgent} urgent, {stats.byPriority.high} high priority
+              {t('dashboard.widgets.unsolvedTickets.footer.urgentHigh', { 
+                urgent: stats.byPriority.urgent.toString(), 
+                high: stats.byPriority.high.toString() 
+              })}
             </span>
           </div>
         </div>

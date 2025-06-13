@@ -8,6 +8,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { useBranding } from '@/lib/BrandingContext';
 import { useCdr } from '@/contexts/CdrContext';
+import { useTranslations } from '@/lib/i18n';
 
 interface ProgressState {
   phase: 'initial' | 'background' | 'complete';
@@ -34,8 +35,6 @@ const formatDate = (date: Date): string => {
   return `${month} ${day}, ${year}`;
 };
 
-
-
 export function DateSelector({ 
   selectedDate, 
   onDateChange, 
@@ -44,6 +43,7 @@ export function DateSelector({
 }: DateSelectorProps) {
   const { settings } = useBranding();
   const { loadMetrics, hasDataLoaded, kpis } = useCdr();
+  const { t } = useTranslations();
   
   // Provide fallback colors if branding is not available
   const primaryColor = settings?.primaryColor || '#3b82f6';
@@ -88,8 +88,8 @@ export function DateSelector({
             }}
           >
             <Calendar className="h-3 w-3 flex-shrink-0" />
-            <span className="hidden xs:inline">Today</span>
-            <span className="xs:hidden">T</span>
+            <span className="hidden sm:inline">{t('dashboard.widgets.dateSelector.buttons.today')}</span>
+            <span className="sm:hidden">T</span>
           </Button>
 
           {/* Yesterday Button */}
@@ -106,8 +106,8 @@ export function DateSelector({
             }}
           >
             <Calendar className="h-3 w-3 flex-shrink-0" />
-            <span className="hidden xs:inline">Yesterday</span>
-            <span className="xs:hidden">Y</span>
+            <span className="hidden sm:inline">{t('dashboard.widgets.dateSelector.buttons.yesterday')}</span>
+            <span className="sm:hidden">Y</span>
           </Button>
 
           {/* Custom Date Picker */}
@@ -129,7 +129,7 @@ export function DateSelector({
                   {isCustomDate ? (
                     <span className="hidden sm:inline">{formatDate(selectedDate)}</span>
                   ) : (
-                    <span className="hidden sm:inline">Pick Date</span>
+                    <span className="hidden sm:inline">{t('dashboard.widgets.dateSelector.buttons.pickDate')}</span>
                   )}
                   <span className="sm:hidden">
                     {isCustomDate ? formatDate(selectedDate).split(',')[0] : 'Pick'}
@@ -167,20 +167,20 @@ export function DateSelector({
             {isLoading ? (
               <>
                 <RefreshCw className="h-3 w-3 animate-spin flex-shrink-0" />
-                <span className="hidden xs:inline">Loading...</span>
-                <span className="xs:hidden">...</span>
+                <span className="hidden sm:inline">{t('dashboard.widgets.dateSelector.buttons.loading')}</span>
+                <span className="sm:hidden">...</span>
               </>
             ) : hasDataLoaded ? (
               <>
                 <RefreshCw className="h-3 w-3 flex-shrink-0" />
-                <span className="hidden xs:inline">Refresh</span>
-                <span className="xs:hidden">R</span>
+                <span className="hidden sm:inline">{t('dashboard.widgets.dateSelector.buttons.refresh')}</span>
+                <span className="sm:hidden">R</span>
               </>
             ) : (
               <>
                 <BarChart3 className="h-3 w-3 flex-shrink-0" />
-                <span className="hidden xs:inline">Load</span>
-                <span className="xs:hidden">L</span>
+                <span className="hidden sm:inline">{t('dashboard.widgets.dateSelector.buttons.load')}</span>
+                <span className="sm:hidden">L</span>
               </>
             )}
           </Button>
@@ -192,7 +192,7 @@ export function DateSelector({
         <div className="flex justify-center">
           <Badge variant="outline" className="gap-1 text-xs px-2 py-1">
             <TrendingUp className="h-3 w-3 flex-shrink-0" />
-            <span>{kpis?.totalCalls || 0} calls</span>
+            <span>{t('dashboard.widgets.dateSelector.status.calls', { count: (kpis?.totalCalls || 0).toString() })}</span>
           </Badge>
         </div>
       )}
@@ -205,9 +205,9 @@ export function DateSelector({
               <RefreshCw className="h-3 w-3 animate-spin flex-shrink-0" />
               <span className="truncate">
                 {progress ? (
-                  `${progress.phase === 'initial' ? 'Loading' : 'Background'} • ${progress.recordsLoaded.toLocaleString()}`
+                  `${progress.phase === 'initial' ? t('dashboard.widgets.dateSelector.buttons.loading').replace('...', '') : 'Background'} • ${progress.recordsLoaded.toLocaleString()}`
                 ) : (
-                  'Loading...'
+                  t('dashboard.widgets.dateSelector.buttons.loading')
                 )}
               </span>
             </div>

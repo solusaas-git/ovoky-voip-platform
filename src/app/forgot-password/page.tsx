@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { SimpleLoadingScreen } from '@/components/SimpleLoadingScreen';
 import { useBranding } from '@/lib/BrandingContext';
+import { useTranslations } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -28,24 +29,28 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-// Form validation schema
-const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }),
+// Form validation schema with dynamic error messages
+const createFormSchema = (t: (key: string) => string) => z.object({
+  email: z.string().email({ message: t('auth.validation.emailInvalid') }),
 });
 
 export default function ForgotPasswordPage() {
-  const { isLoading } = useBranding();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const [errorContent, setErrorContent] = useState({
     title: '',
     message: '',
     description: ''
   });
-  
-  const router = useRouter();
 
-  // Form definition - moved to top to ensure hooks are called in same order
+  const router = useRouter();
+  const { settings, isLoading: brandingLoading } = useBranding();
+  const { t, isLoading: translationsLoading } = useTranslations();
+
+  // Always call useForm hook - no conditional logic before it
+  const formSchema = createFormSchema(t);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,14 +58,16 @@ export default function ForgotPasswordPage() {
     },
   });
 
-  // Show simple loading screen until branding is ready
-  if (isLoading) {
+  // Show loading screen until both branding and translations are ready
+  if (brandingLoading || translationsLoading) {
     return <SimpleLoadingScreen />;
   }
 
+  const companyName = settings.companyName || 'OVOKY';
+
   // Form submission handler
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true);
+    setIsLoading(true);
     
     try {
       const response = await fetch('/api/auth/forgot-password', {
@@ -74,79 +81,62 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle specific error cases
-        switch (data.code) {
-          case 'MISSING_EMAIL':
-            setErrorContent({
-              title: 'Missing Email',
-              message: 'Email address is required',
-              description: 'Please enter your email address to receive password reset instructions.'
-            });
-            break;
-          case 'INVALID_EMAIL_FORMAT':
-            setErrorContent({
-              title: 'Invalid Email Format',
-              message: 'Please enter a valid email address',
-              description: 'The email address format appears to be incorrect. Please check and try again.'
-            });
-            form.setError('email', {
-              type: 'manual',
-              message: 'Please enter a valid email address'
-            });
-            break;
-          default:
-            setErrorContent({
-              title: 'Request Failed',
-              message: data.message || 'Failed to send password reset email',
-              description: 'Please try again. If the problem persists, contact support.'
-            });
-            break;
-        }
-        setShowErrorDialog(true);
-      } else {
-        // Success
-        const email = values.email;
-        form.reset();
-        router.push(`/forgot-password/sent?email=${encodeURIComponent(email)}`);
+        throw new Error(data.message || t('auth.errors.serverError'));
       }
+
+      // Show success dialog regardless of whether email exists
+      setUserEmail(values.email);
+      setShowSuccessDialog(true);
+
     } catch (error) {
-      console.error('Forgot password error:', error);
+      const message = error instanceof Error ? error.message : t('auth.errors.serverError');
       setErrorContent({
-        title: 'Network Error',
-        message: 'Unable to send password reset request',
-        description: 'Please check your internet connection and try again.'
+        title: t('auth.errors.title'),
+        message: message,
+        description: t('auth.errors.tryAgain')
       });
       setShowErrorDialog(true);
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-full max-w-md space-y-8"
       >
         {/* Header */}
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-primary)]/80 rounded-full mb-4"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="text-center space-y-4"
+        >
+          <motion.div 
+            className="mx-auto h-16 w-16 bg-gradient-to-r from-[var(--brand-primary)] to-blue-600 rounded-2xl flex items-center justify-center shadow-lg"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
           >
-            <Mail className="w-8 h-8 text-white" />
+            <Mail className="h-8 w-8 text-white" />
           </motion.div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Forgot Password?</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            No worries! Enter your email address and we'll send you password reset instructions.
-          </p>
-        </div>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent">
+              {t('auth.forgotPassword.title')}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">
+              {t('auth.forgotPassword.subtitle')}
+            </p>
+            <p className="text-gray-500 dark:text-gray-500 text-sm max-w-sm mx-auto leading-relaxed">
+              {t('auth.forgotPassword.description')}
+            </p>
+          </div>
+        </motion.div>
 
-        {/* Main Form Card */}
+        {/* Form Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -168,7 +158,7 @@ export default function ForgotPasswordPage() {
                         </div>
                         <Input
                           type="email"
-                          placeholder="Enter your email address"
+                          placeholder={t('auth.forgotPassword.emailPlaceholder')}
                           className="pl-12 h-12 bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-700 focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10 rounded-xl transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 hover:border-gray-300 dark:hover:border-gray-500"
                           {...field}
                         />
@@ -186,37 +176,43 @@ export default function ForgotPasswordPage() {
               >
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isLoading}
                   className="w-full h-12 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group transform hover:-translate-y-0.5 border-0"
                 >
-                  {isSubmitting ? (
+                  {isLoading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      Sending Instructions...
+                      {t('auth.forgotPassword.submitting')}
                     </>
                   ) : (
                     <>
-                      Send Reset Instructions
+                      {t('auth.forgotPassword.submitButton')}
+                      <Mail className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
                     </>
                   )}
                 </Button>
               </motion.div>
+
+              {/* Back to Login */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="text-center"
+              >
+                <Link 
+                  href="/" 
+                  className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-[var(--brand-primary)] dark:hover:text-blue-300 font-medium transition-colors duration-200 group"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform duration-200" />
+                  {t('auth.forgotPassword.backToLogin')}
+                </Link>
+              </motion.div>
             </form>
           </Form>
-
-          {/* Back to Login Link */}
-          <div className="mt-6 text-center">
-            <Link 
-              href="/login"
-              className="inline-flex items-center text-sm text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 transition-colors duration-200 font-medium"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Login
-            </Link>
-          </div>
         </motion.div>
 
-        {/* Additional Help */}
+        {/* Sign up link */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -224,16 +220,60 @@ export default function ForgotPasswordPage() {
           className="mt-6 text-center"
         >
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Don't have an account?{' '}
+            {t('auth.login.noAccount')}{' '}
             <Link 
               href="/register" 
               className="text-[var(--brand-primary)] dark:text-blue-400 hover:text-[var(--brand-primary)]/80 dark:hover:text-blue-300 font-semibold transition-colors duration-200"
             >
-              Sign up for free
+              {t('auth.login.createAccount')}
             </Link>
           </p>
         </motion.div>
       </motion.div>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <Mail className="w-5 h-5" />
+              {t('auth.forgotPassword.emailSent.title')}
+            </DialogTitle>
+            <DialogDescription className="space-y-2">
+              <span className="font-medium text-gray-900 dark:text-gray-100 block">
+                {t('auth.forgotPassword.emailSent.message')}
+              </span>
+              <span className="text-gray-600 dark:text-gray-400 block">
+                {t('auth.forgotPassword.emailSent.instruction')}
+              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-500 block mt-2">
+                {userEmail}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex justify-end gap-2 pt-4">
+            <Button 
+              variant="outline"
+              onClick={() => {
+                setShowSuccessDialog(false);
+                setUserEmail('');
+              }}
+            >
+              {t('common.actions.close')}
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowSuccessDialog(false);
+                router.push('/');
+              }}
+              className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90"
+            >
+              {t('auth.forgotPassword.backToLogin')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Error Dialog */}
       <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
@@ -256,7 +296,7 @@ export default function ForgotPasswordPage() {
               onClick={() => setShowErrorDialog(false)}
               className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/90"
             >
-              Try Again
+              {t('common.actions.tryAgain')}
             </Button>
           </div>
         </DialogContent>

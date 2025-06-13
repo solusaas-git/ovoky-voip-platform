@@ -18,6 +18,7 @@ import { TotalMinutesWidget } from '@/components/dashboard/TotalMinutesWidget';
 import { CdrProvider, useCdr } from '@/contexts/CdrContext';
 import { BalanceTopup } from '@/components/payments/BalanceTopup';
 import { Badge } from '@/components/ui/badge';
+import { useTranslations } from '@/lib/i18n';
 
 import { User, TrendingUp, Activity, Clock, Wallet, AlertTriangle, TrendingDown, DollarSign, Ticket, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -43,11 +44,13 @@ import { UnsolvedTicketsCard } from '@/components/admin/UnsolvedTicketsCard';
 import { PhoneNumberRequestsCard } from '@/components/admin/PhoneNumberRequestsCard';
 
 export default function DashboardPage() {
+  const { t } = useTranslations();
+  
   return (
     <MainLayout>
       <PageLayout
-        title="Dashboard"
-        description="Overview of your account activity, call statistics, and system status"
+        title={t('dashboard.page.title')}
+        description={t('dashboard.page.description')}
       >
         <CdrProvider>
           <DashboardContent />
@@ -59,6 +62,7 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { user } = useAuth();
+  const { t } = useTranslations();
   const { accountInfo, isLoading: accountLoading, refetch } = useSippyAccount(user?.sippyAccountId);
   const { settings: notificationSettings, isLoading: notificationLoading } = useUserNotificationSettings();
   const { 
@@ -395,9 +399,9 @@ function DashboardContent() {
           <User className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-xl font-semibold">Welcome back, {user?.name || 'User'}!</h3>
+          <h3 className="text-xl font-semibold">{t('dashboard.welcome', { name: user?.name || 'User' })}</h3>
           <p className="text-sm text-muted-foreground capitalize">
-            {user?.role || 'Loading...'} Account
+            {user?.role || t('common.loading')} {t('dashboard.account')}
           </p>
         </div>
       </div>
@@ -431,12 +435,12 @@ function DashboardContent() {
             textCurrency: 'text-red-100',
             textMuted: 'text-red-200',
             icon: <AlertTriangle className="h-6 w-6 text-white" />,
-            badge: { variant: 'secondary' as const, text: 'Critical', color: 'bg-red-800/50 text-red-100 border-red-700' },
+            badge: { variant: 'secondary' as const, text: t('dashboard.widgets.balance.status.critical'), color: 'bg-red-800/50 text-red-100 border-red-700' },
             alert: {
               bg: 'bg-red-800/30',
               border: 'border-red-600',
               text: 'text-red-100',
-              message: 'Critical: Account balance is zero or negative'
+              message: t('dashboard.widgets.balance.alerts.critical')
             },
             glow: 'shadow-red-500/25',
             pulse: 'animate-pulse'
@@ -450,12 +454,12 @@ function DashboardContent() {
             textCurrency: 'text-orange-100',
             textMuted: 'text-orange-200',
             icon: <TrendingDown className="h-6 w-6 text-white" />,
-            badge: { variant: 'secondary' as const, text: 'Low', color: 'bg-orange-800/50 text-orange-100 border-orange-700' },
+            badge: { variant: 'secondary' as const, text: t('dashboard.widgets.balance.status.warning'), color: 'bg-orange-800/50 text-orange-100 border-orange-700' },
             alert: {
               bg: 'bg-orange-800/30',
               border: 'border-orange-600',
               text: 'text-orange-100',
-              message: 'Warning: Balance is below €5.00'
+              message: t('dashboard.widgets.balance.alerts.warning')
             },
             glow: 'shadow-orange-500/25',
             pulse: ''
@@ -469,12 +473,12 @@ function DashboardContent() {
             textCurrency: 'text-yellow-100',
             textMuted: 'text-yellow-200',
             icon: <Wallet className="h-6 w-6 text-white" />,
-            badge: { variant: 'secondary' as const, text: 'Below Threshold', color: 'bg-yellow-800/50 text-yellow-100 border-yellow-700' },
+            badge: { variant: 'secondary' as const, text: t('dashboard.widgets.balance.status.low'), color: 'bg-yellow-800/50 text-yellow-100 border-yellow-700' },
             alert: {
               bg: 'bg-yellow-800/30',
               border: 'border-yellow-600',
               text: 'text-yellow-100',
-              message: `Notice: Balance is below your threshold of €${notificationSettings?.lowBalanceThreshold?.toFixed(2) || '10.00'}`
+              message: t('dashboard.widgets.balance.alerts.low', { threshold: notificationSettings?.lowBalanceThreshold?.toFixed(2) || '10.00' })
             },
             glow: 'shadow-yellow-500/25',
             pulse: ''
@@ -488,7 +492,7 @@ function DashboardContent() {
             textCurrency: 'text-emerald-100',
             textMuted: 'text-emerald-200',
             icon: <DollarSign className="h-6 w-6 text-white" />,
-            badge: { variant: 'secondary' as const, text: 'Healthy', color: 'bg-emerald-800/50 text-emerald-100 border-emerald-700' },
+            badge: { variant: 'secondary' as const, text: t('dashboard.widgets.balance.status.good'), color: 'bg-emerald-800/50 text-emerald-100 border-emerald-700' },
             alert: null,
             glow: 'shadow-emerald-500/25',
             pulse: ''
@@ -562,7 +566,7 @@ function DashboardContent() {
             {/* Threshold Indicator */}
             {!accountLoading && !notificationLoading && notificationSettings && (
               <div className="text-right">
-                <div className={`text-xs ${config.textMuted} mb-1`}>Threshold</div>
+                <div className={`text-xs ${config.textMuted} mb-1`}>{t('dashboard.widgets.balance.alerts.threshold')}</div>
                 <div className={`text-sm font-medium ${config.textSecondary}`}>
                   €{notificationSettings.lowBalanceThreshold.toFixed(2)}
                 </div>
@@ -574,7 +578,7 @@ function DashboardContent() {
         {/* Account Information */}
         <div className={`flex items-center justify-between text-xs ${config.textMuted} px-1`}>
           <span className="flex items-center space-x-1">
-            <span>Account:</span>
+            <span>{t('dashboard.widgets.balance.alerts.account')}</span>
             <code className="bg-muted/20 px-1 py-0.5 rounded text-xs backdrop-blur-sm">
               {getAccountDisplayName()}
             </code>
@@ -583,7 +587,7 @@ function DashboardContent() {
             <div className={`w-2 h-2 rounded-full ${
               accountLoading ? 'bg-yellow-300 animate-pulse' : 'bg-muted'
             }`} />
-            <span>{accountLoading ? 'Updating...' : 'Live'}</span>
+            <span>{accountLoading ? t('dashboard.widgets.balance.alerts.updating') : t('dashboard.widgets.balance.alerts.live')}</span>
           </span>
         </div>
 
@@ -598,7 +602,7 @@ function DashboardContent() {
               <div>
                 <div className="font-medium mb-1">{config.alert.message}</div>
                 <div className="text-xs opacity-75">
-                  Consider topping up your account to avoid service interruption.
+                  {t('dashboard.widgets.balance.alerts.topupMessage')}
                 </div>
               </div>
             </div>
@@ -609,7 +613,7 @@ function DashboardContent() {
         {!accountLoading && !notificationLoading && (
           <div className={`flex items-center justify-between text-xs ${config.textMuted}`}>
             <div className="flex items-center space-x-2">
-              <span>Status:</span>
+              <span>{t('dashboard.widgets.balance.alerts.statusLabel')}</span>
               <div className={`flex items-center space-x-1 ${config.textSecondary}`}>
                 {balanceStatus === 'good' && <TrendingUp className="w-3 h-3" />}
                 {balanceStatus === 'low' && <Activity className="w-3 h-3" />}
@@ -618,7 +622,7 @@ function DashboardContent() {
               </div>
             </div>
             <div>
-              Last updated: {new Date().toLocaleTimeString()}
+              {t('dashboard.widgets.balance.alerts.lastUpdated', { time: new Date().toLocaleTimeString() })}
             </div>
           </div>
         )}
@@ -742,7 +746,7 @@ function DashboardContent() {
         return (
           <DashboardCard
             key={widget.id}
-            title="Welcome"
+            title={t('dashboard.widgets.welcome.title')}
             icon={<User className="h-4 w-4" />}
             {...commonProps}
           >
@@ -754,7 +758,7 @@ function DashboardContent() {
         return (
           <DashboardCard
             key={widget.id}
-            title="Account Balance"
+            title={t('dashboard.widgets.balance.title')}
             icon={<Wallet className="h-4 w-4" />}
             headerActions={<BalanceTopup size="sm" onPaymentSuccess={() => refetch()} />}
             {...commonProps}
@@ -767,7 +771,7 @@ function DashboardContent() {
         return (
           <DashboardCard
             key={widget.id}
-            title="Cost of Day"
+            title={t('dashboard.widgets.costOfDay.title')}
             icon={<DollarSign className="h-4 w-4" />}
             {...commonProps}
           >
@@ -779,7 +783,7 @@ function DashboardContent() {
         return (
           <DashboardCard
             key={widget.id}
-            title="ASR (Success Rate)"
+            title={t('dashboard.widgets.asr.title')}
             icon={<TrendingUp className="h-4 w-4" />}
             {...commonProps}
           >
@@ -791,7 +795,7 @@ function DashboardContent() {
         return (
           <DashboardCard
             key={widget.id}
-            title="ACD (Avg Call Duration)"
+            title={t('dashboard.widgets.acd.title')}
             icon={<Clock className="h-4 w-4" />}
             {...commonProps}
           >
@@ -803,7 +807,7 @@ function DashboardContent() {
         return (
           <DashboardCard
             key={widget.id}
-            title="Total Minutes"
+            title={t('dashboard.widgets.totalMinutes.title')}
             icon={<Activity className="h-4 w-4" />}
             {...commonProps}
           >
@@ -815,7 +819,7 @@ function DashboardContent() {
         return user?.role === 'admin' ? (
           <DashboardCard
             key={widget.id}
-            title="Users Requiring Attention"
+            title={t('dashboard.widgets.userAttention.title')}
             icon={<AlertTriangle className="h-4 w-4" />}
             {...commonProps}
           >
@@ -827,7 +831,7 @@ function DashboardContent() {
         return user?.role === 'admin' ? (
           <DashboardCard
             key={widget.id}
-            title="Low Balance Users"
+            title={t('dashboard.widgets.lowBalanceUsers.title')}
             icon={<Wallet className="h-4 w-4" />}
             {...commonProps}
           >
@@ -839,7 +843,7 @@ function DashboardContent() {
         return (
           <DashboardCard
             key={widget.id}
-            title="Date Selector"
+            title={t('dashboard.widgets.dateSelector.title')}
             icon={<Clock className="h-4 w-4" />}
             {...commonProps}
           >
@@ -856,7 +860,7 @@ function DashboardContent() {
         return user?.role === 'admin' ? (
           <DashboardCard
             key={widget.id}
-            title="Unsolved Tickets"
+            title={t('dashboard.widgets.unsolvedTickets.title')}
             icon={<Ticket className="h-4 w-4" />}
             {...commonProps}
           >
@@ -872,7 +876,7 @@ function DashboardContent() {
         return user?.role === 'admin' ? (
           <DashboardCard
             key={widget.id}
-            title="Phone Number Requests"
+            title={t('dashboard.widgets.phoneNumberRequests.title')}
             icon={<Phone className="h-4 w-4" />}
             {...commonProps}
           >
@@ -894,7 +898,7 @@ function DashboardContent() {
           >
             <div className="space-y-2">
               <div className="text-2xl font-bold">--</div>
-              <p className="text-xs text-muted-foreground">Widget content for {widget.id}</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.widgets.placeholder.content', { widgetId: widget.id })}</p>
             </div>
           </DashboardCard>
         );

@@ -33,6 +33,7 @@ import { toast } from 'sonner';
 import { formatDate, formatCurrency, maskPhoneNumber } from '@/lib/utils';
 import { PhoneNumber } from '@/types/phoneNumber';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslations } from '@/lib/i18n';
 
 interface AvailableNumbersResponse {
   phoneNumbers: PhoneNumber[];
@@ -73,6 +74,7 @@ interface BulkPurchaseResult {
 }
 
 export default function BuyNumbersPage() {
+  const { t } = useTranslations();
   const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([]);
   const [filters, setFilters] = useState({
     countries: [] as string[],
@@ -158,7 +160,7 @@ export default function BuyNumbersPage() {
       setFilters(data.filters || { countries: [], numberTypes: [] });
     } catch (error) {
       console.error('Error fetching available numbers:', error);
-      toast.error('Failed to load available numbers');
+      toast.error(t('phoneNumbers.buyNumbers.messages.error.loadNumbers'));
     } finally {
       setIsLoading(false);
     }
@@ -182,13 +184,13 @@ export default function BuyNumbersPage() {
         throw new Error(error.error || 'Failed to purchase number');
       }
 
-      toast.success(`Phone number ${selectedNumber.number} purchased successfully!`);
+      toast.success(t('phoneNumbers.buyNumbers.messages.success.numberPurchased', { number: selectedNumber.number }));
       setShowPurchaseModal(false);
       setSelectedNumber(null);
       fetchAvailableNumbers(); // Refresh the list
     } catch (error) {
       console.error('Error purchasing number:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to purchase number');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.buyNumbers.messages.error.purchaseNumber'));
     } finally {
       setIsPurchasing(false);
     }
@@ -224,7 +226,7 @@ export default function BuyNumbersPage() {
       
     } catch (error) {
       console.error('Error bulk purchasing numbers:', error);
-      toast.error('Failed to purchase numbers');
+      toast.error(t('phoneNumbers.buyNumbers.messages.error.bulkPurchase'));
     } finally {
       setIsBulkPurchasing(false);
     }
@@ -252,7 +254,7 @@ export default function BuyNumbersPage() {
       }
 
       const result = await response.json();
-      toast.success(`Backorder request submitted successfully! Request ID: ${result.request.requestNumber}`);
+      toast.success(t('phoneNumbers.buyNumbers.messages.success.backorderSubmitted', { requestId: result.request.requestNumber }));
       setShowBackorderModal(false);
       setSelectedNumber(null);
       setBackorderForm({
@@ -262,7 +264,7 @@ export default function BuyNumbersPage() {
       });
     } catch (error) {
       console.error('Error submitting backorder request:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to submit backorder request');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.buyNumbers.messages.error.submitBackorder'));
     } finally {
       setIsSubmittingBackorder(false);
     }
@@ -338,20 +340,20 @@ export default function BuyNumbersPage() {
   return (
     <MainLayout>
       <PageLayout
-        title="Buy Phone Numbers"
-        description="Purchase available numbers directly or submit backorder requests for numbers requiring approval"
+        title={t('phoneNumbers.buyNumbers.page.title')}
+        description={t('phoneNumbers.buyNumbers.page.description')}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Services', href: '/services' },
-          { label: 'Numbers', href: '/services/numbers' },
-          { label: 'Buy Numbers' }
+          { label: t('phoneNumbers.buyNumbers.page.breadcrumbs.dashboard'), href: '/dashboard' },
+          { label: t('phoneNumbers.buyNumbers.page.breadcrumbs.services'), href: '/services' },
+          { label: t('phoneNumbers.buyNumbers.page.breadcrumbs.numbers'), href: '/services/numbers' },
+          { label: t('phoneNumbers.buyNumbers.page.breadcrumbs.buyNumbers') }
         ]}
       >
         {/* Filters */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Search & Filters</CardTitle>
+              <CardTitle className="text-lg">{t('phoneNumbers.buyNumbers.filters.title')}</CardTitle>
               {phoneNumbers.length > 0 && (
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -361,7 +363,10 @@ export default function BuyNumbersPage() {
                     className="mr-2"
                   />
                   <Label htmlFor="select-all" className="text-sm font-medium">
-                    Select All Direct Purchase ({Math.min(phoneNumbers.filter(n => !n.backorderOnly).length, 20)}{phoneNumbers.filter(n => !n.backorderOnly).length > 20 ? ' of ' + phoneNumbers.filter(n => !n.backorderOnly).length : ''}) - Max 20
+                    {t('phoneNumbers.buyNumbers.filters.selectAll', { 
+                      count: Math.min(phoneNumbers.filter(n => !n.backorderOnly).length, 20).toString(),
+                      maxText: phoneNumbers.filter(n => !n.backorderOnly).length > 20 ? t('phoneNumbers.buyNumbers.filters.maxText', { total: phoneNumbers.filter(n => !n.backorderOnly).length.toString() }) : ''
+                    })}
                   </Label>
                 </div>
               )}
@@ -373,7 +378,7 @@ export default function BuyNumbersPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   type="text"
-                  placeholder="Search numbers..."
+                  placeholder={t('phoneNumbers.buyNumbers.filters.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -382,10 +387,10 @@ export default function BuyNumbersPage() {
               
               <Select value={countryFilter} onValueChange={setCountryFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Countries" />
+                  <SelectValue placeholder={t('phoneNumbers.buyNumbers.filters.allCountries')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
+                  <SelectItem value="all">{t('phoneNumbers.buyNumbers.filters.allCountries')}</SelectItem>
                   {filters.countries.map((country) => (
                     <SelectItem key={country} value={country}>{country}</SelectItem>
                   ))}
@@ -394,10 +399,10 @@ export default function BuyNumbersPage() {
 
               <Select value={numberTypeFilter} onValueChange={setNumberTypeFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Types" />
+                  <SelectValue placeholder={t('phoneNumbers.buyNumbers.filters.allTypes')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="all">{t('phoneNumbers.buyNumbers.filters.allTypes')}</SelectItem>
                   {filters.numberTypes.map((type) => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -410,15 +415,15 @@ export default function BuyNumbersPage() {
                 setSortOrder(order as 'asc' | 'desc');
               }}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder={t('phoneNumbers.buyNumbers.filters.sortBy')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="monthlyRate_asc">Price: Low to High</SelectItem>
-                  <SelectItem value="monthlyRate_desc">Price: High to Low</SelectItem>
-                  <SelectItem value="country_asc">Country A-Z</SelectItem>
-                  <SelectItem value="country_desc">Country Z-A</SelectItem>
-                  <SelectItem value="number_asc">Number A-Z</SelectItem>
-                  <SelectItem value="number_desc">Number Z-A</SelectItem>
+                  <SelectItem value="monthlyRate_asc">{t('phoneNumbers.buyNumbers.filters.sortOptions.priceLowHigh')}</SelectItem>
+                  <SelectItem value="monthlyRate_desc">{t('phoneNumbers.buyNumbers.filters.sortOptions.priceHighLow')}</SelectItem>
+                  <SelectItem value="country_asc">{t('phoneNumbers.buyNumbers.filters.sortOptions.countryAZ')}</SelectItem>
+                  <SelectItem value="country_desc">{t('phoneNumbers.buyNumbers.filters.sortOptions.countryZA')}</SelectItem>
+                  <SelectItem value="number_asc">{t('phoneNumbers.buyNumbers.filters.sortOptions.numberAZ')}</SelectItem>
+                  <SelectItem value="number_desc">{t('phoneNumbers.buyNumbers.filters.sortOptions.numberZA')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -426,7 +431,7 @@ export default function BuyNumbersPage() {
             {(searchTerm || countryFilter !== 'all' || numberTypeFilter !== 'all' || sortBy !== 'monthlyRate' || sortOrder !== 'asc') && (
               <Button variant="ghost" onClick={clearFilters} className="mt-2">
                 <X className="h-4 w-4 mr-2" />
-                Clear Filters
+                {t('phoneNumbers.buyNumbers.filters.clearFilters')}
               </Button>
             )}
           </CardContent>
@@ -437,7 +442,7 @@ export default function BuyNumbersPage() {
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-blue-600">{total}</div>
-              <p className="text-xs text-muted-foreground">Total Numbers</p>
+              <p className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.stats.totalNumbers')}</p>
             </CardContent>
           </Card>
           <Card>
@@ -445,7 +450,7 @@ export default function BuyNumbersPage() {
               <div className="text-2xl font-bold text-green-600">
                 {phoneNumbers.filter(n => !n.backorderOnly).length}
               </div>
-              <p className="text-xs text-muted-foreground">Direct Purchase</p>
+              <p className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.stats.directPurchase')}</p>
             </CardContent>
           </Card>
           <Card>
@@ -453,13 +458,13 @@ export default function BuyNumbersPage() {
               <div className="text-2xl font-bold text-orange-600">
                 {phoneNumbers.filter(n => n.backorderOnly).length}
               </div>
-              <p className="text-xs text-muted-foreground">Backorder Only</p>
+              <p className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.stats.backorderOnly')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">{filters.countries.length}</div>
-              <p className="text-xs text-muted-foreground">Countries</p>
+              <p className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.stats.countries')}</p>
             </CardContent>
           </Card>
           <Card>
@@ -467,7 +472,7 @@ export default function BuyNumbersPage() {
               <div className="text-2xl font-bold">
                 {phoneNumbers.length > 0 ? formatCurrency(Math.min(...phoneNumbers.map(n => n.monthlyRate || 0)), phoneNumbers[0]?.currency || 'USD') : '-'}
               </div>
-              <p className="text-xs text-muted-foreground">Starting From</p>
+              <p className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.stats.startingFrom')}</p>
             </CardContent>
           </Card>
         </div>
@@ -482,11 +487,11 @@ export default function BuyNumbersPage() {
             <CardContent className="py-12">
               <div className="text-center">
                 <Hash className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No numbers available</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('phoneNumbers.buyNumbers.numbers.empty.title')}</h3>
                 <p className="text-muted-foreground">
                   {searchTerm || countryFilter !== 'all' || numberTypeFilter !== 'all' 
-                    ? 'Try adjusting your filters to see more results.'
-                    : 'No phone numbers are currently available for purchase.'
+                    ? t('phoneNumbers.buyNumbers.numbers.empty.descriptionFiltered')
+                    : t('phoneNumbers.buyNumbers.numbers.empty.descriptionEmpty')
                   }
                 </p>
               </div>
@@ -514,41 +519,41 @@ export default function BuyNumbersPage() {
                       </div>
                       {number.backorderOnly ? (
                         <Badge variant="outline" className="text-orange-600 border-orange-200 text-xs whitespace-nowrap">
-                          Backorder
+                          {t('phoneNumbers.buyNumbers.numbers.badges.backorder')}
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-green-600 border-green-200 text-xs whitespace-nowrap">
-                          Available
+                          {t('phoneNumbers.buyNumbers.numbers.badges.available')}
                         </Badge>
                       )}
                     </div>
                     
                     <CardDescription className="text-xs text-muted-foreground">
                       {number.backorderOnly 
-                        ? 'Requires admin approval for purchase'
-                        : 'Full number shown after purchase'
+                        ? t('phoneNumbers.buyNumbers.numbers.descriptions.backorderRequired')
+                        : t('phoneNumbers.buyNumbers.numbers.descriptions.fullNumberAfterPurchase')
                       }
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <Label className="text-xs text-muted-foreground">Monthly Rate</Label>
+                        <Label className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.numbers.fields.monthlyRate')}</Label>
                         <p className="font-medium text-lg text-green-600">
                           {formatCurrency(number.monthlyRate || 0, number.currency)}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-xs text-muted-foreground">Setup Fee</Label>
+                        <Label className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.numbers.fields.setupFee')}</Label>
                         <p className="font-medium">
-                          {number.setupFee ? formatCurrency(number.setupFee, number.currency) : 'Free'}
+                          {number.setupFee ? formatCurrency(number.setupFee, number.currency) : t('phoneNumbers.buyNumbers.modals.singlePurchase.fields.free')}
                         </p>
                       </div>
                     </div>
 
                     {number.capabilities && number.capabilities.length > 0 && (
                       <div>
-                        <Label className="text-xs text-muted-foreground">Capabilities</Label>
+                        <Label className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.numbers.fields.capabilities')}</Label>
                         <div className="flex flex-wrap gap-1 mt-1">
                           {number.capabilities.map((capability) => (
                             <Badge key={capability} variant="secondary" className="text-xs">
@@ -568,7 +573,7 @@ export default function BuyNumbersPage() {
                         className="w-full bg-orange-600 hover:bg-orange-700"
                       >
                         <Calendar className="h-4 w-4 mr-2" />
-                        Request Backorder
+                        {t('phoneNumbers.buyNumbers.numbers.buttons.requestBackorder')}
                       </Button>
                     ) : (
                       <Button
@@ -580,7 +585,7 @@ export default function BuyNumbersPage() {
                         disabled={selectedNumbers.has(number._id)}
                       >
                         <ShoppingCart className="h-4 w-4 mr-2" />
-                        {selectedNumbers.has(number._id) ? 'Selected for Bulk' : 'Purchase Number'}
+                        {selectedNumbers.has(number._id) ? t('phoneNumbers.buyNumbers.numbers.buttons.selectedForBulk') : t('phoneNumbers.buyNumbers.numbers.buttons.purchaseNumber')}
                       </Button>
                     )}
                   </CardContent>
@@ -592,7 +597,11 @@ export default function BuyNumbersPage() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-6">
                 <p className="text-sm text-muted-foreground">
-                  Showing {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, total)} of {total} results
+                  {t('phoneNumbers.buyNumbers.pagination.showing', { 
+                    start: (((currentPage - 1) * limit) + 1).toString(),
+                    end: Math.min(currentPage * limit, total).toString(),
+                    total: total.toString()
+                  })}
                 </p>
                 <div className="flex space-x-2">
                   <Button
@@ -602,7 +611,7 @@ export default function BuyNumbersPage() {
                     disabled={currentPage <= 1}
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    {t('phoneNumbers.buyNumbers.pagination.previous')}
                   </Button>
                   <Button
                     variant="outline"
@@ -610,7 +619,7 @@ export default function BuyNumbersPage() {
                     onClick={() => changePage(currentPage + 1)}
                     disabled={currentPage >= totalPages}
                   >
-                    Next
+                    {t('phoneNumbers.buyNumbers.pagination.next')}
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -628,16 +637,16 @@ export default function BuyNumbersPage() {
                   <div className="flex items-center gap-2">
                     <Package className="h-5 w-5 text-green-600" />
                     <span className="font-medium text-green-800">
-                      {selectedNumbers.size} number{selectedNumbers.size > 1 ? 's' : ''} selected
+                      {selectedNumbers.size === 1 ? t('phoneNumbers.buyNumbers.bulkActions.selected', { count: selectedNumbers.size.toString() }) : t('phoneNumbers.buyNumbers.bulkActions.selectedPlural', { count: selectedNumbers.size.toString() })}
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm text-green-700">
                     <DollarSign className="h-4 w-4" />
                     <span>
-                      Monthly: {formatCurrency(getTotalCost().monthlyTotal, phoneNumbers[0]?.currency || 'USD')}
+                      {t('phoneNumbers.buyNumbers.bulkActions.monthly', { amount: formatCurrency(getTotalCost().monthlyTotal, phoneNumbers[0]?.currency || 'USD') })}
                       {getTotalCost().setupTotal > 0 && (
-                        <> + Setup: {formatCurrency(getTotalCost().setupTotal, phoneNumbers[0]?.currency || 'USD')}</>
+                        t('phoneNumbers.buyNumbers.bulkActions.setup', { amount: formatCurrency(getTotalCost().setupTotal, phoneNumbers[0]?.currency || 'USD') })
                       )}
                     </span>
                   </div>
@@ -653,7 +662,7 @@ export default function BuyNumbersPage() {
                       className="border-green-300 text-green-700 hover:bg-green-100"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Clear
+                      {t('phoneNumbers.buyNumbers.bulkActions.clear')}
                     </Button>
                     <Button
                       size="sm"
@@ -661,7 +670,7 @@ export default function BuyNumbersPage() {
                       className="bg-green-600 hover:bg-green-700"
                     >
                       <Package className="h-4 w-4 mr-1" />
-                      Purchase {selectedNumbers.size} Number{selectedNumbers.size > 1 ? 's' : ''}
+                      {selectedNumbers.size === 1 ? t('phoneNumbers.buyNumbers.bulkActions.purchase', { count: selectedNumbers.size.toString() }) : t('phoneNumbers.buyNumbers.bulkActions.purchasePlural', { count: selectedNumbers.size.toString() })}
                     </Button>
                   </div>
                 </div>
@@ -674,39 +683,39 @@ export default function BuyNumbersPage() {
         <Dialog open={showPurchaseModal} onOpenChange={setShowPurchaseModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Purchase Phone Number</DialogTitle>
+              <DialogTitle>{t('phoneNumbers.buyNumbers.modals.singlePurchase.title')}</DialogTitle>
               <DialogDescription>
-                Confirm your purchase of {maskPhoneNumber(selectedNumber?.number || '')}
+                {t('phoneNumbers.buyNumbers.modals.singlePurchase.description', { number: maskPhoneNumber(selectedNumber?.number || '') })}
               </DialogDescription>
             </DialogHeader>
             {selectedNumber && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <Label>Phone Number</Label>
+                    <Label>{t('phoneNumbers.buyNumbers.modals.singlePurchase.fields.phoneNumber')}</Label>
                     <p className="font-mono text-lg">{maskPhoneNumber(selectedNumber.number)}</p>
-                    <p className="text-xs text-muted-foreground">Full number provided after purchase</p>
+                    <p className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.modals.singlePurchase.fields.fullNumberNote')}</p>
                   </div>
                   <div>
-                    <Label>Country</Label>
+                    <Label>{t('phoneNumbers.buyNumbers.modals.singlePurchase.fields.country')}</Label>
                     <p>{selectedNumber.country}</p>
                   </div>
                   <div>
-                    <Label>Type</Label>
+                    <Label>{t('phoneNumbers.buyNumbers.modals.singlePurchase.fields.type')}</Label>
                     <p>{selectedNumber.numberType}</p>
                   </div>
                   <div>
-                    <Label>Monthly Rate</Label>
+                    <Label>{t('phoneNumbers.buyNumbers.modals.singlePurchase.fields.monthlyRate')}</Label>
                     <p className="font-semibold text-green-600">
                       {formatCurrency(selectedNumber.monthlyRate || 0, selectedNumber.currency)}
                     </p>
                   </div>
                   <div>
-                    <Label>Setup Fee</Label>
+                    <Label>{t('phoneNumbers.buyNumbers.modals.singlePurchase.fields.setupFee')}</Label>
                     <p className="font-semibold">
                       {selectedNumber.setupFee && selectedNumber.setupFee > 0 
                         ? formatCurrency(selectedNumber.setupFee, selectedNumber.currency)
-                        : 'Free'
+                        : t('phoneNumbers.buyNumbers.modals.singlePurchase.fields.free')
                       }
                     </p>
                   </div>
@@ -715,14 +724,17 @@ export default function BuyNumbersPage() {
                 <Alert>
                   <Calendar className="h-4 w-4" />
                   <AlertDescription>
-                    <strong>Billing starts today:</strong> Your first billing cycle will begin today ({formatDate(new Date())}) and billing will occur {selectedNumber.billingCycle === 'yearly' ? 'yearly' : 'monthly'}.
+                    <strong>{t('phoneNumbers.buyNumbers.modals.singlePurchase.alerts.billingStarts', { 
+                      date: formatDate(new Date()),
+                      cycle: selectedNumber.billingCycle === 'yearly' ? t('phoneNumbers.buyNumbers.modals.singlePurchase.alerts.yearly') : t('phoneNumbers.buyNumbers.modals.singlePurchase.alerts.monthly')
+                    })}</strong>
                   </AlertDescription>
                 </Alert>
 
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    By purchasing this number, you agree to the monthly charges and billing terms. You can cancel anytime through your number management page.
+                    {t('phoneNumbers.buyNumbers.modals.singlePurchase.alerts.termsAgreement')}
                   </AlertDescription>
                 </Alert>
               </div>
@@ -730,7 +742,7 @@ export default function BuyNumbersPage() {
             
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" onClick={() => setShowPurchaseModal(false)}>
-                Cancel
+                {t('phoneNumbers.buyNumbers.modals.singlePurchase.buttons.cancel')}
               </Button>
               <Button
                 onClick={handleSinglePurchase}
@@ -740,12 +752,12 @@ export default function BuyNumbersPage() {
                 {isPurchasing ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Purchasing...
+                    {t('phoneNumbers.buyNumbers.modals.singlePurchase.buttons.purchasing')}
                   </>
                 ) : (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirm Purchase
+                    {t('phoneNumbers.buyNumbers.modals.singlePurchase.buttons.purchase')}
                   </>
                 )}
               </Button>
@@ -759,10 +771,10 @@ export default function BuyNumbersPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-green-600" />
-                Bulk Purchase Confirmation
+                {t('phoneNumbers.buyNumbers.modals.bulkPurchase.title')}
               </DialogTitle>
               <DialogDescription>
-                Review your bulk purchase of {selectedNumbers.size} phone number{selectedNumbers.size > 1 ? 's' : ''}
+                {t('phoneNumbers.buyNumbers.modals.bulkPurchase.description', { count: selectedNumbers.size.toString() })}
               </DialogDescription>
             </DialogHeader>
             
@@ -771,31 +783,31 @@ export default function BuyNumbersPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-green-50 rounded-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">{selectedNumbers.size}</div>
-                  <div className="text-sm text-muted-foreground">Numbers</div>
+                  <div className="text-sm text-muted-foreground">{t('phoneNumbers.buyNumbers.modals.bulkPurchase.summary.totalNumbers')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
                     {formatCurrency(getTotalCost().monthlyTotal, phoneNumbers[0]?.currency || 'USD')}
                   </div>
-                  <div className="text-sm text-muted-foreground">Monthly Total</div>
+                  <div className="text-sm text-muted-foreground">{t('phoneNumbers.buyNumbers.modals.bulkPurchase.summary.totalMonthly')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
                     {formatCurrency(getTotalCost().setupTotal, phoneNumbers[0]?.currency || 'USD')}
                   </div>
-                  <div className="text-sm text-muted-foreground">Setup Fees</div>
+                  <div className="text-sm text-muted-foreground">{t('phoneNumbers.buyNumbers.modals.bulkPurchase.summary.totalSetup')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
                     {formatCurrency(getTotalCost().monthlyTotal + getTotalCost().setupTotal, phoneNumbers[0]?.currency || 'USD')}
                   </div>
-                  <div className="text-sm text-muted-foreground">First Bill Total</div>
+                  <div className="text-sm text-muted-foreground">{t('phoneNumbers.buyNumbers.modals.bulkPurchase.summary.grandTotal')}</div>
                 </div>
               </div>
 
               {/* Selected Numbers List */}
               <div>
-                <h3 className="font-semibold mb-3">Selected Numbers</h3>
+                <h3 className="font-semibold mb-3">{t('phoneNumbers.buyNumbers.modals.bulkPurchase.numbersTitle')}</h3>
                 <div className="max-h-60 overflow-y-auto border rounded-lg">
                   <div className="grid gap-2 p-4">
                     {getSelectedNumbers().map((number) => (
@@ -849,7 +861,7 @@ export default function BuyNumbersPage() {
             
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" onClick={() => setShowBulkPurchaseModal(false)}>
-                Cancel
+                {t('phoneNumbers.buyNumbers.modals.bulkPurchase.buttons.cancel')}
               </Button>
               <Button
                 onClick={handleBulkPurchase}
@@ -859,12 +871,12 @@ export default function BuyNumbersPage() {
                 {isBulkPurchasing ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Processing...
+                    {t('phoneNumbers.buyNumbers.modals.bulkPurchase.buttons.purchasing')}
                   </>
                 ) : (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirm Bulk Purchase
+                    {t('phoneNumbers.buyNumbers.modals.bulkPurchase.buttons.purchase')}
                   </>
                 )}
               </Button>
@@ -884,14 +896,14 @@ export default function BuyNumbersPage() {
                 ) : (
                   <AlertCircle className="h-5 w-5 text-yellow-600" />
                 )}
-                Bulk Purchase Results
+                {t('phoneNumbers.buyNumbers.modals.bulkResult.title')}
               </DialogTitle>
               <DialogDescription>
                 {bulkPurchaseResult?.summary.failed === 0 
-                  ? `All ${bulkPurchaseResult.summary.successful} phone numbers purchased successfully!`
+                  ? t('phoneNumbers.buyNumbers.modals.bulkResult.summary.successful', { count: bulkPurchaseResult.summary.successful.toString() })
                   : bulkPurchaseResult?.summary.successful === 0
-                  ? `All ${bulkPurchaseResult.summary.failed} purchases failed.`
-                  : `${bulkPurchaseResult?.summary.successful} successful, ${bulkPurchaseResult?.summary.failed} failed.`
+                  ? t('phoneNumbers.buyNumbers.modals.bulkResult.summary.failed', { count: bulkPurchaseResult.summary.failed.toString() })
+                  : `${t('phoneNumbers.buyNumbers.modals.bulkResult.summary.successful', { count: bulkPurchaseResult?.summary.successful.toString() || '0' })}, ${t('phoneNumbers.buyNumbers.modals.bulkResult.summary.failed', { count: bulkPurchaseResult?.summary.failed.toString() || '0' })}`
                 }
               </DialogDescription>
             </DialogHeader>
@@ -928,7 +940,7 @@ export default function BuyNumbersPage() {
                   <div>
                     <h3 className="font-semibold text-green-600 mb-3 flex items-center gap-2">
                       <Check className="h-4 w-4" />
-                      Successful Purchases ({bulkPurchaseResult.successful.length})
+                      {t('phoneNumbers.buyNumbers.modals.bulkResult.sections.successful')} ({bulkPurchaseResult.successful.length})
                     </h3>
                     <div className="max-h-40 overflow-y-auto border rounded-lg">
                       <div className="divide-y">
@@ -963,7 +975,7 @@ export default function BuyNumbersPage() {
                   <div>
                     <h3 className="font-semibold text-red-600 mb-3 flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4" />
-                      Failed Purchases ({bulkPurchaseResult.failed.length})
+                      {t('phoneNumbers.buyNumbers.modals.bulkResult.sections.failed')} ({bulkPurchaseResult.failed.length})
                     </h3>
                     <div className="max-h-40 overflow-y-auto border rounded-lg">
                       <div className="divide-y">
@@ -1000,7 +1012,7 @@ export default function BuyNumbersPage() {
                 variant="outline" 
                 onClick={() => setShowBulkResultModal(false)}
               >
-                Close
+                {t('phoneNumbers.buyNumbers.modals.bulkResult.buttons.close')}
               </Button>
               {bulkPurchaseResult?.successful.length && bulkPurchaseResult.successful.length > 0 && (
                 <Button 
@@ -1018,9 +1030,9 @@ export default function BuyNumbersPage() {
         <Dialog open={showBackorderModal} onOpenChange={setShowBackorderModal}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Submit Backorder Request</DialogTitle>
+              <DialogTitle>{t('phoneNumbers.buyNumbers.modals.backorder.title')}</DialogTitle>
               <DialogDescription>
-                Request admin approval to purchase {selectedNumber?.number}
+                {t('phoneNumbers.buyNumbers.modals.backorder.description', { number: selectedNumber?.number || '' })}
               </DialogDescription>
             </DialogHeader>
             
@@ -1030,22 +1042,22 @@ export default function BuyNumbersPage() {
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Phone Number</Label>
+                      <Label className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.numbers.fields.phoneNumber')}</Label>
                       <p className="font-mono font-medium">{selectedNumber.number}</p>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Monthly Rate</Label>
+                      <Label className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.numbers.fields.monthlyRate')}</Label>
                       <p className="font-medium text-green-600">
                         {formatCurrency(selectedNumber.monthlyRate || 0, selectedNumber.currency)}
                       </p>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Country & Type</Label>
+                      <Label className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.numbers.fields.country')} & {t('phoneNumbers.buyNumbers.numbers.fields.type')}</Label>
                       <p>{selectedNumber.country} • {selectedNumber.numberType}</p>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Setup Fee</Label>
-                      <p>{selectedNumber.setupFee ? formatCurrency(selectedNumber.setupFee, selectedNumber.currency) : 'Free'}</p>
+                      <Label className="text-xs text-muted-foreground">{t('phoneNumbers.buyNumbers.numbers.fields.setupFee')}</Label>
+                      <p>{selectedNumber.setupFee ? formatCurrency(selectedNumber.setupFee, selectedNumber.currency) : t('phoneNumbers.buyNumbers.modals.singlePurchase.fields.free')}</p>
                     </div>
                   </div>
                 </div>
@@ -1053,27 +1065,27 @@ export default function BuyNumbersPage() {
                 {/* Request Form */}
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="priority">Priority Level</Label>
+                    <Label htmlFor="priority">{t('phoneNumbers.buyNumbers.modals.backorder.form.priority.label')}</Label>
                     <Select value={backorderForm.priority} onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') => setBackorderForm({...backorderForm, priority: value})}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="low">Low - No rush</SelectItem>
-                        <SelectItem value="medium">Medium - Standard processing</SelectItem>
-                        <SelectItem value="high">High - Priority processing</SelectItem>
-                        <SelectItem value="urgent">Urgent - Immediate attention</SelectItem>
+                        <SelectItem value="low">{t('phoneNumbers.buyNumbers.modals.backorder.form.priority.options.low')}</SelectItem>
+                        <SelectItem value="medium">{t('phoneNumbers.buyNumbers.modals.backorder.form.priority.options.medium')}</SelectItem>
+                        <SelectItem value="high">{t('phoneNumbers.buyNumbers.modals.backorder.form.priority.options.high')}</SelectItem>
+                        <SelectItem value="urgent">{t('phoneNumbers.buyNumbers.modals.backorder.form.priority.options.urgent')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="reason">Reason for Request</Label>
+                    <Label htmlFor="reason">{t('phoneNumbers.buyNumbers.modals.backorder.form.reason.label')}</Label>
                     <Input
                       id="reason"
                       value={backorderForm.reason}
                       onChange={(e) => setBackorderForm({...backorderForm, reason: e.target.value})}
-                      placeholder="Brief reason for requesting this number..."
+                      placeholder={t('phoneNumbers.buyNumbers.modals.backorder.form.reason.placeholder')}
                       maxLength={200}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
@@ -1082,12 +1094,12 @@ export default function BuyNumbersPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="businessJustification">Business Justification</Label>
+                    <Label htmlFor="businessJustification">{t('phoneNumbers.buyNumbers.modals.backorder.form.businessJustification.label')}</Label>
                     <Textarea
                       id="businessJustification"
                       value={backorderForm.businessJustification}
                       onChange={(e) => setBackorderForm({...backorderForm, businessJustification: e.target.value})}
-                      placeholder="Provide detailed business justification for why you need this specific number..."
+                      placeholder={t('phoneNumbers.buyNumbers.modals.backorder.form.businessJustification.placeholder')}
                       rows={4}
                       maxLength={1000}
                     />
@@ -1115,7 +1127,7 @@ export default function BuyNumbersPage() {
             
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" onClick={() => setShowBackorderModal(false)}>
-                Cancel
+                {t('phoneNumbers.buyNumbers.modals.backorder.buttons.cancel')}
               </Button>
               <Button
                 onClick={handleBackorderRequest}
@@ -1125,12 +1137,12 @@ export default function BuyNumbersPage() {
                 {isSubmittingBackorder ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Submitting...
+                    {t('phoneNumbers.buyNumbers.modals.backorder.buttons.submitting')}
                   </>
                 ) : (
                   <>
                     <Calendar className="h-4 w-4 mr-2" />
-                    Submit Request
+                    {t('phoneNumbers.buyNumbers.modals.backorder.buttons.submit')}
                   </>
                 )}
               </Button>

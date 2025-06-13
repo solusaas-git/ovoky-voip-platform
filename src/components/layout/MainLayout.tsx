@@ -15,6 +15,7 @@ import { useOnboarding } from '@/hooks/useOnboarding';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -185,6 +186,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             />
           </div>
           <div className="flex items-center space-x-2">
+            <LanguageSwitcher variant="dropdown" className="md:hidden" />
             <NotificationBell size="sm" />
             <ThemeToggle />
           </div>
@@ -302,17 +304,20 @@ export function MainLayout({ children }: MainLayoutProps) {
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
-              <div className="hidden md:flex items-center space-x-2">
-                <NotificationBell size="sm" />
-                <ThemeToggle />
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <div className="hidden md:flex items-center space-x-2">
+                  <NotificationBell size="sm" />
+                  <ThemeToggle />
+                </div>
+                <LanguageSwitcher variant="dropdown" className="md:flex" />
               </div>
               
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={logout}
-                className="flex-1 h-10 md:h-9 rounded-xl md:rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                className="w-full h-10 md:h-9 rounded-xl md:rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 <span className="text-sm md:text-xs font-medium">Logout</span>

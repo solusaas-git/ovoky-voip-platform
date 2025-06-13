@@ -5,19 +5,19 @@ import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, TrendingDown, Loader2, Sparkles, ArrowUpRight, ArrowDownRight, BarChart3 } from 'lucide-react';
 import { useCdr } from '@/contexts/CdrContext';
 import { useKpiThresholds } from '@/hooks/useKpiThresholds';
+import { useTranslations } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export function CostOfDayWidget() {
   const { kpis, isLoading, error, selectedDate, hasDataLoaded } = useCdr();
   const { thresholds } = useKpiThresholds();
+  const { t } = useTranslations();
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency || thresholds.currency,
-      minimumFractionDigits: 4,
-      maximumFractionDigits: 4,
-    }).format(amount);
+    // Format the number with 4 decimal places
+    const formattedAmount = amount.toFixed(4);
+    // Return the amount followed by the Euro symbol
+    return `${formattedAmount} €`;
   };
 
   const formatSelectedDate = (date: Date): string => {
@@ -25,11 +25,11 @@ export function CostOfDayWidget() {
     const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
     
     if (date.toDateString() === today.toDateString()) {
-      return 'today';
+      return t('dashboard.widgets.costOfDay.dateFormats.today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'yesterday';
+      return t('dashboard.widgets.costOfDay.dateFormats.yesterday');
     } else {
-      return `on ${date.toLocaleDateString()}`;
+      return t('dashboard.widgets.costOfDay.dateFormats.onDate', { date: date.toLocaleDateString() });
     }
   };
 
@@ -39,7 +39,7 @@ export function CostOfDayWidget() {
       <Card className="h-full bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-slate-950/50 dark:via-gray-950/50 dark:to-zinc-950/50 border-slate-200/50 dark:border-slate-800/50">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
           <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Cost of Day
+            {t('dashboard.widgets.costOfDay.title')}
           </CardTitle>
           <div className="relative">
             <div className="relative z-10 p-2 rounded-full bg-slate-500/10 dark:bg-slate-400/10">
@@ -55,10 +55,10 @@ export function CostOfDayWidget() {
             </div>
             <div className="text-center space-y-1">
               <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                No data loaded
+                {t('dashboard.widgets.costOfDay.states.noDataLoaded.title')}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Use the date selector to load metrics
+                {t('dashboard.widgets.costOfDay.states.noDataLoaded.subtitle')}
               </p>
             </div>
           </div>
@@ -72,7 +72,7 @@ export function CostOfDayWidget() {
       <Card className="h-full bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-950/50 dark:via-cyan-950/50 dark:to-teal-950/50 border-blue-200/50 dark:border-blue-800/50">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
           <CardTitle className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-            Cost of Day
+            {t('dashboard.widgets.costOfDay.title')}
           </CardTitle>
           <div className="relative">
             <div className="absolute inset-0 rounded-full animate-ping bg-blue-500/20 dark:bg-blue-400/20"></div>
@@ -86,10 +86,10 @@ export function CostOfDayWidget() {
           <div className="flex flex-col items-center justify-center py-8 space-y-3">
             <div className="text-center space-y-1">
               <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                Loading metrics...
+                {t('dashboard.widgets.costOfDay.states.loading.title')}
               </p>
               <p className="text-xs text-blue-600/70 dark:text-blue-400/70">
-                Please wait while we fetch your data
+                {t('dashboard.widgets.costOfDay.states.loading.subtitle')}
               </p>
             </div>
           </div>
@@ -102,16 +102,16 @@ export function CostOfDayWidget() {
     return (
       <Card className="h-full bg-gradient-to-br from-red-50 via-rose-50 to-pink-50 border-red-200/50 shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold text-red-900">Cost of Day</CardTitle>
+          <CardTitle className="text-sm font-semibold text-red-900">{t('dashboard.widgets.costOfDay.title')}</CardTitle>
           <div className="relative">
             <div className="absolute inset-0 bg-red-500/20 rounded-full animate-pulse"></div>
             <DollarSign className="h-5 w-5 text-red-600 relative z-10" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-red-600 mb-2">Error</div>
+          <div className="text-2xl font-bold text-red-600 mb-2">{t('dashboard.widgets.costOfDay.states.error.title')}</div>
           <p className="text-xs text-red-600/80">
-            Failed to load cost data
+            {t('dashboard.widgets.costOfDay.states.error.subtitle')}
           </p>
         </CardContent>
       </Card>
@@ -123,7 +123,7 @@ export function CostOfDayWidget() {
     return (
       <Card className="h-full bg-card border-border shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold">Cost of Day</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t('dashboard.widgets.costOfDay.title')}</CardTitle>
           <div className="relative">
             <div className="absolute inset-0 bg-muted/10 rounded-full"></div>
             <DollarSign className="h-5 w-5 text-muted-foreground relative z-10" />
@@ -136,16 +136,16 @@ export function CostOfDayWidget() {
             </div>
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                No calls made {formatSelectedDate(selectedDate)}
+                {t('dashboard.widgets.costOfDay.states.noActivity.subtitle', { date: formatSelectedDate(selectedDate) })}
               </p>
               <Badge variant="outline" className="text-xs font-medium">
-                No Activity
+                {t('dashboard.widgets.costOfDay.states.noActivity.badge')}
               </Badge>
             </div>
           </div>
           <div className="text-xs text-muted-foreground flex items-center space-x-1">
             <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
-            <span>Waiting for call activity...</span>
+            <span>{t('dashboard.widgets.costOfDay.states.noActivity.waiting')}</span>
           </div>
         </CardContent>
       </Card>
@@ -171,7 +171,7 @@ export function CostOfDayWidget() {
           textMuted: 'text-emerald-600/70 dark:text-emerald-400/70',
           icon: <TrendingDown className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />,
           badge: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800',
-          badgeText: 'Low Cost',
+          badgeText: t('dashboard.widgets.costOfDay.status.badges.lowCost'),
           iconBg: 'bg-emerald-500/10 dark:bg-emerald-400/10',
           iconColor: 'text-emerald-600 dark:text-emerald-400',
           arrow: <ArrowDownRight className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />,
@@ -186,7 +186,7 @@ export function CostOfDayWidget() {
           textMuted: 'text-amber-600/70 dark:text-amber-400/70',
           icon: <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />,
           badge: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800',
-          badgeText: 'Moderate',
+          badgeText: t('dashboard.widgets.costOfDay.status.badges.moderate'),
           iconBg: 'bg-amber-500/10 dark:bg-amber-400/10',
           iconColor: 'text-amber-600 dark:text-amber-400',
           arrow: <ArrowUpRight className="h-3 w-3 text-amber-600 dark:text-amber-400" />,
@@ -201,7 +201,7 @@ export function CostOfDayWidget() {
           textMuted: 'text-red-600/70 dark:text-red-400/70',
           icon: <TrendingUp className="h-4 w-4 text-red-600 dark:text-red-400" />,
           badge: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-800',
-          badgeText: 'High Cost',
+          badgeText: t('dashboard.widgets.costOfDay.status.badges.highCost'),
           iconBg: 'bg-red-500/10 dark:bg-red-400/10',
           iconColor: 'text-red-600 dark:text-red-400',
           arrow: <ArrowUpRight className="h-3 w-3 text-red-600 dark:text-red-400" />,
@@ -216,7 +216,7 @@ export function CostOfDayWidget() {
           textMuted: 'text-muted-foreground/70',
           icon: <DollarSign className="h-4 w-4 text-muted-foreground" />,
           badge: 'bg-muted text-muted-foreground border-border',
-          badgeText: 'No Data',
+          badgeText: t('dashboard.widgets.costOfDay.status.badges.noData'),
           iconBg: 'bg-muted/10',
           iconColor: 'text-muted-foreground',
           arrow: null,
@@ -235,7 +235,7 @@ export function CostOfDayWidget() {
     )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className={cn("text-sm font-semibold", config.textPrimary)}>
-          Cost of Day
+          {t('dashboard.widgets.costOfDay.title')}
         </CardTitle>
         <div className="relative">
           <div className={cn("absolute inset-0 rounded-full animate-ping", config.pulse)}></div>
@@ -261,7 +261,7 @@ export function CostOfDayWidget() {
           
           <div className="flex items-center justify-between">
             <p className={cn("text-xs", config.textMuted)}>
-              Total charged today
+              {t('dashboard.widgets.costOfDay.labels.totalChargedToday')}
             </p>
             <Badge variant="outline" className={cn("text-xs font-medium", config.badge)}>
               {config.badgeText}
@@ -274,14 +274,14 @@ export function CostOfDayWidget() {
           <div className={cn("flex items-center justify-between text-sm", config.textSecondary)}>
             <div className="flex items-center space-x-2">
               <Sparkles className="h-3 w-3" />
-              <span>Total Calls</span>
+              <span>{t('dashboard.widgets.costOfDay.labels.totalCalls')}</span>
             </div>
             <span className="font-semibold">{kpis.totalCalls.toLocaleString()}</span>
           </div>
           
           {kpis.costOfDay > 0 && (
             <div className={cn("flex items-center justify-between text-sm", config.textSecondary)}>
-              <span>Avg per Call</span>
+              <span>{t('dashboard.widgets.costOfDay.labels.avgPerCall')}</span>
               <span className="font-semibold">
                 {formatCurrency(kpis.costOfDay / kpis.totalCalls, kpis.currency)}
               </span>
@@ -293,10 +293,11 @@ export function CostOfDayWidget() {
         {kpis.costOfDay > 0 && (
           <div className="space-y-2">
             <div className="flex justify-between text-xs">
-              <span className={config.textMuted}>Daily Usage</span>
+              <span className={config.textMuted}>{t('dashboard.widgets.costOfDay.labels.dailyUsage')}</span>
               <span className={config.textSecondary}>
-                {getCostStatus() === 'low' ? 'Efficient' : 
-                 getCostStatus() === 'medium' ? 'Moderate' : 'High Usage'}
+                {getCostStatus() === 'low' ? t('dashboard.widgets.costOfDay.status.usage.efficient') : 
+                 getCostStatus() === 'medium' ? t('dashboard.widgets.costOfDay.status.usage.moderate') : 
+                 t('dashboard.widgets.costOfDay.status.usage.highUsage')}
               </span>
             </div>
             <div className="w-full bg-muted/50 rounded-full h-2 overflow-hidden">
@@ -323,7 +324,7 @@ export function CostOfDayWidget() {
               getCostStatus() === 'medium' ? 'bg-amber-400' :
               getCostStatus() === 'high' ? 'bg-red-400' : 'bg-slate-400'
             )}></div>
-            <span>Live Data</span>
+            <span>{t('dashboard.widgets.costOfDay.labels.liveData')}</span>
           </div>
           <span>{new Date().toLocaleTimeString()}</span>
         </div>

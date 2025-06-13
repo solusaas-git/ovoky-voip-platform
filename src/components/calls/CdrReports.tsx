@@ -53,6 +53,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from '@/lib/AuthContext';
 import { useBranding } from '@/hooks/useBranding';
+import { useTranslations } from '@/lib/i18n';
 import {
   Table,
   TableBody,
@@ -320,6 +321,7 @@ interface CdrReportsProps {
 export function CdrReports({ accountId }: CdrReportsProps) {
   const { user } = useAuth();
   const { colors, getGradientStyle, features } = useBranding();
+  const { t } = useTranslations();
   const [cdrs, setCdrs] = useState<Cdr[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -546,8 +548,6 @@ export function CdrReports({ accountId }: CdrReportsProps) {
     fetchCdrs(newPage);
   };
 
-
-
   const formatDuration = (seconds: number) => {
     if (seconds < 60) return `${Math.round(seconds)}s`;
     const minutes = Math.floor(seconds / 60);
@@ -561,6 +561,196 @@ export function CdrReports({ accountId }: CdrReportsProps) {
 
   const getCallResultBadge = (result: number) => {
     const interpretation = interpretSippyResultCode(result);
+    
+    // Get translated label and description
+    const getTranslatedLabel = (result: number): string => {
+      // Handle success cases
+      if (result === 0 || result === 200) {
+        return t('cdrs.resultLabels.success');
+      }
+      
+      // Handle internal negative codes
+      const internalCodeMap: Record<number, string> = {
+        [-1]: 'externalTranslatorRejected',
+        [-2]: 'bodylessInvite',
+        [-3]: 'accountExpired',
+        [-4]: 'connectionCapacityExceeded',
+        [-5]: 'malformedSdp',
+        [-6]: 'unsupportedContentType',
+        [-7]: 'unacceptableCodec',
+        [-8]: 'invalidCldTranslationAuth',
+        [-9]: 'invalidCliTranslationAuth',
+        [-10]: 'invalidCldTranslationAccount',
+        [-11]: 'invalidCliTranslationAccount',
+        [-12]: 'cannotFindSession',
+        [-13]: 'invalidCliTranslationDid',
+        [-14]: 'noRateFound',
+        [-15]: 'callLoopDetected',
+        [-16]: 'tooManySessions',
+        [-17]: 'accountInUse',
+        [-18]: 'cpsLimitAccount',
+        [-19]: 'cpsLimitSystem',
+        [-20]: 'insufficientBalance',
+        [-21]: 'forbiddenDestination',
+        [-22]: 'noCustomerRate',
+        [-23]: 'lossProtection',
+        [-24]: 'addressIncomplete',
+        [-25]: 'noRoutesFound',
+        [-26]: 'cpsLimitConnection',
+        [-27]: 'invalidAssertedId',
+        [-28]: 'cldInDncList',
+        [-29]: 'invalidCldTranslationDid',
+        [-30]: 'callCanceled',
+        [-31]: 'cpsLimitCustomer',
+        [-32]: 'tooManySessionsCustomer',
+        [-33]: 'cpsLimitAuthRule',
+        [-34]: 'tooManySessionsAuthRule',
+        [-35]: 'invalidCliTranslationPreRouting',
+        [-36]: 'invalidCldTranslationPreRouting',
+        [-37]: 'cliInDncList'
+      };
+      
+      if (internalCodeMap[result]) {
+        return t(`cdrs.resultLabels.${internalCodeMap[result]}`);
+      }
+      
+      // Handle standard SIP codes
+      const sipCodeMap: Record<number, string> = {
+        100: 'trying',
+        180: 'ringing',
+        181: 'callBeingForwarded',
+        182: 'queued',
+        183: 'sessionProgress',
+        200: 'ok',
+        202: 'accepted',
+        300: 'multipleChoices',
+        301: 'movedPermanently',
+        302: 'movedTemporarily',
+        305: 'useProxy',
+        380: 'alternativeService',
+        404: 'numberNotFound',
+        486: 'busyHere'
+      };
+      
+      if (sipCodeMap[result]) {
+        return t(`cdrs.resultLabels.${sipCodeMap[result]}`);
+      }
+      
+      // For other SIP codes, use the original label
+      return interpretation.label;
+    };
+
+    const getTranslatedDescription = (result: number): string => {
+      // Handle success cases
+      if (result === 0 || result === 200) {
+        return t('cdrs.resultDescriptions.success');
+      }
+      
+      // Handle internal negative codes
+      const internalCodeMap: Record<number, string> = {
+        [-1]: 'externalTranslatorRejected',
+        [-2]: 'bodylessInvite',
+        [-3]: 'accountExpired',
+        [-4]: 'connectionCapacityExceeded',
+        [-5]: 'malformedSdp',
+        [-6]: 'unsupportedContentType',
+        [-7]: 'unacceptableCodec',
+        [-8]: 'invalidCldTranslationAuth',
+        [-9]: 'invalidCliTranslationAuth',
+        [-10]: 'invalidCldTranslationAccount',
+        [-11]: 'invalidCliTranslationAccount',
+        [-12]: 'cannotFindSession',
+        [-13]: 'invalidCliTranslationDid',
+        [-14]: 'noRateFound',
+        [-15]: 'callLoopDetected',
+        [-16]: 'tooManySessions',
+        [-17]: 'accountInUse',
+        [-18]: 'cpsLimitAccount',
+        [-19]: 'cpsLimitSystem',
+        [-20]: 'insufficientBalance',
+        [-21]: 'forbiddenDestination',
+        [-22]: 'noCustomerRate',
+        [-23]: 'lossProtection',
+        [-24]: 'addressIncomplete',
+        [-25]: 'noRoutesFound',
+        [-26]: 'cpsLimitConnection',
+        [-27]: 'invalidAssertedId',
+        [-28]: 'cldInDncList',
+        [-29]: 'invalidCldTranslationDid',
+        [-30]: 'callCanceled',
+        [-31]: 'cpsLimitCustomer',
+        [-32]: 'tooManySessionsCustomer',
+        [-33]: 'cpsLimitAuthRule',
+        [-34]: 'tooManySessionsAuthRule',
+        [-35]: 'invalidCliTranslationPreRouting',
+        [-36]: 'invalidCldTranslationPreRouting',
+        [-37]: 'cliInDncList'
+      };
+      
+      if (internalCodeMap[result]) {
+        return t(`cdrs.resultDescriptions.${internalCodeMap[result]}`);
+      }
+      
+      // Handle standard SIP codes
+      const sipCodeMap: Record<number, string> = {
+        100: 'trying',
+        180: 'ringing',
+        181: 'callBeingForwarded',
+        182: 'queued',
+        183: 'sessionProgress',
+        200: 'ok',
+        202: 'accepted',
+        300: 'multipleChoices',
+        301: 'movedPermanently',
+        302: 'movedTemporarily',
+        305: 'useProxy',
+        380: 'alternativeService',
+        404: 'numberNotFound',
+        486: 'busyHere'
+      };
+      
+      if (sipCodeMap[result]) {
+        return t(`cdrs.resultDescriptions.${sipCodeMap[result]}`);
+      }
+      
+      // For other codes, use the original description
+      return interpretation.description;
+    };
+
+    const getTranslatedCategory = (result: number): string => {
+      const categoryMap: Record<string, string> = {
+        'Successful': 'successful',
+        'Translation': 'translation',
+        'Protocol': 'protocol',
+        'Account': 'account',
+        'Capacity': 'capacity',
+        'Media': 'media',
+        'Session': 'session',
+        'Billing': 'billing',
+        'Routing': 'routing',
+        'Rate Limiting': 'rateLimiting',
+        'Quality': 'quality',
+        'Addressing': 'addressing',
+        'Compliance': 'compliance',
+        'User Action': 'userAction',
+        'Provisional': 'provisional',
+        'Success': 'success',
+        'Redirection': 'redirection',
+        'Client Error': 'clientError',
+        'Server Error': 'serverError',
+        'Global Failure': 'globalFailure'
+      };
+      
+      if (categoryMap[interpretation.category]) {
+        return t(`cdrs.categories.${categoryMap[interpretation.category]}`);
+      }
+      
+      return interpretation.category;
+    };
+
+    const translatedLabel = getTranslatedLabel(result);
+    const translatedDescription = getTranslatedDescription(result);
+    const translatedCategory = getTranslatedCategory(result);
     
     const getIcon = () => {
       switch (interpretation.type) {
@@ -594,38 +784,38 @@ export function CdrReports({ accountId }: CdrReportsProps) {
           <Badge 
             variant="outline" 
             className={`text-xs cursor-help transition-colors ${getBadgeClasses()}`}
-            title={`${interpretation.label}: ${interpretation.description} (Code: ${result})`}
+            title={`${translatedLabel}: ${translatedDescription} (Code: ${result})`}
           >
             <div className="flex items-center gap-1">
               {getIcon()}
-              <span>{interpretation.label}</span>
+              <span>{translatedLabel}</span>
               <span className="text-xs opacity-60">({result})</span>
             </div>
           </Badge>
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs">
           <div className="space-y-2">
-            <div className="font-medium">{interpretation.label}</div>
-            <div className="text-sm text-muted-foreground">{interpretation.description}</div>
+            <div className="font-medium">{translatedLabel}</div>
+            <div className="text-sm text-muted-foreground">{translatedDescription}</div>
             <div className="flex items-center gap-2 text-xs">
               <Badge variant="secondary" className="text-xs">
-                {interpretation.category}
+                {translatedCategory}
               </Badge>
               <span className="text-muted-foreground">Code: {result}</span>
             </div>
             {interpretation.type === 'error' && interpretation.category === 'Billing' && (
               <div className="text-xs text-amber-600 bg-amber-50 border border-amber-200 p-2 rounded dark:text-amber-400 dark:bg-amber-950 dark:border-amber-800">
-                💡 <strong>Tip:</strong> Check account balance and billing configuration
+                💡 <strong>{t('cdrs.tooltips.tip')}</strong> {t('cdrs.tooltips.billing')}
               </div>
             )}
             {interpretation.type === 'error' && interpretation.category === 'Rate Limiting' && (
               <div className="text-xs text-blue-600 bg-blue-50 border border-blue-200 p-2 rounded dark:text-blue-400 dark:bg-blue-950 dark:border-blue-800">
-                💡 <strong>Tip:</strong> Consider adjusting CPS limits or contact support
+                💡 <strong>{t('cdrs.tooltips.tip')}</strong> {t('cdrs.tooltips.rateLimiting')}
               </div>
             )}
             {interpretation.type === 'error' && interpretation.category === 'Translation' && (
               <div className="text-xs text-purple-600 bg-purple-50 border border-purple-200 p-2 rounded dark:text-purple-400 dark:bg-purple-950 dark:border-purple-800">
-                💡 <strong>Tip:</strong> Review CLI/CLD translation rules configuration
+                💡 <strong>{t('cdrs.tooltips.tip')}</strong> {t('cdrs.tooltips.translation')}
               </div>
             )}
           </div>
@@ -636,18 +826,18 @@ export function CdrReports({ accountId }: CdrReportsProps) {
 
   const exportToCsv = () => {
     const headers = [
-      'Call ID',
-      'Connect Time',
-      'Duration',
-      'Billed Duration',
-      'CLI',
-      'CLD',
-      'Cost',
-      'Country',
-      'Description',
-      'Result',
-      'Protocol',
-      'Remote IP'
+      t('cdrs.export.csvHeaders.callId'),
+      t('cdrs.export.csvHeaders.connectTime'),
+      t('cdrs.export.csvHeaders.duration'),
+      t('cdrs.export.csvHeaders.billedDuration'),
+      t('cdrs.export.csvHeaders.cli'),
+      t('cdrs.export.csvHeaders.cld'),
+      t('cdrs.export.csvHeaders.cost'),
+      t('cdrs.export.csvHeaders.country'),
+      t('cdrs.export.csvHeaders.description'),
+      t('cdrs.export.csvHeaders.result'),
+      t('cdrs.export.csvHeaders.protocol'),
+      t('cdrs.export.csvHeaders.remoteIp')
     ];
 
     const csvContent = [
@@ -697,9 +887,9 @@ export function CdrReports({ accountId }: CdrReportsProps) {
           </div>
           <div>
             <h3 className="text-lg font-semibold" style={{ color: colors.primary }}>
-              Loading CDR Reports
+              {t('cdrs.loading.title')}
             </h3>
-            <p className="text-muted-foreground">Fetching call detail records...</p>
+            <p className="text-muted-foreground">{t('cdrs.loading.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -715,8 +905,8 @@ export function CdrReports({ accountId }: CdrReportsProps) {
               <FileText className="h-5 w-5 text-red-600" />
             </div>
             <div>
-              <CardTitle className="text-destructive">Error Loading CDR Reports</CardTitle>
-              <CardDescription>There was an error loading the CDR data</CardDescription>
+              <CardTitle className="text-destructive">{t('cdrs.errors.loadingTitle')}</CardTitle>
+              <CardDescription>{t('cdrs.errors.loadingDescription')}</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -728,7 +918,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
             className="gap-2"
           >
             <RefreshCw className="h-4 w-4" />
-            Try Again
+            {t('cdrs.errors.tryAgain')}
           </Button>
         </CardContent>
       </Card>
@@ -744,14 +934,14 @@ export function CdrReports({ accountId }: CdrReportsProps) {
               <FileText className="h-5 w-5 text-red-600" />
             </div>
             <div>
-              <CardTitle className="text-destructive">No Sippy Account ID</CardTitle>
-              <CardDescription>Your user account doesn&apos;t have a Sippy Account ID configured.</CardDescription>
+              <CardTitle className="text-destructive">{t('cdrs.errors.noSippyAccountTitle')}</CardTitle>
+              <CardDescription>{t('cdrs.errors.noSippyAccountDescription')}</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-destructive">
-            Please contact an administrator to set up your Sippy account.
+            {t('cdrs.errors.noSippyAccountMessage')}
           </p>
         </CardContent>
       </Card>
@@ -774,22 +964,25 @@ export function CdrReports({ accountId }: CdrReportsProps) {
               style={{ backgroundColor: `${colors.primary}20`, color: colors.primary }}
             >
               <BarChart3 className="h-4 w-4" />
-              Call Detail Records
+              {t('cdrs.header.title')}
             </div>
           </div>
           <p className="text-muted-foreground">
-            {stats.total} record{stats.total !== 1 ? 's' : ''} for account {targetAccountId}
+            {stats.total === 1 
+              ? t('cdrs.header.recordCount', { count: stats.total.toString(), accountId: (targetAccountId || 0).toString() })
+              : t('cdrs.header.recordCountPlural', { count: stats.total.toString(), accountId: (targetAccountId || 0).toString() })
+            }
             {filters.result_type && filters.result_type !== 'all' && (
               <span className="ml-2">
-                • Filtered by: {filters.result_type.replace('_', ' ')}
+                • {t('cdrs.header.filteredBy', { filter: filters.result_type.replace('_', ' ') })}
                 {cdrs.length !== filteredCdrs.length && (
-                  <span className="text-amber-600"> ({cdrs.length - filteredCdrs.length} hidden)</span>
+                  <span className="text-amber-600"> {t('cdrs.header.hiddenRecords', { count: (cdrs.length - filteredCdrs.length).toString() })}</span>
                 )}
               </span>
             )}
             {lastRefresh && (
               <span className="ml-2">
-                • Last updated {format(lastRefresh, 'HH:mm:ss')}
+                • {t('cdrs.header.lastUpdated', { time: format(lastRefresh, 'HH:mm:ss') })}
               </span>
             )}
           </p>
@@ -803,7 +996,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
             className="gap-2"
           >
             <Filter className="h-4 w-4" />
-            Filters
+            {t('cdrs.header.buttons.filters')}
           </Button>
           <Button 
             variant="outline" 
@@ -813,7 +1006,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
             className="gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('cdrs.header.buttons.refresh')}
           </Button>
           <Button 
             variant="outline" 
@@ -823,7 +1016,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            Export CSV
+            {t('cdrs.header.buttons.exportCsv')}
           </Button>
         </div>
       </div>
@@ -837,7 +1030,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Records</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('cdrs.stats.totalRecords.title')}</p>
                 <p className="text-2xl font-bold text-brand">
                   {stats.total}
                 </p>
@@ -859,7 +1052,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Cost</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('cdrs.stats.totalCost.title')}</p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {formatCurrency(stats.totalCost, filteredCdrs[0]?.payment_currency)}
                 </p>
@@ -878,7 +1071,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Avg Duration</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('cdrs.stats.avgDuration.title')}</p>
                 <p className="text-2xl font-bold text-brand">
                   {formatDuration(stats.avgDuration)}
                 </p>
@@ -900,12 +1093,12 @@ export function CdrReports({ accountId }: CdrReportsProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Success Rate</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('cdrs.stats.successRate.title')}</p>
                 <p className="text-2xl font-bold text-brand">
                   {stats.total > 0 ? Math.round((stats.completedCalls / stats.total) * 100) : 0}%
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {stats.completedCalls} of {stats.total} calls
+                  {t('cdrs.stats.successRate.subtitle', { successful: stats.completedCalls.toString(), total: stats.total.toString() })}
                 </p>
               </div>
               <div 
@@ -928,7 +1121,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <Filter className="h-5 w-5" style={{ color: colors.primary }} />
-                Filters
+                {t('cdrs.filters.title')}
               </CardTitle>
               <Button 
                 variant="ghost" 
@@ -943,51 +1136,51 @@ export function CdrReports({ accountId }: CdrReportsProps) {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label>Type</Label>
+                <Label>{t('cdrs.filters.fields.type.label')}</Label>
                 <Select
                   value={filters.type}
                   onValueChange={(value) => handleFilterChange('type', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={t('cdrs.filters.fields.type.placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="non_zero_and_errors">Non-zero and Errors</SelectItem>
-                    <SelectItem value="non_zero">Non-zero Duration</SelectItem>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="complete">Completed Calls</SelectItem>
-                    <SelectItem value="incomplete">Incomplete Calls</SelectItem>
-                    <SelectItem value="errors">Errors</SelectItem>
+                    <SelectItem value="non_zero_and_errors">{t('cdrs.filters.fields.type.options.nonZeroAndErrors')}</SelectItem>
+                    <SelectItem value="non_zero">{t('cdrs.filters.fields.type.options.nonZero')}</SelectItem>
+                    <SelectItem value="all">{t('cdrs.filters.fields.type.options.all')}</SelectItem>
+                    <SelectItem value="complete">{t('cdrs.filters.fields.type.options.complete')}</SelectItem>
+                    <SelectItem value="incomplete">{t('cdrs.filters.fields.type.options.incomplete')}</SelectItem>
+                    <SelectItem value="errors">{t('cdrs.filters.fields.type.options.errors')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-                              <div className="space-y-2">
-                  <Label>Result Type</Label>
-                  <Select
-                    value={filters.result_type || "all"}
-                    onValueChange={(value) => handleFilterChange('result_type', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All result types" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Result Types</SelectItem>
-                      <SelectItem value="success">✅ Successful Calls</SelectItem>
-                      <SelectItem value="billing">💰 Billing Issues</SelectItem>
-                      <SelectItem value="rate_limiting">⚡ Rate Limiting</SelectItem>
-                      <SelectItem value="translation">🔄 Translation Errors</SelectItem>
-                      <SelectItem value="capacity">📊 Capacity Issues</SelectItem>
-                      <SelectItem value="routing">🛣️ Routing Problems</SelectItem>
-                      <SelectItem value="protocol">📡 Protocol Errors</SelectItem>
-                      <SelectItem value="account">👤 Account Issues</SelectItem>
-                      <SelectItem value="compliance">⚖️ Compliance (DNC)</SelectItem>
-                      <SelectItem value="client_error">❌ Client Errors (4xx)</SelectItem>
-                      <SelectItem value="server_error">🔥 Server Errors (5xx)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               <div className="space-y-2">
-                <Label>Start Date</Label>
+                <Label>{t('cdrs.filters.fields.resultType.label')}</Label>
+                <Select
+                  value={filters.result_type || "all"}
+                  onValueChange={(value) => handleFilterChange('result_type', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('cdrs.filters.fields.resultType.placeholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('cdrs.filters.fields.resultType.options.all')}</SelectItem>
+                    <SelectItem value="success">{t('cdrs.filters.fields.resultType.options.success')}</SelectItem>
+                    <SelectItem value="billing">{t('cdrs.filters.fields.resultType.options.billing')}</SelectItem>
+                    <SelectItem value="rate_limiting">{t('cdrs.filters.fields.resultType.options.rateLimiting')}</SelectItem>
+                    <SelectItem value="translation">{t('cdrs.filters.fields.resultType.options.translation')}</SelectItem>
+                    <SelectItem value="capacity">{t('cdrs.filters.fields.resultType.options.capacity')}</SelectItem>
+                    <SelectItem value="routing">{t('cdrs.filters.fields.resultType.options.routing')}</SelectItem>
+                    <SelectItem value="protocol">{t('cdrs.filters.fields.resultType.options.protocol')}</SelectItem>
+                    <SelectItem value="account">{t('cdrs.filters.fields.resultType.options.account')}</SelectItem>
+                    <SelectItem value="compliance">{t('cdrs.filters.fields.resultType.options.compliance')}</SelectItem>
+                    <SelectItem value="client_error">{t('cdrs.filters.fields.resultType.options.clientError')}</SelectItem>
+                    <SelectItem value="server_error">{t('cdrs.filters.fields.resultType.options.serverError')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('cdrs.filters.fields.startDate.label')}</Label>
                 <Input
                   type="datetime-local"
                   value={filters.start_date}
@@ -995,7 +1188,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label>End Date</Label>
+                <Label>{t('cdrs.filters.fields.endDate.label')}</Label>
                 <Input
                   type="datetime-local"
                   value={filters.end_date}
@@ -1003,19 +1196,19 @@ export function CdrReports({ accountId }: CdrReportsProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label>CLI</Label>
+                <Label>{t('cdrs.filters.fields.cli.label')}</Label>
                 <Input
                   value={filters.cli}
                   onChange={(e) => handleFilterChange('cli', e.target.value)}
-                  placeholder="Filter by CLI"
+                  placeholder={t('cdrs.filters.fields.cli.placeholder')}
                 />
               </div>
               <div className="space-y-2">
-                <Label>CLD</Label>
+                <Label>{t('cdrs.filters.fields.cld.label')}</Label>
                 <Input
                   value={filters.cld}
                   onChange={(e) => handleFilterChange('cld', e.target.value)}
-                  placeholder="Filter by CLD"
+                  placeholder={t('cdrs.filters.fields.cld.placeholder')}
                 />
               </div>
             </div>
@@ -1030,12 +1223,12 @@ export function CdrReports({ accountId }: CdrReportsProps) {
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Searching...
+                    {t('cdrs.filters.buttons.apply')}
                   </>
                 ) : (
                   <>
                     <Search className="h-4 w-4" />
-                    Apply Filters
+                    {t('cdrs.filters.buttons.apply')}
                   </>
                 )}
               </Button>
@@ -1046,7 +1239,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
                 className="gap-2"
               >
                 <X className="h-4 w-4" />
-                Clear Filters
+                {t('cdrs.filters.buttons.clear')}
               </Button>
             </div>
           </CardContent>
@@ -1066,10 +1259,10 @@ export function CdrReports({ accountId }: CdrReportsProps) {
               </div>
               <div>
                 <h3 className="text-lg font-semibold" style={{ color: colors.primary }}>
-                  No CDR Records Found
+                  {t('cdrs.table.empty.title')}
                 </h3>
                 <p className="text-muted-foreground">
-                  No call detail records found for account {targetAccountId}. Try adjusting your filters or date range.
+                  {t('cdrs.table.empty.description', { accountId: (targetAccountId || 0).toString() })}
                 </p>
               </div>
             </div>
@@ -1083,10 +1276,10 @@ export function CdrReports({ accountId }: CdrReportsProps) {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <FileText className="h-5 w-5" style={{ color: colors.primary }} />
-                Call Detail Records
+                {t('cdrs.table.title')}
               </CardTitle>
               <div className="text-sm text-muted-foreground">
-                Showing {startRecord}-{endRecord} of {totalRecords} records
+                {t('cdrs.table.showing', { start: startRecord.toString(), end: endRecord.toString(), total: totalRecords.toString() })}
               </div>
             </div>
           </CardHeader>
@@ -1095,14 +1288,14 @@ export function CdrReports({ accountId }: CdrReportsProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Call</TableHead>
-                    <TableHead>Connect Time</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Cost</TableHead>
-                    <TableHead>Country</TableHead>
-                    <TableHead>Protocol</TableHead>
-                    <TableHead>Result</TableHead>
-                    <TableHead>Remote IP</TableHead>
+                    <TableHead>{t('cdrs.table.headers.call')}</TableHead>
+                    <TableHead>{t('cdrs.table.headers.connectTime')}</TableHead>
+                    <TableHead>{t('cdrs.table.headers.duration')}</TableHead>
+                    <TableHead>{t('cdrs.table.headers.cost')}</TableHead>
+                    <TableHead>{t('cdrs.table.headers.country')}</TableHead>
+                    <TableHead>{t('cdrs.table.headers.protocol')}</TableHead>
+                    <TableHead>{t('cdrs.table.headers.result')}</TableHead>
+                    <TableHead>{t('cdrs.table.headers.remoteIp')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1124,7 +1317,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
                         
                         <TableCell>
                           <div className="text-sm text-foreground">
-                            {connectDate ? format(connectDate, 'HH:mm:ss') : 'N/A'}
+                            {connectDate ? format(connectDate, 'HH:mm:ss') : t('cdrs.table.row.na')}
                           </div>
                           {connectDate && (
                             <div className="text-xs text-muted-foreground">
@@ -1138,7 +1331,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
                             {formatDuration(cdr.duration || 0)}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            Billed: {formatDuration(cdr.billed_duration || 0)}
+                            {t('cdrs.table.row.billed', { duration: formatDuration(cdr.billed_duration || 0) })}
                           </div>
                         </TableCell>
                         
@@ -1149,15 +1342,15 @@ export function CdrReports({ accountId }: CdrReportsProps) {
                         </TableCell>
                         
                         <TableCell>
-                          <div className="font-medium text-foreground">{cdr.country || 'N/A'}</div>
+                          <div className="font-medium text-foreground">{cdr.country || t('cdrs.table.row.na')}</div>
                           <div className="text-xs text-muted-foreground">
-                            {cdr.description || 'N/A'}
+                            {cdr.description || t('cdrs.table.row.na')}
                           </div>
                         </TableCell>
                         
                         <TableCell>
                           <Badge variant="secondary" className="text-xs">
-                            {cdr.protocol || 'N/A'}
+                            {cdr.protocol || t('cdrs.table.row.na')}
                           </Badge>
                         </TableCell>
                         
@@ -1168,7 +1361,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
                         <TableCell>
                           <div className="flex items-center gap-1 text-xs">
                             <Globe className="h-3 w-3 text-muted-foreground" />
-                            <span className="font-mono">{cdr.remote_ip || 'N/A'}</span>
+                            <span className="font-mono">{cdr.remote_ip || t('cdrs.table.row.na')}</span>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1184,10 +1377,10 @@ export function CdrReports({ accountId }: CdrReportsProps) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="text-sm text-muted-foreground">
-                  Showing {startRecord}-{endRecord} of {totalRecords} records
+                  {t('cdrs.pagination.showing', { start: startRecord.toString(), end: endRecord.toString(), total: totalRecords.toString() })}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Records per page:</span>
+                  <span className="text-sm text-muted-foreground">{t('cdrs.pagination.recordsPerPage')}</span>
                   <Select
                     value={recordsPerPage.toString()}
                     onValueChange={(value) => {
@@ -1213,7 +1406,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
               
               <div className="flex items-center gap-2">
                 <div className="text-sm text-muted-foreground">
-                  Page {currentPage} of {totalPages}
+                  {t('cdrs.pagination.page', { current: currentPage.toString(), total: totalPages.toString() })}
                 </div>
                 <div className="flex items-center gap-1">
                   <Button
@@ -1223,7 +1416,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
                     disabled={currentPage === 1 || isLoading}
                     className="h-8 w-8 p-0"
                   >
-                    <span className="sr-only">First page</span>
+                    <span className="sr-only">{t('cdrs.pagination.buttons.first')}</span>
                     ⟪
                   </Button>
                   <Button
@@ -1282,7 +1475,7 @@ export function CdrReports({ accountId }: CdrReportsProps) {
                     disabled={currentPage === totalPages || isLoading}
                     className="h-8 w-8 p-0"
                   >
-                    <span className="sr-only">Last page</span>
+                    <span className="sr-only">{t('cdrs.pagination.buttons.last')}</span>
                     ⟫
                   </Button>
                 </div>
@@ -1297,10 +1490,10 @@ export function CdrReports({ accountId }: CdrReportsProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Info className="h-5 w-5" style={{ color: colors.primary }} />
-            Understanding Result Codes
+{t('cdrs.resultCodes.title')}
           </CardTitle>
           <CardDescription>
-            Sippy result codes help identify call success, failures, and specific issues
+{t('cdrs.resultCodes.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -1308,22 +1501,22 @@ export function CdrReports({ accountId }: CdrReportsProps) {
             <div className="space-y-2">
               <h4 className="font-medium flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                Successful Calls
+                {t('cdrs.resultCodes.categories.successful.title')}
               </h4>
               <ul className="text-muted-foreground space-y-1">
-                <li>• <strong>0, 200:</strong> Call completed successfully</li>
-                <li>• <strong>1xx:</strong> Provisional responses (trying, ringing)</li>
+                <li>• <strong>0, 200:</strong> {t('cdrs.resultLabels.success')}</li>
+                <li>• <strong>1xx:</strong> {t('cdrs.resultLabels.trying')}, {t('cdrs.resultLabels.ringing')}</li>
               </ul>
             </div>
             
             <div className="space-y-2">
               <h4 className="font-medium flex items-center gap-2">
                 <XCircle className="h-4 w-4 text-red-600" />
-                Common Issues
+                {t('cdrs.resultCodes.categories.commonIssues.title')}
               </h4>
               <ul className="text-muted-foreground space-y-1">
-                <li>• <strong>-20:</strong> Insufficient balance</li>
-                <li>• <strong>-18 to -19:</strong> Call rate limits exceeded</li>
+                <li>• <strong>-20:</strong> {t('cdrs.resultLabels.insufficientBalance')}</li>
+                <li>• <strong>-18 to -19:</strong> {t('cdrs.resultLabels.cpsLimitAccount')}</li>
                 <li>• <strong>486:</strong> Busy here</li>
                 <li>• <strong>404:</strong> Number not found</li>
               </ul>
@@ -1332,13 +1525,13 @@ export function CdrReports({ accountId }: CdrReportsProps) {
             <div className="space-y-2">
               <h4 className="font-medium flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
-                System Errors
+                {t('cdrs.resultCodes.categories.systemErrors.title')}
               </h4>
               <ul className="text-muted-foreground space-y-1">
                 <li>• <strong>5xx:</strong> Server errors</li>
-                <li>• <strong>-4, -16:</strong> Capacity exceeded</li>
-                <li>• <strong>-25:</strong> No routes found</li>
-                <li>• <strong>488:</strong> Codec incompatibility</li>
+                <li>• <strong>-4, -16:</strong> {t('cdrs.resultLabels.connectionCapacityExceeded')}</li>
+                <li>• <strong>-25:</strong> {t('cdrs.resultLabels.noRoutesFound')}</li>
+                <li>• <strong>488:</strong> {t('cdrs.resultLabels.unacceptableCodec')}</li>
               </ul>
             </div>
           </div>

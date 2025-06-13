@@ -43,6 +43,7 @@ import {
   RequestPriority 
 } from '@/types/phoneNumber';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useTranslations } from '@/lib/i18n';
 
 // Interface for backorder requests
 interface BackorderRequest {
@@ -106,6 +107,7 @@ interface CombinedRequest {
 }
 
 export default function PhoneNumbersPage() {
+  const { t } = useTranslations();
   const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([]);
   const [requests, setRequests] = useState<CombinedRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -155,7 +157,7 @@ export default function PhoneNumbersPage() {
     } catch (error) {
       console.error('Error fetching phone numbers:', error);
       setPhoneNumbers([]);
-      toast.error('Failed to load phone numbers');
+      toast.error(t('phoneNumbers.messages.error.loadNumbers'));
     } finally {
       setIsLoading(false);
     }
@@ -255,7 +257,7 @@ export default function PhoneNumbersPage() {
       }
 
       const data = await response.json();
-      toast.success(`Cancel request submitted. Request ID: ${data.requestNumber}`);
+      toast.success(t('phoneNumbers.messages.success.requestSubmitted'));
       setShowCancelModal(false);
       setCancelForm({
         phoneNumberId: '',
@@ -269,7 +271,7 @@ export default function PhoneNumbersPage() {
       fetchRequests();
     } catch (error) {
       console.error('Error submitting cancel request:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to submit cancel request');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.messages.error.submitRequest'));
     } finally {
       setIsSubmitting(false);
     }
@@ -286,11 +288,11 @@ export default function PhoneNumbersPage() {
         throw new Error(error.error || 'Failed to withdraw request');
       }
 
-      toast.success(`Your number will be kept! Cancellation request ${requestNumber} has been withdrawn.`);
+      toast.success(t('phoneNumbers.messages.success.requestWithdrawn'));
       fetchRequests(); // Refresh requests list
     } catch (error) {
       console.error('Error withdrawing request:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to withdraw request');
+      toast.error(error instanceof Error ? error.message : t('phoneNumbers.messages.error.withdrawRequest'));
     }
   };
 
@@ -331,19 +333,23 @@ export default function PhoneNumbersPage() {
 
   const getDisplayStatusText = (status: string) => {
     switch (status) {
-      case 'pending_cancellation': return 'Pending Cancellation';
-      case 'assigned': return 'Active';
+      case 'pending_cancellation': return t('phoneNumbers.numbers.statuses.pendingCancellation');
+      case 'assigned': return t('phoneNumbers.numbers.statuses.assigned');
+      case 'suspended': return t('phoneNumbers.numbers.statuses.suspended');
+      case 'available': return t('phoneNumbers.numbers.statuses.available');
+      case 'reserved': return t('phoneNumbers.numbers.statuses.reserved');
+      case 'cancelled': return t('phoneNumbers.numbers.statuses.cancelled');
       default: return status.replace('_', ' ');
     }
   };
 
   const getReasonDisplayText = (reason: string) => {
     switch (reason) {
-      case 'no_longer_needed': return 'No longer needed';
-      case 'cost_reduction': return 'Cost reduction';
-      case 'service_issues': return 'Service issues';
-      case 'business_closure': return 'Business closure';
-      case 'other': return 'Other';
+      case 'no_longer_needed': return t('phoneNumbers.reasons.noLongerNeeded');
+      case 'cost_reduction': return t('phoneNumbers.reasons.costReduction');
+      case 'service_issues': return t('phoneNumbers.reasons.serviceIssues');
+      case 'business_closure': return t('phoneNumbers.reasons.businessClosure');
+      case 'other': return t('phoneNumbers.reasons.other');
       default: return reason;
     }
   };
@@ -385,7 +391,7 @@ export default function PhoneNumbersPage() {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedStates(prev => ({ ...prev, [key]: true }));
-      toast.success('Copied to clipboard');
+      toast.success(t('phoneNumbers.messages.success.copiedToClipboard'));
       
       // Reset the copied state after 2 seconds
       setTimeout(() => {
@@ -399,12 +405,12 @@ export default function PhoneNumbersPage() {
   return (
     <MainLayout>
       <PageLayout
-        title="Phone Numbers"
-        description="Manage your assigned phone numbers and service requests"
+        title={t('phoneNumbers.page.title')}
+        description={t('phoneNumbers.page.description')}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Services', href: '/services' },
-          { label: 'Numbers' }
+          { label: t('phoneNumbers.page.breadcrumbs.dashboard'), href: '/dashboard' },
+          { label: t('phoneNumbers.page.breadcrumbs.services'), href: '/services' },
+          { label: t('phoneNumbers.page.breadcrumbs.numbers') }
         ]}
         headerActions={
           <Button 
@@ -412,15 +418,15 @@ export default function PhoneNumbersPage() {
             className="bg-green-600 hover:bg-green-700"
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
-            Buy Numbers
+            {t('phoneNumbers.header.buttons.buyNumbers')}
           </Button>
         }
       >
         {/* Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="numbers">My Numbers ({phoneNumbers.length})</TabsTrigger>
-            <TabsTrigger value="requests">Requests ({requests.length})</TabsTrigger>
+            <TabsTrigger value="numbers">{t('phoneNumbers.tabs.myNumbers')} ({phoneNumbers.length})</TabsTrigger>
+            <TabsTrigger value="requests">{t('phoneNumbers.tabs.requests')} ({requests.length})</TabsTrigger>
           </TabsList>
 
           {/* Phone Numbers Tab */}
@@ -428,7 +434,7 @@ export default function PhoneNumbersPage() {
             {/* Filters */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Filters</CardTitle>
+                <CardTitle className="text-lg">{t('phoneNumbers.filters.title')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -436,7 +442,7 @@ export default function PhoneNumbersPage() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
                       type="text"
-                      placeholder="Search numbers or country..."
+                      placeholder={t('phoneNumbers.filters.searchPlaceholder')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -447,10 +453,10 @@ export default function PhoneNumbersPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="assigned">Active</SelectItem>
-                      <SelectItem value="pending_cancellation">Pending Cancellation</SelectItem>
-                      <SelectItem value="suspended">Suspended</SelectItem>
+                      <SelectItem value="all">{t('phoneNumbers.filters.statusFilter.allStatuses')}</SelectItem>
+                      <SelectItem value="assigned">{t('phoneNumbers.filters.statusFilter.active')}</SelectItem>
+                      <SelectItem value="pending_cancellation">{t('phoneNumbers.filters.statusFilter.pendingCancellation')}</SelectItem>
+                      <SelectItem value="suspended">{t('phoneNumbers.filters.statusFilter.suspended')}</SelectItem>
                     </SelectContent>
                   </Select>
                   {(searchTerm || statusFilter !== 'all') && (
@@ -479,11 +485,11 @@ export default function PhoneNumbersPage() {
                 <CardContent className="py-12">
                   <div className="text-center">
                     <Hash className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No phone numbers found</h3>
+                    <h3 className="text-lg font-semibold mb-2">{t('phoneNumbers.numbers.empty.title')}</h3>
                     <p className="text-muted-foreground">
                       {searchTerm || statusFilter !== 'all' 
-                        ? 'Try adjusting your filters to see more results.'
-                        : 'You don&apos;t have any phone numbers assigned yet.'
+                        ? t('phoneNumbers.numbers.empty.descriptionFiltered')
+                        : t('phoneNumbers.numbers.empty.descriptionEmpty')
                       }
                     </p>
                   </div>
@@ -507,13 +513,13 @@ export default function PhoneNumbersPage() {
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <Label className="text-xs text-muted-foreground">Monthly Rate</Label>
+                          <Label className="text-xs text-muted-foreground">{t('phoneNumbers.numbers.fields.monthlyRate')}</Label>
                           <p className="font-medium">
                             {number.monthlyRate ? formatCurrency(number.monthlyRate, number.currency) : 'Free'}
                           </p>
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Next Billing</Label>
+                          <Label className="text-xs text-muted-foreground">{t('phoneNumbers.numbers.fields.nextBilling')}</Label>
                           <p className="font-medium">
                             {number.nextBillingDate ? formatDate(number.nextBillingDate) : 'N/A'}
                           </p>
@@ -522,7 +528,7 @@ export default function PhoneNumbersPage() {
 
                       {number.capabilities && number.capabilities.length > 0 && (
                         <div>
-                          <Label className="text-xs text-muted-foreground">Capabilities</Label>
+                          <Label className="text-xs text-muted-foreground">{t('phoneNumbers.numbers.fields.capabilities')}</Label>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {number.capabilities.map((capability) => (
                               <Badge key={capability} variant="outline" className="text-xs">
@@ -543,7 +549,7 @@ export default function PhoneNumbersPage() {
                           }}
                           className="flex-1"
                         >
-                          View Details
+                          {t('phoneNumbers.numbers.buttons.viewDetails')}
                         </Button>
                         {(getPhoneNumberDisplayStatus(number) === 'assigned') && (
                           <Button
@@ -561,7 +567,7 @@ export default function PhoneNumbersPage() {
                             title={requests.some(req => 
                               req.phoneNumber?.number === number.number && 
                               (req.status === 'pending' || req.status === 'approved')
-                            ) ? 'Request already pending' : 'Request cancellation'}
+                            ) ? t('phoneNumbers.numbers.tooltips.requestAlreadyPending') : t('phoneNumbers.numbers.tooltips.requestCancellation')}
                           >
                             <UserX className="h-4 w-4" />
                           </Button>
@@ -583,7 +589,10 @@ export default function PhoneNumbersPage() {
                                 <div className="flex items-center space-x-2">
                                   <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
                                   <p className="text-xs text-muted-foreground">
-                                    Cancellation request #{pendingRequest.requestNumber} is {pendingRequest.status}
+                                    {t('phoneNumbers.numbers.pendingRequest.cancellationPending', { 
+                                      requestNumber: pendingRequest.requestNumber, 
+                                      status: pendingRequest.status 
+                                    })}
                                   </p>
                                 </div>
                                 {pendingRequest.status === 'pending' && (
@@ -594,13 +603,15 @@ export default function PhoneNumbersPage() {
                                     className="text-xs h-6 px-2 text-blue-600 hover:text-blue-700"
                                     title="Cancel the cancellation request and keep your number"
                                   >
-                                    Keep Number
+                                    {t('phoneNumbers.numbers.buttons.keepNumber')}
                                   </Button>
                                 )}
                               </div>
                               {pendingRequest.scheduledDate && (
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  Scheduled: {formatDate(pendingRequest.scheduledDate)}
+                                  {t('phoneNumbers.numbers.pendingRequest.scheduled', { 
+                                    date: formatDate(pendingRequest.scheduledDate) 
+                                  })}
                                 </p>
                               )}
                             </div>
@@ -622,9 +633,9 @@ export default function PhoneNumbersPage() {
                 <CardContent className="py-12">
                   <div className="text-center">
                     <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No requests found</h3>
+                    <h3 className="text-lg font-semibold mb-2">{t('phoneNumbers.requests.empty.title')}</h3>
                     <p className="text-muted-foreground">
-                      You haven&apos;t submitted any service requests yet.
+                      {t('phoneNumbers.requests.empty.description')}
                     </p>
                   </div>
                 </CardContent>
@@ -632,22 +643,22 @@ export default function PhoneNumbersPage() {
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle>Service Requests</CardTitle>
+                  <CardTitle>{t('phoneNumbers.requests.title')}</CardTitle>
                   <CardDescription>
-                    View and manage your phone number service requests
+                    {t('phoneNumbers.requests.description')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Request ID</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Phone Number</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Priority</TableHead>
-                        <TableHead>Submitted</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead>{t('phoneNumbers.requests.table.headers.requestId')}</TableHead>
+                        <TableHead>{t('phoneNumbers.requests.table.headers.type')}</TableHead>
+                        <TableHead>{t('phoneNumbers.requests.table.headers.phoneNumber')}</TableHead>
+                        <TableHead>{t('phoneNumbers.requests.table.headers.status')}</TableHead>
+                        <TableHead>{t('phoneNumbers.requests.table.headers.priority')}</TableHead>
+                        <TableHead>{t('phoneNumbers.requests.table.headers.submitted')}</TableHead>
+                        <TableHead className="text-right">{t('phoneNumbers.requests.table.headers.actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -667,9 +678,9 @@ export default function PhoneNumbersPage() {
                                   : 'text-blue-600 border-blue-200'
                               }
                             >
-                              {request.requestType === 'backorder' ? 'Purchase' : 
-                               request.requestType === 'cancel' ? 'Cancel' : 
-                               'Modify'}
+                              {request.requestType === 'backorder' ? t('phoneNumbers.requests.types.purchase') : 
+                               request.requestType === 'cancel' ? t('phoneNumbers.requests.types.cancel') : 
+                               t('phoneNumbers.requests.types.modify')}
                             </Badge>
                           </TableCell>
                           <TableCell className="font-mono">
@@ -698,7 +709,7 @@ export default function PhoneNumbersPage() {
                                   setShowRequestDetailsModal(true);
                                 }}
                               >
-                                View Details
+                                {t('phoneNumbers.requests.buttons.viewDetails')}
                               </Button>
                               {request.status === 'pending' && request.requestType === 'cancel' && (
                                 <Button
@@ -707,7 +718,7 @@ export default function PhoneNumbersPage() {
                                   onClick={() => handleWithdrawRequest(request._id, request.requestNumber)}
                                   className="text-blue-600 hover:text-blue-700"
                                 >
-                                  Keep Number
+                                  {t('phoneNumbers.requests.buttons.keepNumber')}
                                 </Button>
                               )}
                             </div>
@@ -727,7 +738,7 @@ export default function PhoneNumbersPage() {
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                Request Details
+                {t('phoneNumbers.modals.requestDetails.title')}
                 {selectedRequest && (
                   <Badge 
                     variant={selectedRequest.requestType === 'backorder' ? 'outline' : 'secondary'}
@@ -739,18 +750,18 @@ export default function PhoneNumbersPage() {
                         : 'text-blue-600 border-blue-200'
                     }
                   >
-                    {selectedRequest.requestType === 'backorder' ? 'Purchase Request' : 
-                     selectedRequest.requestType === 'cancel' ? 'Cancellation Request' : 
-                     'Modification Request'}
+                    {selectedRequest.requestType === 'backorder' ? t('phoneNumbers.requests.types.purchaseRequest') : 
+                     selectedRequest.requestType === 'cancel' ? t('phoneNumbers.requests.types.cancellationRequest') : 
+                     t('phoneNumbers.requests.types.modificationRequest')}
                   </Badge>
                 )}
               </DialogTitle>
               <DialogDescription>
                 {selectedRequest?.requestType === 'backorder' 
-                  ? 'Your request to purchase a backorder-only phone number'
+                  ? t('phoneNumbers.modals.requestDetails.descriptions.backorder')
                   : selectedRequest?.requestType === 'cancel'
-                  ? 'Your request to cancel a phone number'
-                  : 'Your request to modify a phone number'
+                  ? t('phoneNumbers.modals.requestDetails.descriptions.cancel')
+                  : t('phoneNumbers.modals.requestDetails.descriptions.modify')
                 }
               </DialogDescription>
             </DialogHeader>
@@ -760,32 +771,32 @@ export default function PhoneNumbersPage() {
                 {/* Request Overview */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                   <div>
-                    <Label className="text-xs text-muted-foreground">Request ID</Label>
+                    <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.overview.requestId')}</Label>
                     <p className="font-mono font-medium">{selectedRequest.requestNumber}</p>
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Status</Label>
+                    <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.overview.status')}</Label>
                     <Badge variant={getRequestBadgeVariant(selectedRequest.status)} className="mt-1">
                       {selectedRequest.status}
                     </Badge>
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Priority</Label>
+                    <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.overview.priority')}</Label>
                     <Badge variant={getPriorityBadgeVariant(selectedRequest.priority)} className="mt-1">
                       {selectedRequest.priority}
                     </Badge>
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Submitted</Label>
+                    <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.overview.submitted')}</Label>
                     <p className="text-sm">{formatDate(selectedRequest.createdAt)}</p>
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Last Updated</Label>
+                    <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.overview.lastUpdated')}</Label>
                     <p className="text-sm">{formatDate(selectedRequest.updatedAt)}</p>
                   </div>
                   {selectedRequest.scheduledDate && (
                     <div>
-                      <Label className="text-xs text-muted-foreground">Scheduled Date</Label>
+                      <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.overview.scheduledDate')}</Label>
                       <p className="text-sm">{formatDate(selectedRequest.scheduledDate)}</p>
                     </div>
                   )}
@@ -794,33 +805,33 @@ export default function PhoneNumbersPage() {
                 {/* Phone Number Details */}
                 {selectedRequest.phoneNumber && (
                   <div>
-                    <h4 className="font-semibold mb-3">Phone Number Information</h4>
+                    <h4 className="font-semibold mb-3">{t('phoneNumbers.modals.requestDetails.phoneNumberInfo.title')}</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 border rounded-lg">
                       <div>
-                        <Label className="text-xs text-muted-foreground">Number</Label>
+                        <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.phoneNumberInfo.number')}</Label>
                         <p className="font-mono font-medium text-lg">{selectedRequest.phoneNumber.number}</p>
                       </div>
                       <div>
-                        <Label className="text-xs text-muted-foreground">Country</Label>
+                        <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.phoneNumberInfo.country')}</Label>
                         <p>{selectedRequest.phoneNumber.country} (+{selectedRequest.phoneNumber.countryCode})</p>
                       </div>
                       <div>
-                        <Label className="text-xs text-muted-foreground">Type</Label>
+                        <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.phoneNumberInfo.type')}</Label>
                         <p>{selectedRequest.phoneNumber.numberType}</p>
                       </div>
                       <div>
-                        <Label className="text-xs text-muted-foreground">Provider</Label>
+                        <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.phoneNumberInfo.provider')}</Label>
                         <p>{selectedRequest.phoneNumber.provider}</p>
                       </div>
                       <div>
-                        <Label className="text-xs text-muted-foreground">Monthly Rate</Label>
+                        <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.phoneNumberInfo.monthlyRate')}</Label>
                         <p className="font-medium">
                           {formatCurrency(selectedRequest.phoneNumber.monthlyRate, selectedRequest.phoneNumber.currency)}
                         </p>
                       </div>
                       {selectedRequest.phoneNumber.setupFee && (
                         <div>
-                          <Label className="text-xs text-muted-foreground">Setup Fee</Label>
+                          <Label className="text-xs text-muted-foreground">{t('phoneNumbers.modals.requestDetails.phoneNumberInfo.setupFee')}</Label>
                           <p className="font-medium">
                             {formatCurrency(selectedRequest.phoneNumber.setupFee, selectedRequest.phoneNumber.currency)}
                           </p>
@@ -966,10 +977,10 @@ export default function PhoneNumbersPage() {
                     <div className="p-2 bg-primary/10 rounded-lg">
                       <Phone className="h-6 w-6 text-primary" />
                     </div>
-                    Phone Number Details
+                    {t('phoneNumbers.modals.numberDetails.title')}
                   </DialogTitle>
                   <DialogDescription className="text-base mt-2">
-                    Complete technical and billing information for {selectedNumber?.number}
+                    {t('phoneNumbers.modals.numberDetails.description', { number: selectedNumber?.number || '' })}
                   </DialogDescription>
                 </div>
                 {selectedNumber && (
@@ -979,7 +990,7 @@ export default function PhoneNumbersPage() {
                     </Badge>
                     {selectedNumber.backorderOnly && (
                       <Badge variant="outline" className="text-orange-600 border-orange-200 px-3 py-1.5">
-                        Backorder Only
+                        {t('phoneNumbers.modals.numberDetails.badges.backorderOnly')}
                       </Badge>
                     )}
                   </div>
@@ -991,13 +1002,13 @@ export default function PhoneNumbersPage() {
               <div className="flex-1 overflow-y-auto space-y-6 pr-2 py-2">
                 {/* Scroll indicator */}
                 <div className="text-center text-xs text-muted-foreground mb-2">
-                  📋 Scroll down to see Technical Configuration section
+                  {t('phoneNumbers.modals.numberDetails.scrollIndicator')}
                 </div>
 
                 {/* Header Information */}
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 rounded-xl p-6 border border-blue-200/50">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100">Number Information</h3>
+                    <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100">{t('phoneNumbers.modals.numberDetails.sections.numberInfo.title')}</h3>
                     <Button
                       variant="outline"
                       size="sm"
@@ -1007,29 +1018,29 @@ export default function PhoneNumbersPage() {
                       {copiedStates.number ? (
                         <>
                           <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
-                          Copied!
+                          {t('phoneNumbers.modals.numberDetails.buttons.copied')}
                         </>
                       ) : (
                         <>
                           <Copy className="h-3 w-3 mr-1" />
-                          Copy Number
+                          {t('phoneNumbers.modals.numberDetails.buttons.copyNumber')}
                         </>
                       )}
                     </Button>
                   </div>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                     <div>
-                      <Label className="text-blue-700 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">Phone Number</Label>
+                      <Label className="text-blue-700 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{t('phoneNumbers.modals.numberDetails.sections.numberInfo.fields.phoneNumber')}</Label>
                       <p className="font-mono text-xl font-bold text-blue-900 dark:text-blue-100 mt-1">{selectedNumber.number}</p>
                     </div>
                     <div>
-                      <Label className="text-blue-700 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">Country</Label>
+                      <Label className="text-blue-700 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{t('phoneNumbers.modals.numberDetails.sections.numberInfo.fields.country')}</Label>
                       <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mt-1">
                         {selectedNumber.country} (+{selectedNumber.countryCode})
                       </p>
                     </div>
                     <div>
-                      <Label className="text-blue-700 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">Type</Label>
+                      <Label className="text-blue-700 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{t('phoneNumbers.modals.numberDetails.sections.numberInfo.fields.type')}</Label>
                       <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mt-1">{selectedNumber.numberType}</p>
                     </div>
                   </div>
@@ -1037,7 +1048,7 @@ export default function PhoneNumbersPage() {
 
                 {/* Billing Information */}
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50 rounded-xl p-6 border border-green-200/50">
-                  <h3 className="text-xl font-semibold text-green-900 dark:text-green-100 mb-4">Billing & Costs</h3>
+                  <h3 className="text-xl font-semibold text-green-900 dark:text-green-100 mb-4">{t('phoneNumbers.modals.numberDetails.sections.billing.title')}</h3>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                     <div>
                       <Label className="text-green-700 dark:text-green-300 text-xs font-medium uppercase tracking-wide">Monthly Rate</Label>
@@ -1123,7 +1134,7 @@ export default function PhoneNumbersPage() {
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                       <Terminal className="h-5 w-5" />
-                      🔧 Technical Configuration
+                      🔧 {t('phoneNumbers.modals.numberDetails.sections.technical.title')}
                     </h3>
                     {selectedNumber.connectionType && (
                       <Badge variant="outline" className="text-slate-700 border-slate-300 dark:text-slate-300">
@@ -1338,11 +1349,18 @@ export default function PhoneNumbersPage() {
                           <div className="flex items-start gap-3">
                             <BookOpen className="h-5 w-5 text-blue-600 mt-0.5" />
                             <div>
-                              <p className="font-medium text-blue-900 dark:text-blue-100 text-sm">Setup Instructions</p>
+                              <p className="font-medium text-blue-900 dark:text-blue-100 text-sm">{t('phoneNumbers.modals.numberDetails.sections.setupInstructions.title')}</p>
                               <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
                                 {selectedNumber.connectionType === 'ip_routing' 
-                                  ? `Configure your PBX to route calls from ${selectedNumber.ipAddress}:${selectedNumber.port || '5060'} for this number.`
-                                  : `Use the username "${selectedNumber.login}" with the provided password to authenticate with ${selectedNumber.domain}:${selectedNumber.credentialsPort || '5060'}.`
+                                  ? t('phoneNumbers.modals.numberDetails.sections.setupInstructions.ipRouting', { 
+                                      ipAddress: selectedNumber.ipAddress || '', 
+                                      port: (selectedNumber.port || 5060).toString() 
+                                    })
+                                  : t('phoneNumbers.modals.numberDetails.sections.setupInstructions.credentials', { 
+                                      login: selectedNumber.login || '', 
+                                      domain: selectedNumber.domain || '', 
+                                      port: (selectedNumber.credentialsPort || 5060).toString() 
+                                    })
                                 }
                               </p>
                             </div>
@@ -1392,44 +1410,44 @@ export default function PhoneNumbersPage() {
         <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Request Cancellation</DialogTitle>
+              <DialogTitle>{t('phoneNumbers.modals.cancelRequest.title')}</DialogTitle>
               <DialogDescription>
-                Submit a cancellation request for {selectedNumber?.number}
+                {t('phoneNumbers.modals.cancelRequest.description')}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="reason">Reason *</Label>
+                <Label htmlFor="reason">{t('phoneNumbers.modals.cancelRequest.form.reason.label')}</Label>
                 <Select value={cancelForm.reason} onValueChange={(value) => setCancelForm({ ...cancelForm, reason: value })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a reason" />
+                    <SelectValue placeholder={t('phoneNumbers.modals.cancelRequest.form.reason.placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="no_longer_needed">No longer needed</SelectItem>
-                    <SelectItem value="cost_reduction">Cost reduction</SelectItem>
-                    <SelectItem value="service_issues">Service issues</SelectItem>
-                    <SelectItem value="business_closure">Business closure</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="no_longer_needed">{t('phoneNumbers.modals.cancelRequest.form.reason.options.noLongerNeeded')}</SelectItem>
+                    <SelectItem value="cost_reduction">{t('phoneNumbers.modals.cancelRequest.form.reason.options.costReduction')}</SelectItem>
+                    <SelectItem value="service_issues">{t('phoneNumbers.modals.cancelRequest.form.reason.options.serviceIssues')}</SelectItem>
+                    <SelectItem value="business_closure">{t('phoneNumbers.modals.cancelRequest.form.reason.options.businessClosure')}</SelectItem>
+                    <SelectItem value="other">{t('phoneNumbers.modals.cancelRequest.form.reason.options.other')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div>
-                <Label htmlFor="priority">Priority</Label>
+                <Label htmlFor="priority">{t('phoneNumbers.modals.cancelRequest.form.priority.label')}</Label>
                 <Select value={cancelForm.priority} onValueChange={(value: RequestPriority) => setCancelForm({ ...cancelForm, priority: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="low">{t('phoneNumbers.modals.cancelRequest.form.priority.options.low')}</SelectItem>
+                    <SelectItem value="medium">{t('phoneNumbers.modals.cancelRequest.form.priority.options.medium')}</SelectItem>
+                    <SelectItem value="high">{t('phoneNumbers.modals.cancelRequest.form.priority.options.high')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div>
-                <Label htmlFor="scheduledDate">Preferred Cancellation Date</Label>
+                <Label htmlFor="scheduledDate">{t('phoneNumbers.modals.cancelRequest.form.scheduledDate.label')}</Label>
                 <Input
                   id="scheduledDate"
                   type="date"
@@ -1437,15 +1455,16 @@ export default function PhoneNumbersPage() {
                   onChange={(e) => setCancelForm({ ...cancelForm, scheduledDate: e.target.value || undefined })}
                   min={new Date().toISOString().split('T')[0]}
                 />
+                <p className="text-xs text-muted-foreground mt-1">{t('phoneNumbers.modals.cancelRequest.form.scheduledDate.helper')}</p>
               </div>
               
               <div>
-                <Label htmlFor="description">Additional Details</Label>
+                <Label htmlFor="description">{t('phoneNumbers.modals.cancelRequest.form.description.label')}</Label>
                 <Textarea
                   id="description"
                   value={cancelForm.description}
                   onChange={(e) => setCancelForm({ ...cancelForm, description: e.target.value })}
-                  placeholder="Please provide any additional details about your cancellation request..."
+                  placeholder={t('phoneNumbers.modals.cancelRequest.form.description.placeholder')}
                   rows={4}
                 />
               </div>
@@ -1453,7 +1472,7 @@ export default function PhoneNumbersPage() {
             
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" onClick={() => setShowCancelModal(false)}>
-                Cancel
+                {t('phoneNumbers.modals.cancelRequest.buttons.cancel')}
               </Button>
               <Button
                 onClick={handleCancelRequest}
@@ -1462,10 +1481,10 @@ export default function PhoneNumbersPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Submitting...
+                    {t('phoneNumbers.modals.cancelRequest.buttons.submitting')}
                   </>
                 ) : (
-                  'Submit Request'
+                  t('phoneNumbers.modals.cancelRequest.buttons.submit')
                 )}
               </Button>
             </div>

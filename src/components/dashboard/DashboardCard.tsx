@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useTranslations } from '@/lib/i18n';
 
 interface DashboardCardProps {
   id: string;
@@ -105,6 +106,7 @@ export function DashboardCard({
   headerActions,
   totalGridColumns = 12,
 }: DashboardCardProps) {
+  const { t } = useTranslations();
   const [isCollapsed, setIsCollapsed] = useState(collapsed);
   const [timeToRefresh, setTimeToRefresh] = useState(refreshInterval);
   const [shouldRefresh, setShouldRefresh] = useState(false);
@@ -290,7 +292,7 @@ export function DashboardCard({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Drag to reorder</p>
+                        <p>{t('dashboard.widgets.editMode.buttons.dragTooltip')}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -313,8 +315,8 @@ export function DashboardCard({
                   <div className="flex items-center space-x-2">
                     {showTitle && (
                       <CardTitle className={cn(
-                        "text-lg truncate",
-                        !enabled && "text-muted-foreground"
+                        "text-base font-semibold truncate",
+                        !enabled && "text-muted-foreground line-through"
                       )}>
                         {title}
                       </CardTitle>
@@ -323,8 +325,8 @@ export function DashboardCard({
                     {/* Show title in edit mode even if hidden for identification */}
                     {!showTitle && isEditMode && (
                       <CardTitle className={cn(
-                        "text-lg truncate opacity-50 italic",
-                        !enabled && "text-muted-foreground"
+                        "text-base font-semibold truncate opacity-50 italic",
+                        !enabled && "text-muted-foreground line-through"
                       )}>
                         {title} (Title Hidden)
                       </CardTitle>
@@ -334,9 +336,9 @@ export function DashboardCard({
                     
                     {/* Status badges */}
                     {!enabled && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="secondary" className="text-xs">
                         <EyeOff className="h-3 w-3 mr-1" />
-                        Hidden
+                        {t('dashboard.widgets.editMode.buttons.hidden')}
                       </Badge>
                     )}
                     
@@ -347,7 +349,7 @@ export function DashboardCard({
                     )}
                     
                     {alwaysVisible && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="destructive" className="text-xs">
                         Critical
                       </Badge>
                     )}
@@ -398,7 +400,7 @@ export function DashboardCard({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Refresh widget data</p>
+                        <p>{t('dashboard.widgets.editMode.buttons.refreshTooltip')}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -415,7 +417,7 @@ export function DashboardCard({
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Auto-refresh in {formatRefreshTime(timeToRefresh)}</p>
+                        <p>{t('dashboard.widgets.editMode.buttons.autoRefreshTooltip', { time: formatRefreshTime(timeToRefresh) })}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -497,7 +499,7 @@ export function DashboardCard({
                         className="h-8"
                       >
                         <Settings className="h-3 w-3 mr-2" />
-                        Settings
+                        {t('dashboard.widgets.editMode.buttons.settings')}
                       </Button>
                     }
                   />
@@ -516,18 +518,18 @@ export function DashboardCard({
                             {enabled ? (
                               <>
                                 <Eye className="h-3 w-3 mr-2" />
-                                Visible
+                                {t('dashboard.widgets.editMode.buttons.visible')}
                               </>
                             ) : (
                               <>
                                 <EyeOff className="h-3 w-3 mr-2" />
-                                Hidden
+                                {t('dashboard.widgets.editMode.buttons.hidden')}
                               </>
                             )}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{enabled ? 'Hide widget' : 'Show widget'}</p>
+                          <p>{enabled ? t('dashboard.widgets.editMode.buttons.hideTooltip') : t('dashboard.widgets.editMode.buttons.showTooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>

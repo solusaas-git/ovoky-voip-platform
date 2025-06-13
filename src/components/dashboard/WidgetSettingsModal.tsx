@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, Info, Palette, Grid3X3, Timer, LockIcon, Eye } from 'lucide-react';
+import { useTranslations } from '@/lib/i18n';
 
 interface WidgetSettingsModalProps {
   id: string;
@@ -69,6 +70,7 @@ export function WidgetSettingsModal({
   open,
   onOpenChange,
 }: WidgetSettingsModalProps) {
+  const { t } = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -80,18 +82,18 @@ export function WidgetSettingsModal({
   };
 
   const formatRefreshTime = (seconds: number) => {
-    if (seconds === 0) return 'Disabled';
-    if (seconds < 60) return `${seconds}s`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-    return `${Math.floor(seconds / 3600)}h`;
+    if (seconds === 0) return t('dashboard.widgets.settings.autoRefresh.interval.disabled');
+    if (seconds < 60) return t('dashboard.widgets.settings.autoRefresh.timeFormats.seconds', { count: seconds.toString() });
+    if (seconds < 3600) return t('dashboard.widgets.settings.autoRefresh.timeFormats.minutes', { count: Math.floor(seconds / 60).toString() });
+    return t('dashboard.widgets.settings.autoRefresh.timeFormats.hours', { count: Math.floor(seconds / 3600).toString() });
   };
 
   const getPriorityLabel = (priority: number) => {
-    if (priority >= 8) return 'Critical';
-    if (priority >= 6) return 'High';
-    if (priority >= 4) return 'Medium';
-    if (priority >= 2) return 'Low';
-    return 'Minimal';
+    if (priority >= 8) return t('dashboard.widgets.settings.categoryPriority.priority.levels.critical');
+    if (priority >= 6) return t('dashboard.widgets.settings.categoryPriority.priority.levels.high');
+    if (priority >= 4) return t('dashboard.widgets.settings.categoryPriority.priority.levels.medium');
+    if (priority >= 2) return t('dashboard.widgets.settings.categoryPriority.priority.levels.low');
+    return t('dashboard.widgets.settings.categoryPriority.priority.levels.minimal');
   };
 
   const getPriorityColor = (priority: number) => {
@@ -109,7 +111,7 @@ export function WidgetSettingsModal({
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Settings className="h-5 w-5" />
-            <span>Widget Settings</span>
+            <span>{t('dashboard.widgets.settings.title')}</span>
             <Badge variant="outline" className="text-xs">{title}</Badge>
           </DialogTitle>
         </DialogHeader>
@@ -120,27 +122,27 @@ export function WidgetSettingsModal({
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center space-x-2">
                 <Info className="h-4 w-4" />
-                <span>Current Status</span>
+                <span>{t('dashboard.widgets.settings.currentStatus.title')}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center justify-between">
-                  <span>Visibility:</span>
+                  <span>{t('dashboard.widgets.settings.currentStatus.visibility')}</span>
                   <Badge variant={enabled ? 'default' : 'secondary'}>
-                    {enabled ? 'Visible' : 'Hidden'}
+                    {enabled ? t('dashboard.widgets.settings.currentStatus.visible') : t('dashboard.widgets.settings.currentStatus.hidden')}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Size:</span>
+                  <span>{t('dashboard.widgets.settings.currentStatus.size')}</span>
                   <Badge variant="outline">{gridCols}×{gridRows}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Category:</span>
+                  <span>{t('dashboard.widgets.settings.currentStatus.category')}</span>
                   <Badge variant="outline" className="capitalize">{category}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Priority:</span>
+                  <span>{t('dashboard.widgets.settings.currentStatus.priority')}</span>
                   <Badge variant="outline" className={getPriorityColor(priority)}>
                     {getPriorityLabel(priority)} ({priority})
                   </Badge>
@@ -152,24 +154,24 @@ export function WidgetSettingsModal({
                 {alwaysVisible && (
                   <Badge variant="destructive" className="text-xs">
                     <LockIcon className="h-3 w-3 mr-1" />
-                    Critical Widget
+                    {t('dashboard.widgets.settings.currentStatus.badges.criticalWidget')}
                   </Badge>
                 )}
                 {locked && (
                   <Badge variant="outline" className="text-xs text-yellow-600">
                     <LockIcon className="h-3 w-3 mr-1" />
-                    Locked
+                    {t('dashboard.widgets.settings.currentStatus.badges.locked')}
                   </Badge>
                 )}
                 {!collapsible && (
                   <Badge variant="outline" className="text-xs text-orange-600">
-                    No Collapse
+                    {t('dashboard.widgets.settings.currentStatus.badges.noCollapse')}
                   </Badge>
                 )}
                 {refreshInterval > 0 && (
                   <Badge variant="outline" className="text-xs text-green-600">
                     <Timer className="h-3 w-3 mr-1" />
-                    Auto-refresh
+                    {t('dashboard.widgets.settings.currentStatus.badges.autoRefresh')}
                   </Badge>
                 )}
               </div>
@@ -181,15 +183,15 @@ export function WidgetSettingsModal({
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center space-x-2">
                 <Eye className="h-4 w-4" />
-                <span>Visibility & Behavior</span>
+                <span>{t('dashboard.widgets.settings.visibilityBehavior.title')}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <Label className="text-sm font-medium">Widget Enabled</Label>
-                    <p className="text-xs text-muted-foreground">Show or hide this widget on the dashboard</p>
+                    <Label className="text-sm font-medium">{t('dashboard.widgets.settings.visibilityBehavior.widgetEnabled.label')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('dashboard.widgets.settings.visibilityBehavior.widgetEnabled.description')}</p>
                   </div>
                   <Switch
                     checked={enabled}
@@ -200,8 +202,8 @@ export function WidgetSettingsModal({
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <Label className="text-sm font-medium">Show Title</Label>
-                    <p className="text-xs text-muted-foreground">Display the widget title header</p>
+                    <Label className="text-sm font-medium">{t('dashboard.widgets.settings.visibilityBehavior.showTitle.label')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('dashboard.widgets.settings.visibilityBehavior.showTitle.description')}</p>
                   </div>
                   <Switch
                     checked={showTitle}
@@ -211,8 +213,8 @@ export function WidgetSettingsModal({
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <Label className="text-sm font-medium">Allow Collapsing</Label>
-                    <p className="text-xs text-muted-foreground">Users can collapse this widget</p>
+                    <Label className="text-sm font-medium">{t('dashboard.widgets.settings.visibilityBehavior.allowCollapsing.label')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('dashboard.widgets.settings.visibilityBehavior.allowCollapsing.description')}</p>
                   </div>
                   <Switch
                     checked={collapsible}
@@ -222,8 +224,8 @@ export function WidgetSettingsModal({
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <Label className="text-sm font-medium">Lock Widget</Label>
-                    <p className="text-xs text-muted-foreground">Prevent moving or resizing</p>
+                    <Label className="text-sm font-medium">{t('dashboard.widgets.settings.visibilityBehavior.lockWidget.label')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('dashboard.widgets.settings.visibilityBehavior.lockWidget.description')}</p>
                   </div>
                   <Switch
                     checked={locked}
@@ -236,7 +238,7 @@ export function WidgetSettingsModal({
                     <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
                       <div className="flex items-center space-x-2 text-sm text-blue-800 dark:text-blue-200">
                         <Info className="h-4 w-4" />
-                        <span>This is a critical widget that cannot be hidden.</span>
+                        <span>{t('dashboard.widgets.settings.visibilityBehavior.criticalNote')}</span>
                       </div>
                     </div>
                   </div>
@@ -250,7 +252,7 @@ export function WidgetSettingsModal({
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center space-x-2">
                 <Grid3X3 className="h-4 w-4" />
-                <span>Layout & Sizing</span>
+                <span>{t('dashboard.widgets.settings.layoutSizing.title')}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -258,9 +260,9 @@ export function WidgetSettingsModal({
                 {/* Width Control */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Width (Columns)</Label>
+                    <Label className="text-sm font-medium">{t('dashboard.widgets.settings.layoutSizing.width.label')}</Label>
                     <Badge variant="outline" className="text-xs">
-                      {gridCols} of {totalGridColumns}
+                      {t('dashboard.widgets.settings.layoutSizing.width.badge', { cols: gridCols.toString(), total: totalGridColumns.toString() })}
                     </Badge>
                   </div>
                   <div className="space-y-2">
@@ -274,8 +276,8 @@ export function WidgetSettingsModal({
                       disabled={locked}
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>1 col</span>
-                      <span>{totalGridColumns} cols</span>
+                      <span>{t('dashboard.widgets.settings.layoutSizing.width.min')}</span>
+                      <span>{t('dashboard.widgets.settings.layoutSizing.width.max', { total: totalGridColumns.toString() })}</span>
                     </div>
                   </div>
                 </div>
@@ -283,9 +285,9 @@ export function WidgetSettingsModal({
                 {/* Height Control */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Height (Rows)</Label>
+                    <Label className="text-sm font-medium">{t('dashboard.widgets.settings.layoutSizing.height.label')}</Label>
                     <Badge variant="outline" className="text-xs">
-                      {gridRows} row{gridRows !== 1 ? 's' : ''}
+                      {gridRows !== 1 ? t('dashboard.widgets.settings.layoutSizing.height.badgePlural', { rows: gridRows.toString() }) : t('dashboard.widgets.settings.layoutSizing.height.badge', { rows: gridRows.toString() })}
                     </Badge>
                   </div>
                   <div className="space-y-2">
@@ -299,8 +301,8 @@ export function WidgetSettingsModal({
                       disabled={locked}
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>1 row</span>
-                      <span>6 rows</span>
+                      <span>{t('dashboard.widgets.settings.layoutSizing.height.min')}</span>
+                      <span>{t('dashboard.widgets.settings.layoutSizing.height.max')}</span>
                     </div>
                   </div>
                 </div>
@@ -308,16 +310,16 @@ export function WidgetSettingsModal({
 
               {/* Aspect Ratio */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Aspect Ratio</Label>
+                <Label className="text-sm font-medium">{t('dashboard.widgets.settings.layoutSizing.aspectRatio.label')}</Label>
                 <Select value={aspectRatio} onValueChange={onUpdateAspectRatio}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auto">Auto (Content-based)</SelectItem>
-                    <SelectItem value="square">Square (1:1)</SelectItem>
-                    <SelectItem value="wide">Wide (2:1)</SelectItem>
-                    <SelectItem value="tall">Tall (1:2)</SelectItem>
+                    <SelectItem value="auto">{t('dashboard.widgets.settings.layoutSizing.aspectRatio.auto')}</SelectItem>
+                    <SelectItem value="square">{t('dashboard.widgets.settings.layoutSizing.aspectRatio.square')}</SelectItem>
+                    <SelectItem value="wide">{t('dashboard.widgets.settings.layoutSizing.aspectRatio.wide')}</SelectItem>
+                    <SelectItem value="tall">{t('dashboard.widgets.settings.layoutSizing.aspectRatio.tall')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -329,32 +331,32 @@ export function WidgetSettingsModal({
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center space-x-2">
                 <Palette className="h-4 w-4" />
-                <span>Category & Priority</span>
+                <span>{t('dashboard.widgets.settings.categoryPriority.title')}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Category</Label>
+                  <Label className="text-sm font-medium">{t('dashboard.widgets.settings.categoryPriority.category.label')}</Label>
                   <Select value={category} onValueChange={onUpdateCategory}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="general">General</SelectItem>
-                      <SelectItem value="overview">Overview</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="metrics">Metrics</SelectItem>
-                      <SelectItem value="analytics">Analytics</SelectItem>
-                      <SelectItem value="reports">Reports</SelectItem>
-                      <SelectItem value="settings">Settings</SelectItem>
+                      <SelectItem value="general">{t('dashboard.widgets.settings.categoryPriority.category.general')}</SelectItem>
+                      <SelectItem value="overview">{t('dashboard.widgets.settings.categoryPriority.category.overview')}</SelectItem>
+                      <SelectItem value="admin">{t('dashboard.widgets.settings.categoryPriority.category.admin')}</SelectItem>
+                      <SelectItem value="metrics">{t('dashboard.widgets.settings.categoryPriority.category.metrics')}</SelectItem>
+                      <SelectItem value="analytics">{t('dashboard.widgets.settings.categoryPriority.category.analytics')}</SelectItem>
+                      <SelectItem value="reports">{t('dashboard.widgets.settings.categoryPriority.category.reports')}</SelectItem>
+                      <SelectItem value="settings">{t('dashboard.widgets.settings.categoryPriority.category.settings')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Priority</Label>
+                    <Label className="text-sm font-medium">{t('dashboard.widgets.settings.categoryPriority.priority.label')}</Label>
                     <Badge variant="outline" className={`text-xs ${getPriorityColor(priority)}`}>
                       {getPriorityLabel(priority)} ({priority})
                     </Badge>
@@ -369,8 +371,8 @@ export function WidgetSettingsModal({
                       className="w-full"
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Low (0)</span>
-                      <span>High (10)</span>
+                      <span>{t('dashboard.widgets.settings.categoryPriority.priority.min')}</span>
+                      <span>{t('dashboard.widgets.settings.categoryPriority.priority.max')}</span>
                     </div>
                   </div>
                 </div>
@@ -383,13 +385,13 @@ export function WidgetSettingsModal({
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center space-x-2">
                 <Timer className="h-4 w-4" />
-                <span>Auto-Refresh Settings</span>
+                <span>{t('dashboard.widgets.settings.autoRefresh.title')}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Refresh Interval</Label>
+                  <Label className="text-sm font-medium">{t('dashboard.widgets.settings.autoRefresh.interval.label')}</Label>
                   <Badge variant="outline" className="text-xs">
                     {formatRefreshTime(refreshInterval)}
                   </Badge>
@@ -404,15 +406,15 @@ export function WidgetSettingsModal({
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Disabled</span>
-                    <span>1 hour</span>
+                    <span>{t('dashboard.widgets.settings.autoRefresh.interval.min')}</span>
+                    <span>{t('dashboard.widgets.settings.autoRefresh.interval.max')}</span>
                   </div>
                 </div>
                 {refreshInterval > 0 && (
                   <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
                     <div className="flex items-center space-x-2 text-sm text-green-800 dark:text-green-200">
                       <Timer className="h-4 w-4" />
-                      <span>Widget will auto-refresh every {formatRefreshTime(refreshInterval)}</span>
+                      <span>{t('dashboard.widgets.settings.autoRefresh.note', { time: formatRefreshTime(refreshInterval) })}</span>
                     </div>
                   </div>
                 )}
@@ -423,23 +425,23 @@ export function WidgetSettingsModal({
           {/* Preview */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Live Preview</CardTitle>
+              <CardTitle className="text-sm">{t('dashboard.widgets.settings.preview.title')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="p-4 border rounded-lg bg-muted/50">
                 <div className="text-sm space-y-2">
-                  <div className="font-medium">Widget: {title}</div>
+                  <div className="font-medium">{t('dashboard.widgets.settings.preview.widget', { title })}</div>
                   <div className="text-muted-foreground">
-                    Size: {gridCols}×{gridRows} • Category: {category} • Priority: {priority}
+                    {t('dashboard.widgets.settings.preview.details', { cols: gridCols.toString(), rows: gridRows.toString(), category, priority: priority.toString() })}
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {enabled && <Badge variant="default" className="text-xs">Visible</Badge>}
-                    {!enabled && <Badge variant="secondary" className="text-xs">Hidden</Badge>}
-                    {showTitle && <Badge variant="outline" className="text-xs">Title Shown</Badge>}
-                    {!showTitle && <Badge variant="outline" className="text-xs text-orange-600">Title Hidden</Badge>}
-                    {collapsible && <Badge variant="outline" className="text-xs">Collapsible</Badge>}
-                    {locked && <Badge variant="outline" className="text-xs text-yellow-600">Locked</Badge>}
-                    {refreshInterval > 0 && <Badge variant="outline" className="text-xs text-green-600">Auto-refresh</Badge>}
+                    {enabled && <Badge variant="default" className="text-xs">{t('dashboard.widgets.settings.preview.badges.visible')}</Badge>}
+                    {!enabled && <Badge variant="secondary" className="text-xs">{t('dashboard.widgets.settings.preview.badges.hidden')}</Badge>}
+                    {showTitle && <Badge variant="outline" className="text-xs">{t('dashboard.widgets.settings.preview.badges.titleShown')}</Badge>}
+                    {!showTitle && <Badge variant="outline" className="text-xs text-orange-600">{t('dashboard.widgets.settings.preview.badges.titleHidden')}</Badge>}
+                    {collapsible && <Badge variant="outline" className="text-xs">{t('dashboard.widgets.settings.preview.badges.collapsible')}</Badge>}
+                    {locked && <Badge variant="outline" className="text-xs text-yellow-600">{t('dashboard.widgets.settings.preview.badges.locked')}</Badge>}
+                    {refreshInterval > 0 && <Badge variant="outline" className="text-xs text-green-600">{t('dashboard.widgets.settings.preview.badges.autoRefresh')}</Badge>}
                   </div>
                 </div>
               </div>

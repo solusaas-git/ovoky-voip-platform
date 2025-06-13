@@ -44,7 +44,7 @@ interface PopulatedPhoneNumber {
 interface PopulatedAssignment {
   _id: mongoose.Types.ObjectId;
   phoneNumberId: mongoose.Types.ObjectId;
-  userId: PopulatedUser;
+  userId: PopulatedUser | null;
   status: string;
   assignedAt: Date;
   unassignedAt?: Date;
@@ -133,7 +133,8 @@ export async function GET(
     console.log(`📋 Phone number ${phoneNumber.number} has ${assignmentHistory.length} assignment records:`);
     assignmentHistory.forEach((assignment, index) => {
       const typedAssignment = assignment as unknown as PopulatedAssignment;
-      console.log(`   ${index + 1}. ID: ${assignment._id}, Status: ${assignment.status}, User: ${typedAssignment.userId.email}, Assigned: ${assignment.assignedAt}, Unassigned: ${assignment.unassignedAt || 'N/A'}`);
+      const userEmail = typedAssignment.userId ? typedAssignment.userId.email : 'Unknown User';
+      console.log(`   ${index + 1}. ID: ${assignment._id}, Status: ${assignment.status}, User: ${userEmail}, Assigned: ${assignment.assignedAt}, Unassigned: ${assignment.unassignedAt || 'N/A'}`);
     });
 
     // Get onboarding data for current assigned user (if any)
@@ -143,7 +144,10 @@ export async function GET(
     }).lean() : null;
 
     // Get onboarding data for users in assignment history
-    const assignmentUserIds = assignmentHistory.map(assignment => (assignment.userId as unknown as PopulatedUser)._id);
+    const assignmentUserIds = assignmentHistory
+      .map(assignment => (assignment.userId as unknown as PopulatedUser))
+      .filter(user => user && user._id)
+      .map(user => user._id);
     const assignmentOnboardingData = assignmentUserIds.length > 0 ? await UserOnboarding.find({
       userId: { $in: assignmentUserIds }
     }).lean() : [];
@@ -172,18 +176,18 @@ export async function GET(
       assignmentHistory: assignmentHistory.map(assignment => {
         const typedAssignment = assignment as unknown as PopulatedAssignment;
         
-        // Get onboarding data for this assignment's user
-        const userOnboarding = assignmentOnboardingData.find(ob => 
-          ob.userId.toString() === typedAssignment.userId._id.toString()
-        );
+        // Get onboarding data for this assignment's user (if user exists)
+        const userOnboarding = typedAssignment.userId ? assignmentOnboardingData.find(ob => 
+          ob.userId.toString() === typedAssignment.userId!._id.toString()
+        ) : null;
 
         return {
           ...assignment,
           _id: typedAssignment._id.toString(),
           phoneNumberId: typedAssignment.phoneNumberId.toString(),
-          userId: typedAssignment.userId._id.toString(),
+          userId: typedAssignment.userId ? typedAssignment.userId._id.toString() : null,
           status: typedAssignment.status,
-          user: {
+          user: typedAssignment.userId ? {
             _id: typedAssignment.userId._id.toString(),
             name: typedAssignment.userId.name,
             email: typedAssignment.userId.email,
@@ -191,7 +195,7 @@ export async function GET(
             onboarding: {
               companyName: userOnboarding?.companyName || null,
             },
-          },
+          } : null,
           assignedAt: typedAssignment.assignedAt.toISOString(),
           unassignedAt: typedAssignment.unassignedAt?.toISOString(),
           billingStartDate: typedAssignment.billingStartDate.toISOString(),

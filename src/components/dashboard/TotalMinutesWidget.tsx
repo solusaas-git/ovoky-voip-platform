@@ -5,22 +5,24 @@ import { Badge } from '@/components/ui/badge';
 import { Timer, Clock, TrendingUp, Loader2, Gauge, BarChart, Zap, Activity, Calendar } from 'lucide-react';
 import { useCdr } from '@/contexts/CdrContext';
 import { useKpiThresholds } from '@/hooks/useKpiThresholds';
+import { useTranslations } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export function TotalMinutesWidget() {
   const { kpis, isLoading, error, selectedDate, hasDataLoaded } = useCdr();
   const { thresholds } = useKpiThresholds();
+  const { t } = useTranslations();
 
   const formatSelectedDate = (date: Date): string => {
     const today = new Date();
     const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
     
     if (date.toDateString() === today.toDateString()) {
-      return 'today';
+      return t('dashboard.widgets.totalMinutes.dateFormats.today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'yesterday';
+      return t('dashboard.widgets.totalMinutes.dateFormats.yesterday');
     } else {
-      return `on ${date.toLocaleDateString()}`;
+      return t('dashboard.widgets.totalMinutes.dateFormats.onDate', { date: date.toLocaleDateString() });
     }
   };
 
@@ -29,7 +31,7 @@ export function TotalMinutesWidget() {
     return (
       <Card className="h-full bg-card border-border shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold">Total Day Minutes</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t('dashboard.widgets.totalMinutes.title')}</CardTitle>
           <div className="relative">
             <div className="absolute inset-0 bg-muted/10 rounded-full"></div>
             <Clock className="h-5 w-5 text-muted-foreground relative z-10" />
@@ -39,7 +41,7 @@ export function TotalMinutesWidget() {
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center space-x-2">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">Loading minutes data...</span>
+              <span className="text-sm text-muted-foreground">{t('dashboard.widgets.totalMinutes.states.loading.subtitle')}</span>
             </div>
           </div>
         </CardContent>
@@ -52,7 +54,7 @@ export function TotalMinutesWidget() {
     return (
       <Card className="h-full bg-card border-border shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold">Total Day Minutes</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t('dashboard.widgets.totalMinutes.title')}</CardTitle>
           <div className="relative">
             <div className="absolute inset-0 bg-muted/10 rounded-full"></div>
             <Clock className="h-5 w-5 text-muted-foreground relative z-10" />
@@ -61,20 +63,20 @@ export function TotalMinutesWidget() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="text-2xl md:text-3xl font-bold tracking-tight text-destructive">
-              Error
+              {t('dashboard.widgets.totalMinutes.states.error.title')}
             </div>
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                Failed to load data
+                {t('dashboard.widgets.totalMinutes.states.error.subtitle')}
               </p>
               <Badge variant="destructive" className="text-xs font-medium">
-                Error
+                {t('dashboard.widgets.totalMinutes.states.error.badge')}
               </Badge>
             </div>
           </div>
           <div className="text-xs text-muted-foreground flex items-center space-x-1">
             <div className="w-2 h-2 bg-destructive rounded-full"></div>
-            <span>Please try refreshing the widget</span>
+            <span>{t('dashboard.widgets.totalMinutes.states.error.retry')}</span>
           </div>
         </CardContent>
       </Card>
@@ -86,7 +88,7 @@ export function TotalMinutesWidget() {
     return (
       <Card className="h-full bg-card border-border shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold">Total Day Minutes</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t('dashboard.widgets.totalMinutes.title')}</CardTitle>
           <div className="relative">
             <div className="absolute inset-0 bg-muted/10 rounded-full"></div>
             <Clock className="h-5 w-5 text-muted-foreground relative z-10" />
@@ -99,16 +101,16 @@ export function TotalMinutesWidget() {
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <p className="text-xs text-muted-foreground">
-                No usage {formatSelectedDate(selectedDate)}
+                {t('dashboard.widgets.totalMinutes.states.noActivity.subtitle', { date: formatSelectedDate(selectedDate) })}
               </p>
               <Badge variant="outline" className="text-xs font-medium w-fit">
-                No Activity
+                {t('dashboard.widgets.totalMinutes.states.noActivity.badge')}
               </Badge>
             </div>
           </div>
           <div className="text-xs text-muted-foreground flex items-center space-x-1">
             <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
-            <span>Waiting for call activity...</span>
+            <span>{t('dashboard.widgets.totalMinutes.states.noActivity.waiting')}</span>
           </div>
         </CardContent>
       </Card>
@@ -120,7 +122,7 @@ export function TotalMinutesWidget() {
     return (
       <Card className="h-full bg-card border-border shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-sm font-semibold">Total Day Minutes</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t('dashboard.widgets.totalMinutes.title')}</CardTitle>
           <div className="relative">
             <div className="absolute inset-0 bg-muted/10 rounded-full"></div>
             <Clock className="h-5 w-5 text-muted-foreground relative z-10" />
@@ -133,10 +135,10 @@ export function TotalMinutesWidget() {
             </div>
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                No data available
+                {t('dashboard.widgets.totalMinutes.states.noData.subtitle')}
               </p>
               <Badge variant="outline" className="text-xs font-medium">
-                No Data
+                {t('dashboard.widgets.totalMinutes.states.noData.badge')}
               </Badge>
             </div>
           </div>
@@ -188,7 +190,7 @@ export function TotalMinutesWidget() {
           textSecondary: 'text-emerald-700 dark:text-emerald-300',
           textMuted: 'text-emerald-600/70 dark:text-emerald-400/70',
           badge: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800',
-          badgeText: 'Light Usage',
+          badgeText: t('dashboard.widgets.totalMinutes.status.badges.lightUsage'),
           iconBg: 'bg-emerald-500/10 dark:bg-emerald-400/10',
           iconColor: 'text-emerald-600 dark:text-emerald-400',
           progressBg: 'bg-gradient-to-r from-emerald-400 to-green-500',
@@ -203,7 +205,7 @@ export function TotalMinutesWidget() {
           textSecondary: 'text-blue-700 dark:text-blue-300',
           textMuted: 'text-blue-600/70 dark:text-blue-400/70',
           badge: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800',
-          badgeText: 'Moderate Usage',
+          badgeText: t('dashboard.widgets.totalMinutes.status.badges.moderate'),
           iconBg: 'bg-blue-500/10 dark:bg-blue-400/10',
           iconColor: 'text-blue-600 dark:text-blue-400',
           progressBg: 'bg-gradient-to-r from-blue-400 to-cyan-500',
@@ -218,7 +220,7 @@ export function TotalMinutesWidget() {
           textSecondary: 'text-orange-700 dark:text-orange-300',
           textMuted: 'text-orange-600/70 dark:text-orange-400/70',
           badge: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-400 dark:border-orange-800',
-          badgeText: 'Heavy Usage',
+          badgeText: t('dashboard.widgets.totalMinutes.status.badges.heavy'),
           iconBg: 'bg-orange-500/10 dark:bg-orange-400/10',
           iconColor: 'text-orange-600 dark:text-orange-400',
           progressBg: 'bg-gradient-to-r from-orange-400 to-amber-500',
@@ -233,7 +235,7 @@ export function TotalMinutesWidget() {
           textSecondary: 'text-red-700 dark:text-red-300',
           textMuted: 'text-red-600/70 dark:text-red-400/70',
           badge: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-800',
-          badgeText: 'Very Heavy',
+          badgeText: t('dashboard.widgets.totalMinutes.status.badges.veryHeavy'),
           iconBg: 'bg-red-500/10 dark:bg-red-400/10',
           iconColor: 'text-red-600 dark:text-red-400',
           progressBg: 'bg-gradient-to-r from-red-400 to-rose-500',
@@ -248,7 +250,7 @@ export function TotalMinutesWidget() {
           textSecondary: 'text-muted-foreground',
           textMuted: 'text-muted-foreground/70',
           badge: 'bg-muted text-muted-foreground border-border',
-          badgeText: 'No Data',
+          badgeText: t('dashboard.widgets.totalMinutes.states.noData.badge'),
           iconBg: 'bg-muted/10',
           iconColor: 'text-muted-foreground',
           progressBg: 'bg-muted',
@@ -268,7 +270,7 @@ export function TotalMinutesWidget() {
     )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className={cn("text-sm font-semibold", config.textPrimary)}>
-          Total Day Minutes
+          {t('dashboard.widgets.totalMinutes.title')}
         </CardTitle>
         <div className="relative">
           <div className={cn("absolute inset-0 rounded-full animate-ping", config.pulse)}></div>
@@ -292,7 +294,7 @@ export function TotalMinutesWidget() {
           
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <p className={cn("text-xs", config.textMuted)}>
-              Total usage {formatSelectedDate(selectedDate)}
+              {t('dashboard.widgets.totalMinutes.labels.totalUsage')} {formatSelectedDate(selectedDate)}
             </p>
             <Badge variant="outline" className={cn("text-xs font-medium w-fit", config.badge)}>
               {config.badgeText}
@@ -354,7 +356,7 @@ export function TotalMinutesWidget() {
         <div className="space-y-3">
           {kpis.totalMinutes > 0 && (
             <div className={cn("text-center p-2 md:p-3 rounded-lg bg-muted/30 dark:bg-muted/20", config.textSecondary)}>
-              <div className="text-xs font-medium mb-1">Detailed Breakdown</div>
+              <div className="text-xs font-medium mb-1">{t('dashboard.widgets.totalMinutes.labels.efficiency')}</div>
               <div className="font-semibold text-sm md:text-base">{formatDetailedTime(kpis.totalMinutes)}</div>
             </div>
           )}
@@ -364,7 +366,7 @@ export function TotalMinutesWidget() {
               <div className={cn("text-center p-2 md:p-3 rounded-lg bg-muted/30", config.textSecondary)}>
                 <div className="flex items-center justify-center space-x-1 mb-1">
                   <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs font-medium">Avg</span>
+                  <span className="text-xs font-medium">{t('dashboard.widgets.totalMinutes.labels.avgPerCall')}</span>
                 </div>
                 <div className="font-semibold text-sm md:text-base">{(kpis.totalMinutes / Math.max(kpis.totalCalls, 1)).toFixed(1)}m</div>
               </div>
@@ -372,7 +374,7 @@ export function TotalMinutesWidget() {
               <div className={cn("text-center p-2 md:p-3 rounded-lg bg-muted/30", config.textSecondary)}>
                 <div className="flex items-center justify-center space-x-1 mb-1">
                   <TrendingUp className="h-3 w-3 text-green-600 dark:text-green-400" />
-                  <span className="text-xs font-medium">Peak</span>
+                  <span className="text-xs font-medium">{t('dashboard.widgets.totalMinutes.labels.peakUsage')}</span>
                 </div>
                 <div className="font-semibold text-sm md:text-base">{(kpis.totalMinutes * 1.3).toFixed(0)}m</div>
               </div>
@@ -384,7 +386,7 @@ export function TotalMinutesWidget() {
         {kpis.totalMinutes > 0 && (
           <div className="space-y-2">
             <div className="flex justify-between text-xs">
-              <span className={config.textMuted}>Usage Intensity</span>
+              <span className={config.textMuted}>{t('dashboard.widgets.totalMinutes.labels.usageTrend')}</span>
               <span className={config.textSecondary}>
                 {getUsageStatus() === 'light' ? '🟢 Efficient' : 
                  getUsageStatus() === 'moderate' ? '🔵 Balanced' :
@@ -427,7 +429,7 @@ export function TotalMinutesWidget() {
           <div className={cn("text-center p-2 md:p-3 rounded-lg bg-muted/30", config.textMuted)}>
             <div className="flex items-center justify-center space-x-1 mb-1">
               <Zap className="h-3 w-3" />
-              <span className="text-xs font-medium">Efficiency</span>
+              <span className="text-xs font-medium">{t('dashboard.widgets.totalMinutes.labels.efficiency')}</span>
             </div>
             <div className="font-semibold text-sm md:text-base">{Math.min(100, kpis.asr).toFixed(0)}%</div>
           </div>
@@ -442,7 +444,7 @@ export function TotalMinutesWidget() {
               getUsageStatus() === 'heavy' ? 'bg-orange-400 dark:bg-orange-500' :
               getUsageStatus() === 'very-heavy' ? 'bg-red-400 dark:bg-red-500' : 'bg-slate-400 dark:bg-slate-500'
             )}></div>
-            <span>Live Data</span>
+            <span>{t('dashboard.widgets.totalMinutes.labels.liveData')}</span>
           </div>
           <span className="text-right sm:text-left">{new Date().toLocaleTimeString()}</span>
         </div>

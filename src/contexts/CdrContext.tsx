@@ -226,11 +226,11 @@ export function CdrProvider({ children }: { children: React.ReactNode }) {
       const fullCdrs = data.success ? (data.cdrs || []) : (data.cdrs || []);
       
       // Convert full CDR objects to lightweight CdrWidget objects
-      const cdrs: CdrWidget[] = fullCdrs.map((cdr: CdrRow) => ({
-        cost: cdr.charged_amount?.toString() || '0',
+      const cdrs: CdrWidget[] = fullCdrs.map((cdr: any) => ({
+        cost: cdr.cost?.toString() || '0',
         duration: cdr.duration || 0,
-        result: cdr.disconnect_cause ? parseInt(cdr.disconnect_cause) || 0 : 0,
-        payment_currency: undefined, // CdrRow doesn't have payment_currency, will be set from account info
+        result: cdr.result || 0,
+        payment_currency: cdr.payment_currency || undefined,
         connect_time: cdr.connect_time || ''
       }));
 
