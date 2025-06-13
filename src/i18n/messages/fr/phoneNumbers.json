@@ -606,11 +606,62 @@
       },
       "edit": {
         "title": "Modifier le Numéro de Téléphone",
-        "description": "Modifier les détails du numéro de téléphone",
+        "description": "Mettre à jour les détails du numéro {number}",
+        "fields": {
+          "number": "Numéro de Téléphone",
+          "numberPlaceholder": "+1234567890",
+          "country": "Pays",
+          "countryPlaceholder": "Sélectionner un pays",
+          "numberType": "Type de Numéro",
+          "provider": "Fournisseur",
+          "providerPlaceholder": "Sélectionner un fournisseur",
+          "rateDeck": "Grille Tarifaire",
+          "rateDeckPlaceholder": "Sélectionner une grille tarifaire",
+          "backorderOnly": "Nécessite une commande en attente (les utilisateurs doivent demander ce numéro au lieu de l'acheter directement)",
+          "backorderDescription": "Lorsque activé, les utilisateurs devront soumettre une demande de commande en attente pour approbation administrative au lieu d'acheter ce numéro directement.",
+          "billingCycle": "Cycle de Facturation",
+          "billingDay": "Jour de Facturation du Mois",
+          "capabilities": "Capacités",
+          "connectionType": "Type de Connexion",
+          "connectionTypePlaceholder": "Sélectionner un type de connexion",
+          "ipAddress": "Adresse IP",
+          "port": "Port",
+          "login": "Identifiant",
+          "password": "Mot de Passe",
+          "domain": "Domaine/IP",
+          "credentialsPort": "Port"
+        },
+        "numberTypes": {
+          "geographic": "Géographique/Local",
+          "mobile": "Mobile",
+          "national": "National",
+          "tollfree": "Numéro Vert",
+          "shared": "Coût Partagé",
+          "npv": "NPV (Numéros Vérifiés)",
+          "premium": "Premium"
+        },
+        "billingCycles": {
+          "monthly": "Mensuel",
+          "yearly": "Annuel"
+        },
+        "connectionTypes": {
+          "none": "Aucun",
+          "ip_routing": "Routage IP",
+          "credentials": "Identifiants"
+        },
+        "capabilities": {
+          "voice": "Voix",
+          "sms": "SMS",
+          "fax": "Fax",
+          "data": "Données"
+        },
+        "sections": {
+          "technical": "Paramètres de Connexion Technique"
+        },
         "buttons": {
           "cancel": "Annuler",
-          "save": "Enregistrer les Modifications",
-          "saving": "Enregistrement..."
+          "update": "Mettre à Jour le Numéro",
+          "updating": "Mise à Jour..."
         }
       },
       "reserve": {

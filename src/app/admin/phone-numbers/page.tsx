@@ -2718,10 +2718,10 @@ export default function AdminPhoneNumbersPage() {
                   }}
                 >
                   <Edit className="h-4 w-4 mr-1" />
-                  Edit
+                  {t('phoneNumbers.admin.table.actionButtons.edit')}
                 </Button>
                 <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
-                  Close
+                  {t('phoneNumbers.admin.modals.details.buttons.close')}
                 </Button>
               </div>
             </div>
@@ -2732,26 +2732,26 @@ export default function AdminPhoneNumbersPage() {
         <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Edit Phone Number</DialogTitle>
+              <DialogTitle>{t('phoneNumbers.admin.modals.edit.title')}</DialogTitle>
               <DialogDescription>
-                Update phone number details for {selectedNumber?.number}
+                {t('phoneNumbers.admin.modals.edit.description', { number: selectedNumber?.number || '' })}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <Label htmlFor="editNumber">Phone Number *</Label>
+                  <Label htmlFor="editNumber">{t('phoneNumbers.admin.modals.edit.fields.number')} *</Label>
                   <Input
                     id="editNumber"
                     value={editForm.number}
                     onChange={(e) => setEditForm({ ...editForm, number: e.target.value })}
-                    placeholder="+1234567890"
+                    placeholder={t('phoneNumbers.admin.modals.edit.fields.numberPlaceholder')}
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="editCountry">Country *</Label>
+                  <Label htmlFor="editCountry">{t('phoneNumbers.admin.modals.edit.fields.country')} *</Label>
                   <Select 
                     value={editForm.country} 
                     onValueChange={(countryName) => {
@@ -2764,7 +2764,7 @@ export default function AdminPhoneNumbersPage() {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select country" />
+                      <SelectValue placeholder={t('phoneNumbers.admin.modals.edit.fields.countryPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {countries
@@ -2779,20 +2779,20 @@ export default function AdminPhoneNumbersPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="editNumberType">Number Type *</Label>
+                  <Label htmlFor="editNumberType">{t('phoneNumbers.admin.modals.edit.fields.numberType')} *</Label>
                   <Select value={editForm.numberType} onValueChange={(value: PhoneNumberType) => setEditForm({ ...editForm, numberType: value })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {[
-                        { id: 'geographic', label: 'Geographic/Local', value: 'Geographic/Local' },
-                        { id: 'mobile', label: 'Mobile', value: 'Mobile' },
-                        { id: 'national', label: 'National', value: 'National' },
-                        { id: 'tollfree', label: 'Toll-free', value: 'Toll-free' },
-                        { id: 'shared', label: 'Shared Cost', value: 'Shared Cost' },
-                        { id: 'npv', label: 'NPV (Verified Numbers)', value: 'NPV (Verified Numbers)' },
-                        { id: 'premium', label: 'Premium', value: 'Premium' }
+                        { id: 'geographic', label: t('phoneNumbers.admin.modals.edit.numberTypes.geographic'), value: 'Geographic/Local' },
+                        { id: 'mobile', label: t('phoneNumbers.admin.modals.edit.numberTypes.mobile'), value: 'Mobile' },
+                        { id: 'national', label: t('phoneNumbers.admin.modals.edit.numberTypes.national'), value: 'National' },
+                        { id: 'tollfree', label: t('phoneNumbers.admin.modals.edit.numberTypes.tollfree'), value: 'Toll-free' },
+                        { id: 'shared', label: t('phoneNumbers.admin.modals.edit.numberTypes.shared'), value: 'Shared Cost' },
+                        { id: 'npv', label: t('phoneNumbers.admin.modals.edit.numberTypes.npv'), value: 'NPV (Verified Numbers)' },
+                        { id: 'premium', label: t('phoneNumbers.admin.modals.edit.numberTypes.premium'), value: 'Premium' }
                       ].map(option => (
                         <SelectItem key={option.id} value={option.value}>
                           {option.label}
@@ -2803,10 +2803,10 @@ export default function AdminPhoneNumbersPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="editProvider">Provider</Label>
+                  <Label htmlFor="editProvider">{t('phoneNumbers.admin.modals.edit.fields.provider')}</Label>
                   <Select value={editForm.provider} onValueChange={(value) => setEditForm({ ...editForm, provider: value })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select provider" />
+                      <SelectValue placeholder={t('phoneNumbers.admin.modals.edit.fields.providerPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {providers
@@ -2821,10 +2821,10 @@ export default function AdminPhoneNumbersPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="editRateDeck">Rate Deck</Label>
+                  <Label htmlFor="editRateDeck">{t('phoneNumbers.admin.modals.edit.fields.rateDeck')}</Label>
                   <Select value={editForm.rateDeckId} onValueChange={(value) => setEditForm({ ...editForm, rateDeckId: value })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select rate deck" />
+                      <SelectValue placeholder={t('phoneNumbers.admin.modals.edit.fields.rateDeckPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {rateDeckOptions
@@ -2845,29 +2845,29 @@ export default function AdminPhoneNumbersPage() {
                       onCheckedChange={(checked) => setEditForm({ ...editForm, backorderOnly: !!checked })}
                     />
                     <Label htmlFor="editBackorderOnly" className="text-sm font-medium">
-                      Require backorder (users must request this number instead of purchasing directly)
+                      {t('phoneNumbers.admin.modals.edit.fields.backorderOnly')}
                     </Label>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    When enabled, users will need to submit a backorder request for admin approval instead of purchasing this number directly.
+                    {t('phoneNumbers.admin.modals.edit.fields.backorderDescription')}
                   </p>
                 </div>
 
                 <div>
-                  <Label htmlFor="editBillingCycle">Billing Cycle</Label>
+                  <Label htmlFor="editBillingCycle">{t('phoneNumbers.admin.modals.edit.fields.billingCycle')}</Label>
                   <Select value={editForm.billingCycle} onValueChange={(value: BillingCycle) => setEditForm({ ...editForm, billingCycle: value })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
+                      <SelectItem value="monthly">{t('phoneNumbers.admin.modals.edit.billingCycles.monthly')}</SelectItem>
+                      <SelectItem value="yearly">{t('phoneNumbers.admin.modals.edit.billingCycles.yearly')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="editBillingDay">Billing Day of Month</Label>
+                  <Label htmlFor="editBillingDay">{t('phoneNumbers.admin.modals.edit.fields.billingDay')}</Label>
                   <Input
                     id="editBillingDay"
                     type="number"
@@ -2879,7 +2879,7 @@ export default function AdminPhoneNumbersPage() {
                 </div>
 
                 <div className="col-span-2">
-                  <Label>Capabilities</Label>
+                  <Label>{t('phoneNumbers.admin.modals.edit.fields.capabilities')}</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {(['voice', 'sms', 'fax', 'data'] as PhoneNumberCapability[]).map((capability) => (
                       <div key={capability} className="flex items-center space-x-2">
@@ -2894,7 +2894,7 @@ export default function AdminPhoneNumbersPage() {
                           }}
                         />
                         <Label htmlFor={`edit-capability-${capability}`} className="text-sm capitalize">
-                          {capability}
+                          {t(`phoneNumbers.admin.modals.edit.capabilities.${capability}`)}
                         </Label>
                       </div>
                     ))}
@@ -2905,22 +2905,22 @@ export default function AdminPhoneNumbersPage() {
                 <div className="col-span-2">
                   <div className="flex items-center space-x-2">
                     <Hash className="h-4 w-4 text-muted-foreground" />
-                    <Label className="text-sm font-medium text-muted-foreground">Technical Connection Parameters</Label>
+                    <Label className="text-sm font-medium text-muted-foreground">{t('phoneNumbers.admin.modals.edit.sections.technical')}</Label>
                   </div>
                   <div className="mt-2 space-y-3">
                     <div>
-                      <Label htmlFor="editConnectionType">Connection Type</Label>
+                      <Label htmlFor="editConnectionType">{t('phoneNumbers.admin.modals.edit.fields.connectionType')}</Label>
                       <Select 
                         value={editForm.connectionType || 'none'} 
                         onValueChange={(value: ConnectionType | 'none') => setEditForm({ ...editForm, connectionType: value === 'none' ? undefined : value })}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select connection type" />
+                          <SelectValue placeholder={t('phoneNumbers.admin.modals.edit.fields.connectionTypePlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          <SelectItem value="ip_routing">IP Routing</SelectItem>
-                          <SelectItem value="credentials">Credentials</SelectItem>
+                          <SelectItem value="none">{t('phoneNumbers.admin.modals.edit.connectionTypes.none')}</SelectItem>
+                          <SelectItem value="ip_routing">{t('phoneNumbers.admin.modals.edit.connectionTypes.ip_routing')}</SelectItem>
+                          <SelectItem value="credentials">{t('phoneNumbers.admin.modals.edit.connectionTypes.credentials')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -2928,7 +2928,7 @@ export default function AdminPhoneNumbersPage() {
                     {editForm.connectionType === 'ip_routing' && (
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="editIpAddress">IP Address</Label>
+                          <Label htmlFor="editIpAddress">{t('phoneNumbers.admin.modals.edit.fields.ipAddress')}</Label>
                           <Input
                             id="editIpAddress"
                             value={editForm.ipAddress}
@@ -2937,7 +2937,7 @@ export default function AdminPhoneNumbersPage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="editPort">Port</Label>
+                          <Label htmlFor="editPort">{t('phoneNumbers.admin.modals.edit.fields.port')}</Label>
                           <Input
                             id="editPort"
                             type="number"
@@ -2952,7 +2952,7 @@ export default function AdminPhoneNumbersPage() {
                     {editForm.connectionType === 'credentials' && (
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="editLogin">Login</Label>
+                          <Label htmlFor="editLogin">{t('phoneNumbers.admin.modals.edit.fields.login')}</Label>
                           <Input
                             id="editLogin"
                             value={editForm.login}
@@ -2961,7 +2961,7 @@ export default function AdminPhoneNumbersPage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="editPassword">Password</Label>
+                          <Label htmlFor="editPassword">{t('phoneNumbers.admin.modals.edit.fields.password')}</Label>
                           <Input
                             id="editPassword"
                             type="password"
@@ -2971,7 +2971,7 @@ export default function AdminPhoneNumbersPage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="editDomain">Domain/IP</Label>
+                          <Label htmlFor="editDomain">{t('phoneNumbers.admin.modals.edit.fields.domain')}</Label>
                           <Input
                             id="editDomain"
                             value={editForm.domain}
@@ -2980,7 +2980,7 @@ export default function AdminPhoneNumbersPage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="editCredentialsPort">Port</Label>
+                          <Label htmlFor="editCredentialsPort">{t('phoneNumbers.admin.modals.edit.fields.credentialsPort')}</Label>
                           <Input
                             id="editCredentialsPort"
                             type="number"
@@ -2998,7 +2998,7 @@ export default function AdminPhoneNumbersPage() {
             
             <div className="flex justify-end space-x-3 pt-4">
               <Button variant="outline" onClick={() => setShowEditModal(false)}>
-                Cancel
+                {t('phoneNumbers.admin.modals.edit.buttons.cancel')}
               </Button>
               <Button
                 onClick={handleEditPhoneNumber}
@@ -3007,10 +3007,10 @@ export default function AdminPhoneNumbersPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Updating...
+                    {t('phoneNumbers.admin.modals.edit.buttons.updating')}
                   </>
                 ) : (
-                  'Update Phone Number'
+                  t('phoneNumbers.admin.modals.edit.buttons.update')
                 )}
               </Button>
             </div>

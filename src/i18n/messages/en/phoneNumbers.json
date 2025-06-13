@@ -606,11 +606,62 @@
       },
       "edit": {
         "title": "Edit Phone Number",
-        "description": "Modify phone number details",
+        "description": "Update phone number details for {number}",
+        "fields": {
+          "number": "Phone Number",
+          "numberPlaceholder": "+1234567890",
+          "country": "Country",
+          "countryPlaceholder": "Select country",
+          "numberType": "Number Type",
+          "provider": "Provider",
+          "providerPlaceholder": "Select provider",
+          "rateDeck": "Rate Deck",
+          "rateDeckPlaceholder": "Select rate deck",
+          "backorderOnly": "Require backorder (users must request this number instead of purchasing directly)",
+          "backorderDescription": "When enabled, users will need to submit a backorder request for admin approval instead of purchasing this number directly.",
+          "billingCycle": "Billing Cycle",
+          "billingDay": "Billing Day of Month",
+          "capabilities": "Capabilities",
+          "connectionType": "Connection Type",
+          "connectionTypePlaceholder": "Select connection type",
+          "ipAddress": "IP Address",
+          "port": "Port",
+          "login": "Login",
+          "password": "Password",
+          "domain": "Domain/IP",
+          "credentialsPort": "Port"
+        },
+        "numberTypes": {
+          "geographic": "Geographic/Local",
+          "mobile": "Mobile",
+          "national": "National",
+          "tollfree": "Toll-free",
+          "shared": "Shared Cost",
+          "npv": "NPV (Verified Numbers)",
+          "premium": "Premium"
+        },
+        "billingCycles": {
+          "monthly": "Monthly",
+          "yearly": "Yearly"
+        },
+        "connectionTypes": {
+          "none": "None",
+          "ip_routing": "IP Routing",
+          "credentials": "Credentials"
+        },
+        "capabilities": {
+          "voice": "Voice",
+          "sms": "SMS",
+          "fax": "Fax",
+          "data": "Data"
+        },
+        "sections": {
+          "technical": "Technical Connection Parameters"
+        },
         "buttons": {
           "cancel": "Cancel",
-          "save": "Save Changes",
-          "saving": "Saving..."
+          "update": "Update Phone Number",
+          "updating": "Updating..."
         }
       },
       "reserve": {
